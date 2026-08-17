@@ -1,0 +1,9 @@
+{
+  "name": "usdt-hub",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "firebase-admin": "^13.4.0"
+  }
+}
