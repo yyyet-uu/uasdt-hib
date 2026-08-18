@@ -1,20 +1,8 @@
-import admin from "firebase-admin";
+import { db, FieldValue } from "../lib/firebase.js";
+import { validateInitData, getInitData } from "../lib/auth.js";
+import { CONFIG } from "../lib/config.js";
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
-    })
-  });
-}
-
-const db = admin.firestore();
-
-const REWARD = 200;
-
-const PROMO_CODES = [
+const CODES = [
   "USDTHUB",
   "MONDAYUSDT",
   "TUESDAYUSDT",
@@ -46,99 +34,67 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { telegramId, code } = req.body || {};
+    const { user } =
+      validateInitData(getInitData(req));
 
-    if (!telegramId || !code) {
-      return res.status(400).json({
-        success: false,
-        error: "Telegram ID and promo code are required"
-      });
+    const uid = String(user.id);
+
+    const code =
+      String(req.body.code || "")
+        .trim()
+        .toUpperCase();
+
+    if (!CODES.includes(code)) {
+      throw new Error("INVALID_CODE");
     }
 
-    const cleanCode = String(code).trim().toUpperCase();
+    const claimRef =
+      db.collection("promoClaims")
+        .doc(`${uid}_${code}`);
 
-    if (!PROMO_CODES.includes(cleanCode)) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid promo code"
-      });
-    }
+    const userRef =
+      db.collection("users").doc(uid);
 
-    const userRef = db
-      .collection("users")
-      .doc(String(telegramId));
+    await db.runTransaction(async tx => {
+      const claim =
+        await tx.get(claimRef);
 
-    const promoRef = db
-      .collection("promoClaims")
-      .doc(`${telegramId}_${cleanCode}`);
+      const u =
+        await tx.get(userRef);
 
-    let result;
-
-    await db.runTransaction(async transaction => {
-      const userSnap = await transaction.get(userRef);
-      const promoSnap = await transaction.get(promoRef);
-
-      if (!userSnap.exists) {
+      if (!u.exists) {
         throw new Error("USER_NOT_FOUND");
       }
 
-      if (promoSnap.exists) {
+      if (claim.exists) {
         throw new Error("ALREADY_CLAIMED");
       }
 
-      const user = userSnap.data();
-      const currentBalance = Number(user.balance || 0);
-
-      const newBalance = currentBalance + REWARD;
-
-      transaction.update(userRef, {
-        balance: newBalance,
-        promoPoints:
-          admin.firestore.FieldValue.increment(REWARD),
-        updatedAt:
-          admin.firestore.FieldValue.serverTimestamp()
+      tx.create(claimRef, {
+        userId: uid,
+        code,
+        reward: CONFIG.PROMO_REWARD,
+        createdAt:
+          FieldValue.serverTimestamp()
       });
 
-      transaction.set(promoRef, {
-        telegramId: String(telegramId),
-        code: cleanCode,
-        reward: REWARD,
-        claimedAt:
-          admin.firestore.FieldValue.serverTimestamp()
+      tx.update(userRef, {
+        balance:
+          FieldValue.increment(
+            CONFIG.PROMO_REWARD
+          )
       });
-
-      result = {
-        reward: REWARD,
-        balance: newBalance
-      };
     });
 
-    return res.status(200).json({
+    return res.json({
       success: true,
-      message: "Promo code redeemed successfully",
-      ...result
+      reward: CONFIG.PROMO_REWARD
     });
 
   } catch (error) {
-    console.error("PROMO ERROR:", error);
-
-    if (error.message === "USER_NOT_FOUND") {
-      return res.status(404).json({
-        success: false,
-        error: "User not found"
-      });
-    }
-
-    if (error.message === "ALREADY_CLAIMED") {
-      return res.status(409).json({
-        success: false,
-        error: "You already used this promo code"
-      });
-    }
-
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
-      error: "Promo code failed"
+      error: error.message
     });
   }
-  }
+}
