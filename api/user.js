@@ -1,19 +1,12 @@
-import admin from "firebase-admin";
+import { db, FieldValue } from "../lib/firebase.js";
+import { validateInitData, getInitData } from "../lib/auth.js";
+import { sendMessage } from "../lib/telegram.js";
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
-    })
-  });
+function referralId(inviter, user) {
+  return `${inviter}_${user}`;
 }
 
-const db = admin.firestore();
-
 export default async function handler(req, res) {
-
   if (req.method !== "POST") {
     return res.status(405).json({
       success: false,
@@ -22,94 +15,152 @@ export default async function handler(req, res) {
   }
 
   try {
+    const { user, startParam } =
+      validateInitData(getInitData(req));
 
-    const {
-      telegramId,
-      firstName = "",
-      username = "",
-      referralCode = ""
-    } = req.body || {};
+    const uid = String(user.id);
 
-    if (!telegramId) {
-      return res.status(400).json({
-        success: false,
-        error: "Telegram ID is required"
-      });
-    }
+    const ref = db.collection("users").doc(uid);
+    const existing = await ref.get();
 
-    const userRef =
-      db.collection("users").doc(String(telegramId));
-
-    const snapshot = await userRef.get();
-
-    if (snapshot.exists) {
-
-      const user = snapshot.data();
-
-      return res.status(200).json({
+    if (existing.exists) {
+      return res.json({
         success: true,
-        existingUser: true,
-        user
+        newUser: false,
+        user: existing.data()
       });
     }
 
-    const user = {
+    let inviterId = null;
 
-      telegramId: String(telegramId),
+    if (startParam?.startsWith("ref_")) {
+      const possible =
+        startParam.slice(4);
 
-      firstName,
-      username,
+      if (
+        possible &&
+        possible !== uid
+      ) {
+        const inviterRef =
+          db.collection("users").doc(possible);
+
+        const inviter =
+          await inviterRef.get();
+
+        if (inviter.exists) {
+          inviterId = possible;
+        }
+      }
+    }
+
+    const userData = {
+      telegramId: uid,
+      firstName: user.first_name || "",
+      lastName: user.last_name || "",
+      username: user.username || "",
 
       balance: 0,
 
       adsWatched: 0,
-
       monetagAds: 0,
       adsgramAds: 0,
+      monetagToday: 0,
+      adsgramToday: 0,
+      adDate: null,
 
       tasksCompleted: 0,
 
       referrals: 0,
       referralPoints: 0,
 
-      withdrawals: 0,
-
-      xoPlays: 0,
-
       welcomeBonusClaimed: false,
-
+      welcomeBonusStatus: "none",
       welcomeAddress: null,
 
       channelsVerified: false,
+      appUnlocked: false,
 
-      referralCode:
-        `ref_${String(telegramId)}`,
+      xoDailyPlays: 0,
+      xoPlayDate: null,
+      xoPlays: 0,
+      xoWins: 0,
 
-      referredBy:
-        referralCode || null,
+      aviatorGames: 0,
+      aviatorWins: 0,
+
+      referralCode: `ref_${uid}`,
+
+      referredBy: inviterId,
 
       createdAt:
-        admin.firestore.FieldValue.serverTimestamp(),
+        FieldValue.serverTimestamp(),
 
       updatedAt:
-        admin.firestore.FieldValue.serverTimestamp()
+        FieldValue.serverTimestamp()
     };
 
-    await userRef.set(user);
+    const referralRef =
+      inviterId
+        ? db.collection("referrals")
+          .doc(referralId(inviterId, uid))
+        : null;
 
-    return res.status(200).json({
+    const batch = db.batch();
+
+    batch.create(ref, userData);
+
+    if (referralRef) {
+      batch.create(referralRef, {
+        inviterId,
+        referredUserId: uid,
+
+        channelReward: 500,
+        adsReward: 500,
+
+        channelRewarded: false,
+        adsRewarded: false,
+
+        createdAt:
+          FieldValue.serverTimestamp()
+      });
+
+      batch.update(
+        db.collection("users").doc(inviterId),
+        {
+          referrals:
+            FieldValue.increment(1)
+        }
+      );
+    }
+
+    await batch.commit();
+
+    try {
+      await sendMessage(
+        uid,
+        "🎉 <b>Welcome to USDT Hub!</b>\n\nYour account has been created successfully."
+      );
+
+      if (inviterId) {
+        await sendMessage(
+          inviterId,
+          "👥 <b>New referral!</b>\nSomeone registered using your referral link."
+        );
+      }
+    } catch {}
+
+    return res.status(201).json({
       success: true,
-      existingUser: false,
-      user
+      newUser: true,
+      user: userData
     });
 
   } catch (error) {
+    console.error(error);
 
-    console.error("USER API ERROR:", error);
-
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
-      error: "Internal server error"
+      error: error.message
     });
   }
-      }
+}
