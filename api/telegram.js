@@ -1,38 +1,4 @@
-import admin from "firebase-admin";
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
-    })
-  });
-}
-
-const db = admin.firestore();
-
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const ADMIN_ID = process.env.TELEGRAM_ADMIN_ID;
-
-async function sendTelegram(chatId, text) {
-  const response = await fetch(
-    `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: "HTML"
-      })
-    }
-  );
-
-  return response.json();
-}
+import { sendMessage } from "../lib/telegram.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -43,47 +9,44 @@ export default async function handler(req, res) {
   }
 
   try {
-    const {
-      telegramId,
-      message
-    } = req.body || {};
+    const update = req.body;
 
-    if (!telegramId || !message) {
-      return res.status(400).json({
-        success: false,
-        error: "telegramId and message are required"
-      });
+    if (update?.message?.text === "/start") {
+      const chatId =
+        update.message.chat.id;
+
+      const webAppUrl =
+        process.env.WEBAPP_URL;
+
+      await sendMessage(
+        chatId,
+        "🔥 <b>Welcome to USDT Hub!</b>\n\nEarn points from ads, tasks and referrals, then withdraw your rewards.",
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "🚀 OPEN USDT HUB",
+                  web_app: {
+                    url: webAppUrl
+                  }
+                }
+              ]
+            ]
+          }
+        }
+      );
     }
 
-    if (!BOT_TOKEN) {
-      return res.status(500).json({
-        success: false,
-        error: "Telegram bot is not configured"
-      });
-    }
-
-    const result = await sendTelegram(
-      String(telegramId),
-      message
-    );
-
-    if (!result.ok) {
-      return res.status(400).json({
-        success: false,
-        error: result.description || "Telegram failed"
-      });
-    }
-
-    return res.status(200).json({
+    return res.json({
       success: true
     });
 
   } catch (error) {
-    console.error("TELEGRAM ERROR:", error);
+    console.error(error);
 
     return res.status(500).json({
-      success: false,
-      error: "Telegram server error"
+      success: false
     });
   }
 }
