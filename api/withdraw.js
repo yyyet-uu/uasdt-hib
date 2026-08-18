@@ -1,48 +1,11 @@
-import admin from "firebase-admin";
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
-    })
-  });
-}
-
-const db = admin.firestore();
-
-const MIN_POINTS = 10000;
-const POINTS_PER_USDT = 100000;
-
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const ADMIN_ID = process.env.TELEGRAM_ADMIN_ID;
-
-function isValidBep20Address(address) {
-  return /^0x[a-fA-F0-9]{40}$/.test(address);
-}
-
-async function sendTelegram(chatId, text) {
-  if (!BOT_TOKEN || !chatId) return;
-
-  await fetch(
-    `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: "HTML"
-      })
-    }
-  );
-}
+import { db, FieldValue } from "../lib/firebase.js";
+import { validateInitData, getInitData } from "../lib/auth.js";
+import { sendUSDT } from "../lib/payout.js";
+import { sendMessage } from "../lib/telegram.js";
+import { CONFIG } from "../lib/config.js";
+import { ethers } from "ethers";
 
 export default async function handler(req, res) {
-
   if (req.method !== "POST") {
     return res.status(405).json({
       success: false,
@@ -50,182 +13,165 @@ export default async function handler(req, res) {
     });
   }
 
+  let withdrawalId = null;
+
   try {
+    const { user } =
+      validateInitData(getInitData(req));
 
-    const {
-      telegramId,
-      bep20Address
-    } = req.body || {};
+    const uid = String(user.id);
 
-    if (!telegramId) {
-      return res.status(400).json({
-        success: false,
-        error: "Telegram ID is required"
-      });
+    const address =
+      String(req.body.address || "").trim();
+
+    if (!ethers.isAddress(address)) {
+      throw new Error("INVALID_ADDRESS");
     }
 
-    if (!bep20Address) {
-      return res.status(400).json({
-        success: false,
-        error: "BEP20 address is required"
-      });
-    }
+    const destination =
+      ethers.getAddress(address);
 
-    const address = bep20Address.trim();
+    const userRef =
+      db.collection("users").doc(uid);
 
-    if (!isValidBep20Address(address)) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid BEP20 address"
-      });
-    }
+    const withdrawalRef =
+      db.collection("withdrawals").doc();
 
-    const userRef = db
-      .collection("users")
-      .doc(String(telegramId));
+    await db.runTransaction(async tx => {
+      const snap =
+        await tx.get(userRef);
 
-    const withdrawalRef = db
-      .collection("withdrawals")
-      .doc();
-
-    let withdrawalData;
-
-    await db.runTransaction(async transaction => {
-
-      const userSnap = await transaction.get(userRef);
-
-      if (!userSnap.exists) {
+      if (!snap.exists) {
         throw new Error("USER_NOT_FOUND");
       }
 
-      const user = userSnap.data();
+      const u = snap.data();
 
-      const points = Number(user.balance || 0);
-
-      if (points < MIN_POINTS) {
-        throw new Error("INSUFFICIENT_POINTS");
+      if (!u.channelsVerified) {
+        throw new Error("CHANNELS_REQUIRED");
       }
 
-      if (!user.channelsVerified) {
-        throw new Error("CHANNELS_NOT_VERIFIED");
+      const points =
+        Number(u.balance || 0);
+
+      if (
+        points <
+        CONFIG.WITHDRAW_MIN_POINTS
+      ) {
+        throw new Error("MINIMUM_NOT_REACHED");
       }
 
-      if (!user.welcomeAddress) {
-        throw new Error("NO_WALLET_ADDRESS");
-      }
+      withdrawalId =
+        withdrawalRef.id;
 
-      withdrawalData = {
-        id: withdrawalRef.id,
-        telegramId: String(telegramId),
-        address,
-        points: MIN_POINTS,
-        amount: MIN_POINTS / POINTS_PER_USDT,
-        status: "pending",
+      tx.update(userRef, {
+        balance:
+          FieldValue.increment(-points),
+
+        withdrawals:
+          FieldValue.increment(1),
+
+        lastWithdrawalId:
+          withdrawalId
+      });
+
+      tx.create(withdrawalRef, {
+        userId: uid,
+        address: destination,
+
+        points,
+
+        amountUSDT:
+          points /
+          CONFIG.POINTS_PER_USDT,
+
+        status: "processing",
+
         createdAt:
-          admin.firestore.FieldValue.serverTimestamp()
-      };
-
-      transaction.set(
-        withdrawalRef,
-        withdrawalData
-      );
-
-      transaction.update(
-        userRef,
-        {
-          balance:
-            admin.firestore.FieldValue.increment(-MIN_POINTS),
-
-          withdrawals:
-            admin.firestore.FieldValue.increment(1),
-
-          lastWithdrawalId:
-            withdrawalRef.id,
-
-          updatedAt:
-            admin.firestore.FieldValue.serverTimestamp()
-        }
-      );
+          FieldValue.serverTimestamp()
+      });
     });
 
-    // Notify the user
-    await sendTelegram(
-      String(telegramId),
-      `💸 <b>Withdrawal Request Received</b>
-
-Amount: <b>0.10 USDT</b>
-Network: <b>BEP20</b>
-Address:
-<code>${address}</code>
-
-Status: ⏳ Pending
-
-Your request has been received and will be processed.`
-    );
-
-    // Notify admin
-    if (ADMIN_ID) {
-      await sendTelegram(
-        ADMIN_ID,
-        `💰 <b>NEW WITHDRAWAL</b>
-
-User ID: <code>${telegramId}</code>
-Amount: <b>0.10 USDT</b>
-Points: <b>10,000</b>
-Network: <b>BEP20</b>
-
-Address:
-<code>${address}</code>
-
-Withdrawal ID:
-<code>${withdrawalData.id}</code>
-
-Status: ⏳ Pending`
+    const amount =
+      Number(
+        (
+          Number(
+            (await withdrawalRef.get()).data()
+              .amountUSDT
+          )
+        ).toFixed(8)
       );
-    }
 
-    return res.status(200).json({
+    const payment =
+      await sendUSDT(
+        destination,
+        amount
+      );
+
+    await withdrawalRef.update({
+      status: "paid",
+      txHash: payment.txHash,
+      paidAt:
+        FieldValue.serverTimestamp()
+    });
+
+    try {
+      await sendMessage(
+        uid,
+        `✅ <b>Withdrawal successful</b>\n\n💰 ${amount} USDT\n🔗 ${payment.txHash}`
+      );
+    } catch {}
+
+    return res.json({
       success: true,
-      status: "pending",
-      withdrawalId: withdrawalData.id,
-      amount: 0.10
+      amount,
+      txHash: payment.txHash
     });
 
   } catch (error) {
+    console.error(error);
 
-    console.error("WITHDRAW ERROR:", error);
+    if (withdrawalId) {
+      try {
+        const ref =
+          db.collection("withdrawals")
+            .doc(withdrawalId);
 
-    if (error.message === "USER_NOT_FOUND") {
-      return res.status(404).json({
-        success: false,
-        error: "User not found"
-      });
+        const snap = await ref.get();
+
+        if (
+          snap.exists &&
+          snap.data().status === "processing"
+        ) {
+          const data = snap.data();
+
+          await db.runTransaction(async tx => {
+            tx.update(
+              db.collection("users").doc(
+                data.userId
+              ),
+              {
+                balance:
+                  FieldValue.increment(
+                    Number(data.points || 0)
+                  )
+              }
+            );
+
+            tx.update(ref, {
+              status: "failed",
+              error: error.message,
+              updatedAt:
+                FieldValue.serverTimestamp()
+            });
+          });
+        }
+      } catch {}
     }
 
-    if (error.message === "INSUFFICIENT_POINTS") {
-      return res.status(400).json({
-        success: false,
-        error: "You need at least 10,000 points"
-      });
-    }
-
-    if (error.message === "CHANNELS_NOT_VERIFIED") {
-      return res.status(403).json({
-        success: false,
-        error: "Join both required channels first"
-      });
-    }
-
-    if (error.message === "NO_WALLET_ADDRESS") {
-      return res.status(400).json({
-        success: false,
-        error: "No wallet address registered"
-      });
-    }
-
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
-      error: "Withdrawal failed"
+      error: error.message
     });
   }
-}
+        }
