@@ -1,18 +1,5 @@
-import admin from "firebase-admin";
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
-    })
-  });
-}
-
-const db = admin.firestore();
-
-const ADMIN_ID = String(process.env.TELEGRAM_ADMIN_ID || "");
+import { db, FieldValue } from "../lib/firebase.js";
+import { validateInitData, getInitData } from "../lib/auth.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -23,161 +10,79 @@ export default async function handler(req, res) {
   }
 
   try {
-    const {
-      telegramId,
-      action,
-      withdrawalId,
-      taskId,
-      status
-    } = req.body || {};
+    const { user } =
+      validateInitData(getInitData(req));
 
-    if (!telegramId || String(telegramId) !== ADMIN_ID) {
+    if (
+      String(user.id) !==
+      String(process.env.TELEGRAM_ADMIN_ID)
+    ) {
       return res.status(403).json({
         success: false,
-        error: "Admin access required"
+        error: "Admin only"
       });
     }
 
-    /* =========================
-       LIST PENDING WITHDRAWALS
-    ========================= */
+    const action = req.body.action;
 
     if (action === "withdrawals") {
-      const snapshot = await db
-        .collection("withdrawals")
-        .where("status", "==", "pending")
-        .get();
+      const snap =
+        await db.collection("withdrawals")
+          .where("status", "==", "processing")
+          .limit(100)
+          .get();
 
-      const withdrawals = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      return res.status(200).json({
+      return res.json({
         success: true,
-        withdrawals
+        withdrawals:
+          snap.docs.map(d => ({
+            id: d.id,
+            ...d.data()
+          }))
       });
     }
-
-    /* =========================
-       UPDATE WITHDRAWAL STATUS
-    ========================= */
-
-    if (action === "withdrawalStatus") {
-      if (!withdrawalId) {
-        return res.status(400).json({
-          success: false,
-          error: "Withdrawal ID required"
-        });
-      }
-
-      const allowed = [
-        "pending",
-        "processing",
-        "paid",
-        "rejected"
-      ];
-
-      if (!allowed.includes(status)) {
-        return res.status(400).json({
-          success: false,
-          error: "Invalid status"
-        });
-      }
-
-      const withdrawalRef = db
-        .collection("withdrawals")
-        .doc(String(withdrawalId));
-
-      const snap = await withdrawalRef.get();
-
-      if (!snap.exists) {
-        return res.status(404).json({
-          success: false,
-          error: "Withdrawal not found"
-        });
-      }
-
-      await withdrawalRef.update({
-        status,
-        updatedAt:
-          admin.firestore.FieldValue.serverTimestamp()
-      });
-
-      return res.status(200).json({
-        success: true,
-        status
-      });
-    }
-
-    /* =========================
-       LIST TASKS
-    ========================= */
-
-    if (action === "tasks") {
-      const snapshot = await db
-        .collection("tasks")
-        .get();
-
-      const tasks = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      return res.status(200).json({
-        success: true,
-        tasks
-      });
-    }
-
-    /* =========================
-       CLOSE TASK
-    ========================= */
 
     if (action === "closeTask") {
+      const taskId =
+        String(req.body.taskId || "");
+
       if (!taskId) {
-        return res.status(400).json({
-          success: false,
-          error: "Task ID required"
-        });
+        throw new Error("TASK_ID_REQUIRED");
       }
 
-      const taskRef = db
-        .collection("tasks")
-        .doc(String(taskId));
-
-      const snap = await taskRef.get();
-
-      if (!snap.exists) {
-        return res.status(404).json({
-          success: false,
-          error: "Task not found"
+      await db.collection("tasks")
+        .doc(taskId)
+        .update({
+          status: "closed",
+          updatedAt:
+            FieldValue.serverTimestamp()
         });
-      }
 
-      await taskRef.update({
-        status: "closed",
-        updatedAt:
-          admin.firestore.FieldValue.serverTimestamp()
-      });
-
-      return res.status(200).json({
-        success: true,
-        message: "Task closed"
+      return res.json({
+        success: true
       });
     }
 
-    return res.status(400).json({
-      success: false,
-      error: "Unknown admin action"
-    });
+    if (action === "stats") {
+      const users =
+        await db.collection("users").count().get();
+
+      const tasks =
+        await db.collection("tasks").count().get();
+
+      return res.json({
+        success: true,
+        users: users.data().count,
+        tasks: tasks.data().count
+      });
+    }
+
+    throw new Error("UNKNOWN_ACTION");
 
   } catch (error) {
-    console.error("ADMIN ERROR:", error);
-
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
-      error: "Admin operation failed"
+      error: error.message
     });
   }
 }
