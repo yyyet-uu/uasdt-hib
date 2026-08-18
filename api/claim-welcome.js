@@ -1,25 +1,11 @@
-import admin from "firebase-admin";
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
-    })
-  });
-}
-
-const db = admin.firestore();
-
-const WELCOME_AMOUNT = 0.01;
-
-function isValidBep20Address(address) {
-  return /^0x[a-fA-F0-9]{40}$/.test(address);
-}
+import { db, FieldValue } from "../lib/firebase.js";
+import { validateInitData, getInitData } from "../lib/auth.js";
+import { sendUSDT } from "../lib/payout.js";
+import { sendMessage } from "../lib/telegram.js";
+import { CONFIG } from "../lib/config.js";
+import { ethers } from "ethers";
 
 export default async function handler(req, res) {
-
   if (req.method !== "POST") {
     return res.status(405).json({
       success: false,
@@ -27,125 +13,142 @@ export default async function handler(req, res) {
     });
   }
 
+  let payoutId = null;
+
   try {
+    const { user } =
+      validateInitData(getInitData(req));
 
-    const {
-      telegramId,
-      bep20Address
-    } = req.body || {};
+    const uid = String(user.id);
+    const address =
+      String(req.body.address || "").trim();
 
-    if (!telegramId) {
-      return res.status(400).json({
-        success: false,
-        error: "Telegram ID is required"
-      });
-    }
-
-    if (!bep20Address) {
-      return res.status(400).json({
-        success: false,
-        error: "BEP20 address is required"
-      });
-    }
-
-    const address = bep20Address.trim().toLowerCase();
-
-    if (!isValidBep20Address(address)) {
+    if (!ethers.isAddress(address)) {
       return res.status(400).json({
         success: false,
         error: "Invalid BEP20 address"
       });
     }
 
+    const normalized =
+      ethers.getAddress(address);
+
     const userRef =
-      db.collection("users").doc(String(telegramId));
-
-    const userSnap = await userRef.get();
-
-    if (!userSnap.exists) {
-      return res.status(404).json({
-        success: false,
-        error: "User is not registered"
-      });
-    }
-
-    const user = userSnap.data();
-
-    if (!user.channelsVerified) {
-      return res.status(403).json({
-        success: false,
-        error: "You must join both channels first"
-      });
-    }
-
-    if (user.welcomeBonusClaimed === true) {
-      return res.status(409).json({
-        success: false,
-        error: "Welcome bonus has already been claimed"
-      });
-    }
-
-    /*
-      IMPORTANT:
-      We use the address as the permanent claim key.
-      This prevents another Telegram account from
-      claiming the welcome bonus using the same address.
-    */
+      db.collection("users").doc(uid);
 
     const addressRef =
-      db.collection("welcomeClaims").doc(address);
+      db.collection("welcomeClaims")
+        .doc(normalized.toLowerCase());
 
-    const claimSnap = await addressRef.get();
+    const payoutRef =
+      db.collection("payouts").doc();
 
-    if (claimSnap.exists) {
-      return res.status(409).json({
-        success: false,
-        error: "This address has already claimed the welcome bonus"
+    await db.runTransaction(async tx => {
+      const userSnap =
+        await tx.get(userRef);
+
+      const addressSnap =
+        await tx.get(addressRef);
+
+      if (!userSnap.exists) {
+        throw new Error("USER_NOT_FOUND");
+      }
+
+      const u = userSnap.data();
+
+      if (!u.channelsVerified) {
+        throw new Error("CHANNELS_REQUIRED");
+      }
+
+      if (u.welcomeBonusClaimed) {
+        throw new Error("WELCOME_ALREADY_CLAIMED");
+      }
+
+      if (addressSnap.exists) {
+        throw new Error("ADDRESS_ALREADY_USED");
+      }
+
+      payoutId = payoutRef.id;
+
+      tx.set(addressRef, {
+        userId: uid,
+        address: normalized,
+        payoutId,
+        createdAt:
+          FieldValue.serverTimestamp()
       });
-    }
 
-    const batch = db.batch();
+      tx.set(payoutRef, {
+        type: "welcome",
+        userId: uid,
+        address: normalized,
+        amount: CONFIG.WELCOME_USDT,
+        status: "processing",
+        createdAt:
+          FieldValue.serverTimestamp()
+      });
 
-    batch.set(addressRef, {
-      address,
-      telegramId: String(telegramId),
-      amount: WELCOME_AMOUNT,
-      status: "pending",
-      createdAt:
-        admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    batch.set(
-      userRef,
-      {
+      tx.update(userRef, {
         welcomeBonusClaimed: true,
-        welcomeAddress: address,
-        welcomeBonusAmount: WELCOME_AMOUNT,
-        welcomeBonusStatus: "pending",
+        welcomeBonusStatus: "processing",
+        welcomeAddress: normalized,
         appUnlocked: true,
         updatedAt:
-          admin.firestore.FieldValue.serverTimestamp()
-      },
-      { merge: true }
-    );
+          FieldValue.serverTimestamp()
+      });
+    });
 
-    await batch.commit();
+    const payment =
+      await sendUSDT(
+        normalized,
+        CONFIG.WELCOME_USDT
+      );
 
-    return res.status(200).json({
+    await payoutRef.update({
+      status: "paid",
+      txHash: payment.txHash,
+      paidAt:
+        FieldValue.serverTimestamp()
+    });
+
+    await userRef.update({
+      welcomeBonusStatus: "paid",
+      updatedAt:
+        FieldValue.serverTimestamp()
+    });
+
+    try {
+      await sendMessage(
+        uid,
+        `🎁 <b>Welcome bonus sent!</b>\n\n💰 ${CONFIG.WELCOME_USDT} USDT\n🔗 ${payment.txHash}`
+      );
+    } catch {}
+
+    return res.json({
       success: true,
-      unlocked: true,
-      amount: WELCOME_AMOUNT,
-      address,
-      payoutStatus: "pending"
+      amount: CONFIG.WELCOME_USDT,
+      txHash: payment.txHash
     });
 
   } catch (error) {
+    console.error(error);
 
-    console.error("WELCOME BONUS ERROR:", error);
+    if (payoutId) {
+      try {
+        await db.collection("payouts")
+          .doc(payoutId)
+          .update({
+            status: "failed",
+            error: error.message,
+            updatedAt:
+              FieldValue.serverTimestamp()
+          });
+      } catch {}
+    }
 
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
-      error: "Unable to process welcome bonus"
+      error: error.message
     });
   }
 }
