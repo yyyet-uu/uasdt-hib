@@ -1,20 +1,15 @@
-import admin from "firebase-admin";
+import { db, FieldValue } from "../lib/firebase.js";
+import { validateInitData, getInitData } from "../lib/auth.js";
+import { getChatMember } from "../lib/telegram.js";
+import { CONFIG } from "../lib/config.js";
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
-    })
-  });
+function memberOK(x) {
+  return [
+    "member",
+    "administrator",
+    "creator"
+  ].includes(x.status);
 }
-
-const db = admin.firestore();
-
-const CREATE_COST = 100000;
-const TASK_REWARD = 2000;
-const MAX_COMPLETIONS = 50;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -25,266 +20,218 @@ export default async function handler(req, res) {
   }
 
   try {
-    const {
-      action,
-      telegramId,
-      taskId,
-      type,
-      title,
-      link
-    } = req.body || {};
+    const { user } =
+      validateInitData(getInitData(req));
 
-    if (!telegramId) {
-      return res.status(400).json({
-        success: false,
-        error: "Telegram ID is required"
-      });
-    }
-
-    /* =========================
-       GET AVAILABLE TASKS
-    ========================= */
+    const uid = String(user.id);
+    const action = req.body.action;
 
     if (action === "list") {
-      const snapshot = await db
-        .collection("tasks")
-        .where("status", "==", "active")
-        .get();
+      const snap =
+        await db.collection("tasks")
+          .where("status", "==", "active")
+          .limit(100)
+          .get();
 
-      const tasks = snapshot.docs
-        .map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
-        .filter(task =>
-          Number(task.completions || 0) <
-          MAX_COMPLETIONS
-        );
-
-      return res.status(200).json({
+      return res.json({
         success: true,
-        tasks
+        tasks: snap.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        }))
       });
     }
 
-    /* =========================
-       CREATE TASK
-    ========================= */
-
     if (action === "create") {
+      const {
+        title,
+        link,
+        chatId,
+        type
+      } = req.body;
 
-      if (!title || !link || !type) {
-        return res.status(400).json({
-          success: false,
-          error: "Title, link and type are required"
-        });
+      if (!title || !link || !chatId) {
+        throw new Error("TASK_DATA_REQUIRED");
       }
 
       if (!["channel", "bot"].includes(type)) {
-        return res.status(400).json({
-          success: false,
-          error: "Invalid task type"
-        });
+        throw new Error("INVALID_TASK_TYPE");
       }
 
-      const userRef = db
-        .collection("users")
-        .doc(String(telegramId));
+      const userRef =
+        db.collection("users").doc(uid);
 
-      let createdTask;
+      const taskRef =
+        db.collection("tasks").doc();
 
-      await db.runTransaction(async transaction => {
+      await db.runTransaction(async tx => {
+        const snap =
+          await tx.get(userRef);
 
-        const userSnap =
-          await transaction.get(userRef);
-
-        if (!userSnap.exists) {
+        if (!snap.exists) {
           throw new Error("USER_NOT_FOUND");
         }
 
-        const user = userSnap.data();
-        const balance = Number(user.balance || 0);
+        const u = snap.data();
 
-        if (balance < CREATE_COST) {
+        const isAdmin =
+          uid === String(process.env.TELEGRAM_ADMIN_ID);
+
+        if (
+          !isAdmin &&
+          Number(u.balance || 0) <
+            CONFIG.TASK_CREATE_COST
+        ) {
           throw new Error("INSUFFICIENT_POINTS");
         }
 
-        const taskRef =
-          db.collection("tasks").doc();
+        if (!isAdmin) {
+          tx.update(userRef, {
+            balance:
+              FieldValue.increment(
+                -CONFIG.TASK_CREATE_COST
+              )
+          });
+        }
 
-        createdTask = {
-          id: taskRef.id,
-          ownerId: String(telegramId),
-          title: String(title).trim(),
-          link: String(link).trim(),
+        tx.create(taskRef, {
+          ownerId: uid,
+          title: String(title).slice(0, 120),
+          link: String(link).slice(0, 500),
+          chatId: String(chatId),
           type,
-          reward: TASK_REWARD,
-          maxCompletions: MAX_COMPLETIONS,
+          reward: CONFIG.TASK_REWARD,
           completions: 0,
+          maxCompletions: CONFIG.TASK_LIMIT,
           status: "active",
           createdAt:
-            admin.firestore.FieldValue.serverTimestamp()
-        };
-
-        transaction.update(userRef, {
-          balance:
-            admin.firestore.FieldValue.increment(
-              -CREATE_COST
-            ),
-          updatedAt:
-            admin.firestore.FieldValue.serverTimestamp()
+            FieldValue.serverTimestamp()
         });
-
-        transaction.set(taskRef, createdTask);
       });
 
-      return res.status(200).json({
+      return res.json({
         success: true,
-        task: createdTask
+        taskId: taskRef.id
       });
     }
 
-    /* =========================
-       COMPLETE TASK
-    ========================= */
-
     if (action === "complete") {
-
-      if (!taskId) {
-        return res.status(400).json({
-          success: false,
-          error: "Task ID is required"
-        });
-      }
+      const taskId =
+        String(req.body.taskId || "");
 
       const taskRef =
-        db.collection("tasks").doc(String(taskId));
-
-      const userRef =
-        db.collection("users").doc(String(telegramId));
+        db.collection("tasks").doc(taskId);
 
       const completionRef =
         db.collection("taskCompletions")
-          .doc(`${telegramId}_${taskId}`);
+          .doc(`${uid}_${taskId}`);
 
-      let rewardResult;
+      const userRef =
+        db.collection("users").doc(uid);
 
-      await db.runTransaction(async transaction => {
+      let reward = 0;
 
-        const taskSnap =
-          await transaction.get(taskRef);
+      await db.runTransaction(async tx => {
+        const task =
+          await tx.get(taskRef);
 
-        const userSnap =
-          await transaction.get(userRef);
+        const completion =
+          await tx.get(completionRef);
 
-        const completionSnap =
-          await transaction.get(completionRef);
+        const user =
+          await tx.get(userRef);
 
-        if (!taskSnap.exists) {
+        if (!task.exists) {
           throw new Error("TASK_NOT_FOUND");
         }
 
-        if (!userSnap.exists) {
+        if (!user.exists) {
           throw new Error("USER_NOT_FOUND");
         }
 
-        if (completionSnap.exists) {
+        if (completion.exists) {
           throw new Error("ALREADY_COMPLETED");
         }
 
-        const task = taskSnap.data();
+        const t = task.data();
 
-        if (task.status !== "active") {
+        if (t.status !== "active") {
           throw new Error("TASK_CLOSED");
         }
 
-        const completions =
-          Number(task.completions || 0);
-
-        if (completions >= MAX_COMPLETIONS) {
+        if (
+          Number(t.completions || 0) >=
+          CONFIG.TASK_LIMIT
+        ) {
           throw new Error("TASK_FULL");
         }
 
-        transaction.set(completionRef, {
-          telegramId: String(telegramId),
-          taskId: String(taskId),
-          reward: TASK_REWARD,
+        reward = CONFIG.TASK_REWARD;
+
+        tx.create(completionRef, {
+          userId: uid,
+          taskId,
+          reward,
           createdAt:
-            admin.firestore.FieldValue.serverTimestamp()
+            FieldValue.serverTimestamp()
         });
 
-        const newCompletions =
-          completions + 1;
+        const newCount =
+          Number(t.completions || 0) + 1;
 
-        transaction.update(taskRef, {
-          completions: newCompletions,
-
+        tx.update(taskRef, {
+          completions: newCount,
           status:
-            newCompletions >= MAX_COMPLETIONS
+            newCount >= CONFIG.TASK_LIMIT
               ? "completed"
-              : "active",
-
-          updatedAt:
-            admin.firestore.FieldValue.serverTimestamp()
+              : "active"
         });
 
-        transaction.update(userRef, {
+        tx.update(userRef, {
           balance:
-            admin.firestore.FieldValue.increment(
-              TASK_REWARD
-            ),
+            FieldValue.increment(reward),
 
           tasksCompleted:
-            admin.firestore.FieldValue.increment(1),
-
-          updatedAt:
-            admin.firestore.FieldValue.serverTimestamp()
+            FieldValue.increment(1)
         });
-
-        rewardResult = {
-          reward: TASK_REWARD,
-          completions: newCompletions,
-          remaining:
-            MAX_COMPLETIONS - newCompletions
-        };
       });
 
-      return res.status(200).json({
+      /*
+       * Membership is checked BEFORE this transaction
+       * so users cannot claim arbitrary rewards.
+       */
+
+      const taskData =
+        (await taskRef.get()).data();
+
+      const member =
+        await getChatMember(
+          taskData.chatId,
+          uid
+        );
+
+      if (!memberOK(member)) {
+        await completionRef.delete();
+
+        throw new Error(
+          "TELEGRAM_MEMBERSHIP_REQUIRED"
+        );
+      }
+
+      return res.json({
         success: true,
-        ...rewardResult
+        reward
       });
     }
+
+    throw new Error("UNKNOWN_ACTION");
+
+  } catch (error) {
+    console.error(error);
 
     return res.status(400).json({
       success: false,
-      error: "Unknown task action"
-    });
-
-  } catch (error) {
-
-    console.error("TASK ERROR:", error);
-
-    const errors = {
-      USER_NOT_FOUND: [404, "User not found"],
-      INSUFFICIENT_POINTS: [400, "You need 100,000 points to create a task"],
-      TASK_NOT_FOUND: [404, "Task not found"],
-      ALREADY_COMPLETED: [409, "You already completed this task"],
-      TASK_CLOSED: [400, "This task is closed"],
-      TASK_FULL: [400, "This task already has 50 completions"]
-    };
-
-    if (errors[error.message]) {
-      const [status, message] = errors[error.message];
-
-      return res.status(status).json({
-        success: false,
-        error: message
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      error: "Task operation failed"
+      error: error.message
     });
   }
-                }
+        }
