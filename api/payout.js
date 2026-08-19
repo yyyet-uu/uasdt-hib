@@ -1,4 +1,4 @@
-import { db } from "../lib/firebase.js";
+import { db, FieldValue } from "../lib/firebase.js";
 import { sendUSDT } from "../lib/payout.js";
 
 export default async function handler(req, res) {
@@ -9,46 +9,80 @@ export default async function handler(req, res) {
     });
   }
 
-  const adminId =
-    String(req.body.telegramId || "");
-
-  if (
-    adminId !==
-    String(process.env.TELEGRAM_ADMIN_ID)
-  ) {
-    return res.status(403).json({
-      success: false,
-      error: "Forbidden"
-    });
-  }
-
   try {
-    const {
-      withdrawalId
-    } = req.body;
+    const adminId =
+      String(req.body?.telegramId || "");
 
-    if (!withdrawalId) {
-      throw new Error("WITHDRAWAL_ID_REQUIRED");
+    if (
+      adminId !==
+      String(process.env.TELEGRAM_ADMIN_ID)
+    ) {
+      return res.status(403).json({
+        success: false,
+        error: "Forbidden"
+      });
     }
 
-    const ref =
+    const withdrawalId =
+      String(req.body?.withdrawalId || "");
+
+    if (!withdrawalId) {
+      throw new Error(
+        "WITHDRAWAL_ID_REQUIRED"
+      );
+    }
+
+    const withdrawalRef =
       db.collection("withdrawals")
         .doc(withdrawalId);
 
-    const snap = await ref.get();
+    let paymentData = null;
 
-    if (!snap.exists) {
-      throw new Error("WITHDRAWAL_NOT_FOUND");
-    }
+    await db.runTransaction(async tx => {
+      const snap =
+        await tx.get(withdrawalRef);
 
-    const data = snap.data();
+      if (!snap.exists) {
+        throw new Error(
+          "WITHDRAWAL_NOT_FOUND"
+        );
+      }
 
-    if (data.status === "paid") {
+      const data = snap.data();
+
+      if (data.status === "paid") {
+        paymentData = {
+          alreadyPaid: true,
+          txHash: data.txHash
+        };
+        return;
+      }
+
+      if (data.status !== "processing") {
+        throw new Error(
+          "WITHDRAWAL_NOT_PROCESSING"
+        );
+      }
+
+      tx.update(withdrawalRef, {
+        status: "paying",
+        updatedAt:
+          FieldValue.serverTimestamp()
+      });
+    });
+
+    if (paymentData?.alreadyPaid) {
       return res.json({
         success: true,
-        txHash: data.txHash
+        txHash: paymentData.txHash,
+        alreadyPaid: true
       });
     }
+
+    const snap =
+      await withdrawalRef.get();
+
+    const data = snap.data();
 
     const payment =
       await sendUSDT(
@@ -56,11 +90,11 @@ export default async function handler(req, res) {
         data.amountUSDT
       );
 
-    await ref.update({
+    await withdrawalRef.update({
       status: "paid",
       txHash: payment.txHash,
       paidAt:
-        new Date()
+        FieldValue.serverTimestamp()
     });
 
     return res.json({
@@ -69,9 +103,16 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
+    console.error(
+      "ADMIN PAYOUT ERROR:",
+      error
+    );
+
     return res.status(400).json({
       success: false,
-      error: error.message
+      error:
+        error.message ||
+        "Payout failed"
     });
   }
-  }
+}
