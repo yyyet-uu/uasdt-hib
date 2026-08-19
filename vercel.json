@@ -13,44 +13,44 @@
       "destination": "/api/index?action=claim-welcome"
     },
     {
-      "source": "/api/referral",
-      "destination": "/api/index?action=referral"
-    },
-    {
       "source": "/api/ads",
-      "destination": "/api/index?action=ads"
-    },
-    {
-      "source": "/api/tasks",
-      "destination": "/api/index?action=tasks"
-    },
-    {
-      "source": "/api/promo",
-      "destination": "/api/index?action=promo"
-    },
-    {
-      "source": "/api/games",
-      "destination": "/api/index?action=games"
-    },
-    {
-      "source": "/api/withdraw",
-      "destination": "/api/index?action=withdraw"
-    },
-    {
-      "source": "/api/payout",
-      "destination": "/api/index?action=payout"
-    },
-    {
-      "source": "/api/telegram",
-      "destination": "/api/index?action=telegram"
-    },
-    {
-      "source": "/api/admin",
-      "destination": "/api/index?action=admin"
+      "destination": "/api/ads"
     },
     {
       "source": "/api/monetag-postback",
-      "destination": "/api/index?action=monetag-postback"
+      "destination": "/api/ads"
+    },
+    {
+      "source": "/api/tasks",
+      "destination": "/api/tasks"
+    },
+    {
+      "source": "/api/referral",
+      "destination": "/api/referral"
+    },
+    {
+      "source": "/api/promo",
+      "destination": "/api/promo"
+    },
+    {
+      "source": "/api/games",
+      "destination": "/api/games"
+    },
+    {
+      "source": "/api/withdraw",
+      "destination": "/api/withdraw"
+    },
+    {
+      "source": "/api/payout",
+      "destination": "/api/payout"
+    },
+    {
+      "source": "/api/admin",
+      "destination": "/api/admin"
+    },
+    {
+      "source": "/api/telegram",
+      "destination": "/api/telegram"
     }
   ]
 }
