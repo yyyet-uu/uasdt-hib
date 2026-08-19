@@ -7,9 +7,8 @@
 
 <title>USDT Hub</title>
 
-<script src="https://telegram.org/js/telegram-web-app.js?63"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<!-- Monetag -->
 <script
   src="//libtl.com/sdk.js"
   data-zone="11526625"
@@ -66,8 +65,6 @@ button{
   display:none!important;
 }
 
-/* LOADING */
-
 #loader{
   position:fixed;
   inset:0;
@@ -110,8 +107,6 @@ button{
 @keyframes spin{
   to{transform:rotate(360deg)}
 }
-
-/* APP */
 
 #app{
   width:min(700px,100%);
@@ -169,8 +164,6 @@ button{
   object-fit:cover;
 }
 
-/* PAGES */
-
 .page{
   display:none;
   animation:pageIn .25s ease;
@@ -190,8 +183,6 @@ button{
     transform:none;
   }
 }
-
-/* CARDS */
 
 .card{
   background:
@@ -213,17 +204,6 @@ button{
   background:
     radial-gradient(circle at 85% 15%,rgba(33,230,162,.16),transparent 35%),
     linear-gradient(145deg,#151d32,#0d1120);
-}
-
-.balanceCard:after{
-  content:"";
-  position:absolute;
-  width:150px;
-  height:150px;
-  right:-60px;
-  bottom:-70px;
-  border-radius:50%;
-  background:rgba(91,124,255,.12);
 }
 
 .label{
@@ -306,8 +286,6 @@ button{
   font-size:12px;
 }
 
-/* STATS */
-
 .stats{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -331,8 +309,6 @@ button{
   color:var(--muted);
 }
 
-/* REFERRAL */
-
 .refBox{
   display:flex;
   gap:8px;
@@ -349,8 +325,6 @@ button{
   outline:none;
   font-size:12px;
 }
-
-/* AD BOX */
 
 .adGrid{
   display:grid;
@@ -397,8 +371,6 @@ button{
   transition:.3s;
 }
 
-/* TASKS */
-
 .task{
   padding:17px;
   border-radius:20px;
@@ -429,8 +401,6 @@ button{
   font-weight:900;
   white-space:nowrap;
 }
-
-/* GAME */
 
 .gameChooser{
   display:grid;
@@ -512,8 +482,6 @@ button{
   text-align:center;
   font-size:55px;
   font-weight:1000;
-  color:white;
-  text-shadow:0 0 25px rgba(255,82,119,.35);
 }
 
 .plane{
@@ -524,8 +492,6 @@ button{
   transform:rotate(-18deg);
   transition:all .15s linear;
 }
-
-/* PROMO */
 
 .promo{
   display:flex;
@@ -542,8 +508,6 @@ button{
   border-radius:14px;
   outline:none;
 }
-
-/* WITHDRAW */
 
 .input{
   width:100%;
@@ -574,8 +538,6 @@ button{
 .withdrawInfo span{
   color:var(--muted);
 }
-
-/* LEADERBOARD */
 
 .rank{
   display:flex;
@@ -608,8 +570,6 @@ button{
   color:var(--green);
   font-weight:900;
 }
-
-/* BOTTOM NAV */
 
 .bottomNav{
   position:fixed;
@@ -648,8 +608,6 @@ button{
   color:white;
   background:rgba(255,255,255,.07);
 }
-
-/* MODALS */
 
 .overlay{
   position:fixed;
@@ -778,570 +736,533 @@ button{
 
 <div id="app" class="hidden">
 
-  <header class="topbar">
-    <div class="brand">
-      <div class="brandIcon">💎</div>
-      <div class="brandText">
-        <b>USDT Hub</b>
-        <span>Earn • Play • Withdraw</span>
-      </div>
+<header class="topbar">
+  <div class="brand">
+    <div class="brandIcon">💎</div>
+    <div class="brandText">
+      <b>USDT Hub</b>
+      <span>Earn • Play • Withdraw</span>
+    </div>
+  </div>
+
+  <div class="userAvatar" id="avatar">👤</div>
+</header>
+
+<main id="page-home" class="page active">
+
+<section class="card balanceCard">
+  <div class="label">Your balance</div>
+  <div class="balance" id="balance">0</div>
+  <div class="usd" id="balanceUsd">$0.0000</div>
+
+  <div class="balanceActions">
+    <button class="btn primary" onclick="go('withdraw')">💸 Withdraw</button>
+    <button class="btn blue" onclick="go('referral')">👥 Invite</button>
+  </div>
+</section>
+
+<section class="card">
+  <div class="sectionTitle">
+    <h2>📊 Your Progress</h2>
+    <span>Lifetime</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <small>Ads watched</small>
+      <strong id="statAds">0</strong>
     </div>
 
-    <div class="userAvatar" id="avatar">
-      👤
-    </div>
-  </header>
-
-  <!-- HOME -->
-
-  <main id="page-home" class="page active">
-
-    <section class="card balanceCard">
-      <div class="label">Your balance</div>
-      <div class="balance" id="balance">0</div>
-      <div class="usd" id="balanceUsd">$0.0000</div>
-
-      <div class="balanceActions">
-        <button class="btn primary" onclick="go('withdraw')">
-          💸 Withdraw
-        </button>
-
-        <button class="btn blue" onclick="go('referral')">
-          👥 Invite
-        </button>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="sectionTitle">
-        <h2>📊 Your Progress</h2>
-        <span>Lifetime</span>
-      </div>
-
-      <div class="stats">
-        <div class="stat">
-          <small>Ads watched</small>
-          <strong id="statAds">0</strong>
-        </div>
-
-        <div class="stat">
-          <small>Referrals</small>
-          <strong id="statRefs">0</strong>
-        </div>
-
-        <div class="stat">
-          <small>Tasks completed</small>
-          <strong id="statTasks">0</strong>
-        </div>
-
-        <div class="stat">
-          <small>Games played</small>
-          <strong id="statGames">0</strong>
-        </div>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="sectionTitle">
-        <h2>🔗 Your referral link</h2>
-      </div>
-
-      <div class="refBox">
-        <input id="refLink" readonly>
-        <button class="btn blue" onclick="copyReferral()">Copy</button>
-      </div>
-
-      <button class="btn primary full" style="margin-top:10px"
-              onclick="shareReferral()">
-        📤 Share & Earn
-      </button>
-    </section>
-
-  </main>
-
-
-  <!-- TASKS -->
-
-  <main id="page-tasks" class="page">
-
-    <div class="sectionTitle">
-      <h2>🎯 Earn Points</h2>
-      <span>Daily rewards</span>
+    <div class="stat">
+      <small>Referrals</small>
+      <strong id="statRefs">0</strong>
     </div>
 
-    <section class="adGrid">
-
-      <div class="adCard">
-        <div class="adIcon">📺</div>
-        <h3>Monetag</h3>
-        <p>25 ads per day</p>
-
-        <div class="progress">
-          <div class="progressBar" id="monetagProgress"></div>
-        </div>
-
-        <small id="monetagCount">0 / 25</small>
-
-        <button class="btn primary full"
-                style="margin-top:12px"
-                id="monetagBtn"
-                onclick="watchMonetag()">
-          Watch Ad
-        </button>
-      </div>
-
-      <div class="adCard">
-        <div class="adIcon">⚡</div>
-        <h3>Adsgram</h3>
-        <p>15 ads per day</p>
-
-        <div class="progress">
-          <div class="progressBar" id="adsgramProgress"></div>
-        </div>
-
-        <small id="adsgramCount">0 / 15</small>
-
-        <button class="btn blue full"
-                style="margin-top:12px"
-                id="adsgramBtn"
-                onclick="watchAdsgram()">
-          Watch Ad
-        </button>
-      </div>
-
-    </section>
-
-    <section class="card" style="margin-top:15px">
-      <div class="sectionTitle">
-        <h2>📢 Community Tasks</h2>
-        <span>Earn points</span>
-      </div>
-
-      <button class="btn primary full"
-              onclick="openCreateTask()">
-        ➕ Create a Task
-      </button>
-
-      <div id="tasksList" style="margin-top:15px">
-        <div class="empty">Loading tasks...</div>
-      </div>
-    </section>
-
-  </main>
-
-
-  <!-- GAMES -->
-
-  <main id="page-games" class="page">
-
-    <div class="sectionTitle">
-      <h2>🎮 Games</h2>
-      <span>Play & win</span>
+    <div class="stat">
+      <small>Tasks completed</small>
+      <strong id="statTasks">0</strong>
     </div>
 
-    <section class="card">
-
-      <div class="gameChooser">
-
-        <button class="gameChoice active"
-                id="chooseXO"
-                onclick="selectGame('xo')">
-          <span class="emoji">❌⭕</span>
-          <b>XO</b>
-          <small style="display:block;color:var(--muted);margin-top:5px">
-            3 games/day
-          </small>
-        </button>
-
-        <button class="gameChoice"
-                id="chooseAviator"
-                onclick="selectGame('aviator')">
-          <span class="emoji">✈️</span>
-          <b>Aviator</b>
-          <small style="display:block;color:var(--muted);margin-top:5px">
-            Try your luck
-          </small>
-        </button>
-
-      </div>
-
-      <!-- XO -->
-
-      <div id="xoPanel" class="gamePanel">
-
-        <div class="notice" id="xoLimit">
-          XO limit: 0 / 3 today
-        </div>
-
-        <div class="xoBoard" id="xoBoard">
-          <button class="xoCell" data-i="0"></button>
-          <button class="xoCell" data-i="1"></button>
-          <button class="xoCell" data-i="2"></button>
-          <button class="xoCell" data-i="3"></button>
-          <button class="xoCell" data-i="4"></button>
-          <button class="xoCell" data-i="5"></button>
-          <button class="xoCell" data-i="6"></button>
-          <button class="xoCell" data-i="7"></button>
-          <button class="xoCell" data-i="8"></button>
-        </div>
-
-        <button class="btn primary full"
-                onclick="startXO()"
-                id="xoStart">
-          🎮 Start XO
-        </button>
-
-      </div>
-
-      <!-- AVIATOR -->
-
-      <div id="aviatorPanel"
-           class="gamePanel hidden">
-
-        <div class="aviator">
-
-          <div class="multiplier" id="multiplier">
-            1.00x
-          </div>
-
-          <div class="plane" id="plane">
-            ✈️
-          </div>
-
-          <div class="skyline"></div>
-
-        </div>
-
-        <button class="btn primary full"
-                style="margin-top:12px"
-                id="aviatorStart"
-                onclick="startAviator()">
-          🚀 Start Flight
-        </button>
-
-        <button class="btn red full hidden"
-                style="margin-top:10px"
-                id="cashoutBtn"
-                onclick="cashoutAviator()">
-          💰 Cash Out
-        </button>
-
-        <div class="notice">
-          Game results are decided by the backend.
-        </div>
-
-      </div>
-
-    </section>
-
-    <section class="card">
-
-      <div class="sectionTitle">
-        <h2>🎟️ Promo Code</h2>
-        <span>200 points each</span>
-      </div>
-
-      <div class="promo">
-        <input id="promoInput"
-               placeholder="Enter promo code">
-        <button class="btn primary"
-                onclick="redeemPromo()">
-          Redeem
-        </button>
-      </div>
-
-    </section>
-
-  </main>
-
-
-  <!-- REFERRAL -->
-
-  <main id="page-referral" class="page">
-
-    <div class="sectionTitle">
-      <h2>👥 Referrals</h2>
-      <span>1000 points</span>
+    <div class="stat">
+      <small>Games played</small>
+      <strong id="statGames">0</strong>
     </div>
+  </div>
+</section>
 
-    <section class="card">
+<section class="card">
+  <div class="sectionTitle">
+    <h2>🔗 Your referral link</h2>
+  </div>
 
-      <div class="label">Your referral link</div>
+  <div class="refBox">
+    <input id="refLink" readonly>
+    <button class="btn blue" onclick="copyReferral()">Copy</button>
+  </div>
 
-      <div class="refBox" style="margin-top:10px">
-        <input id="refLink2" readonly>
-        <button class="btn blue" onclick="copyReferral()">Copy</button>
-      </div>
+  <button class="btn primary full"
+          style="margin-top:10px"
+          onclick="shareReferral()">
+    📤 Share & Earn
+  </button>
+</section>
 
-      <button class="btn primary full"
-              style="margin-top:10px"
-              onclick="shareReferral()">
-        📤 Invite Friends
-      </button>
+</main>
 
-      <div class="notice">
-        500 points after mandatory channels + 500 points after
-        the invited user watches 2 ads.
-      </div>
+<main id="page-tasks" class="page">
 
-    </section>
+<div class="sectionTitle">
+  <h2>🎯 Earn Points</h2>
+  <span>Daily rewards</span>
+</div>
 
-    <section class="card">
+<section class="adGrid">
 
-      <div class="sectionTitle">
-        <h2>🏆 Leaderboard</h2>
-      </div>
+<div class="adCard">
+  <div class="adIcon">📺</div>
+  <h3>Monetag</h3>
+  <p>25 ads per day</p>
 
-      <div id="leaderboard">
-        <div class="empty">Loading...</div>
-      </div>
+  <div class="progress">
+    <div class="progressBar" id="monetagProgress"></div>
+  </div>
 
-    </section>
+  <small id="monetagCount">0 / 25</small>
 
-    <section class="card">
+  <button class="btn primary full"
+          style="margin-top:12px"
+          id="monetagBtn"
+          onclick="watchMonetag()">
+    Watch Ad
+  </button>
+</div>
 
-      <div class="sectionTitle">
-        <h2>👤 My Referrals</h2>
-      </div>
+<div class="adCard">
+  <div class="adIcon">⚡</div>
+  <h3>Adsgram</h3>
+  <p>15 ads per day</p>
 
-      <div id="referralList">
-        <div class="empty">Loading...</div>
-      </div>
+  <div class="progress">
+    <div class="progressBar" id="adsgramProgress"></div>
+  </div>
 
-    </section>
+  <small id="adsgramCount">0 / 15</small>
 
-  </main>
+  <button class="btn blue full"
+          style="margin-top:12px"
+          id="adsgramBtn"
+          onclick="watchAdsgram()">
+    Watch Ad
+  </button>
+</div>
 
+</section>
 
-  <!-- WITHDRAW -->
+<section class="card" style="margin-top:15px">
 
-  <main id="page-withdraw" class="page">
+<div class="sectionTitle">
+  <h2>📢 Community Tasks</h2>
+  <span>Earn points</span>
+</div>
 
-    <div class="sectionTitle">
-      <h2>💸 Withdraw</h2>
-      <span>USDT BEP20</span>
-    </div>
+<button class="btn primary full" onclick="openCreateTask()">
+  ➕ Create a Task
+</button>
 
-    <section class="card">
+<div id="tasksList" style="margin-top:15px">
+  <div class="empty">Loading tasks...</div>
+</div>
 
-      <div class="withdrawInfo">
+</section>
 
-        <div>
-          <span>Your points</span>
-          <b id="withdrawPoints">0</b>
-        </div>
+</main>
 
-        <div>
-          <span>Available USDT</span>
-          <b id="withdrawUsd">$0.0000</b>
-        </div>
+<main id="page-games" class="page">
 
-        <div>
-          <span>Minimum</span>
-          <b>10,000 points</b>
-        </div>
+<div class="sectionTitle">
+  <h2>🎮 Games</h2>
+  <span>Play & win</span>
+</div>
 
-      </div>
+<section class="card">
 
-      <label class="label">
-        BEP20 / BNB Smart Chain address
-      </label>
+<div class="gameChooser">
 
-      <input
-        class="input"
-        id="withdrawAddress"
-        placeholder="0x..."
-        autocomplete="off"
-      >
+<button class="gameChoice active"
+        id="chooseXO"
+        onclick="selectGame('xo')">
+  <span class="emoji">❌⭕</span>
+  <b>XO</b>
+  <small style="display:block;color:var(--muted);margin-top:5px">
+    3 games/day
+  </small>
+</button>
 
-      <button class="btn primary full"
-              id="withdrawBtn"
-              onclick="requestWithdraw()">
-        💸 Withdraw $0.10
-      </button>
-
-      <div class="notice">
-        Withdrawals are processed by the backend.
-        Never enter your seed phrase.
-      </div>
-
-    </section>
-
-    <section class="card">
-
-      <div class="sectionTitle">
-        <h2>📜 Withdrawal History</h2>
-      </div>
-
-      <div id="withdrawHistory">
-        <div class="empty">No withdrawals yet.</div>
-      </div>
-
-    </section>
-
-  </main>
+<button class="gameChoice"
+        id="chooseAviator"
+        onclick="selectGame('aviator')">
+  <span class="emoji">✈️</span>
+  <b>Aviator</b>
+  <small style="display:block;color:var(--muted);margin-top:5px">
+    Try your luck
+  </small>
+</button>
 
 </div>
 
+<div id="xoPanel" class="gamePanel">
 
-<!-- BOTTOM NAV -->
+<div class="notice" id="xoLimit">
+  XO limit: 0 / 3 today
+</div>
+
+<div class="xoBoard" id="xoBoard">
+  <button class="xoCell" data-i="0"></button>
+  <button class="xoCell" data-i="1"></button>
+  <button class="xoCell" data-i="2"></button>
+  <button class="xoCell" data-i="3"></button>
+  <button class="xoCell" data-i="4"></button>
+  <button class="xoCell" data-i="5"></button>
+  <button class="xoCell" data-i="6"></button>
+  <button class="xoCell" data-i="7"></button>
+  <button class="xoCell" data-i="8"></button>
+</div>
+
+<button class="btn primary full"
+        onclick="startXO()"
+        id="xoStart">
+  🎮 Start XO
+</button>
+
+</div>
+
+<div id="aviatorPanel" class="gamePanel hidden">
+
+<div class="aviator">
+
+<div class="multiplier" id="multiplier">
+  1.00x
+</div>
+
+<div class="plane" id="plane">
+  ✈️
+</div>
+
+<div class="skyline"></div>
+
+</div>
+
+<button class="btn primary full"
+        style="margin-top:12px"
+        id="aviatorStart"
+        onclick="startAviator()">
+  🚀 Start Flight
+</button>
+
+<button class="btn red full hidden"
+        style="margin-top:10px"
+        id="cashoutBtn"
+        onclick="cashoutAviator()">
+  💰 Cash Out
+</button>
+
+<div class="notice">
+  Game results are decided by the backend.
+</div>
+
+</div>
+
+</section>
+
+<section class="card">
+
+<div class="sectionTitle">
+  <h2>🎟️ Promo Code</h2>
+  <span>200 points each</span>
+</div>
+
+<div class="promo">
+  <input id="promoInput" placeholder="Enter promo code">
+  <button class="btn primary" onclick="redeemPromo()">Redeem</button>
+</div>
+
+</section>
+
+</main>
+
+<main id="page-referral" class="page">
+
+<div class="sectionTitle">
+  <h2>👥 Referrals</h2>
+  <span>1000 points</span>
+</div>
+
+<section class="card">
+
+<div class="label">Your referral link</div>
+
+<div class="refBox" style="margin-top:10px">
+  <input id="refLink2" readonly>
+  <button class="btn blue" onclick="copyReferral()">Copy</button>
+</div>
+
+<button class="btn primary full"
+        style="margin-top:10px"
+        onclick="shareReferral()">
+  📤 Invite Friends
+</button>
+
+<div class="notice">
+  500 points after mandatory channels + 500 points after
+  the invited user watches 2 ads.
+</div>
+
+</section>
+
+<section class="card">
+
+<div class="sectionTitle">
+  <h2>🏆 Leaderboard</h2>
+</div>
+
+<div id="leaderboard">
+  <div class="empty">Loading...</div>
+</div>
+
+</section>
+
+<section class="card">
+
+<div class="sectionTitle">
+  <h2>👤 My Referrals</h2>
+</div>
+
+<div id="referralList">
+  <div class="empty">Loading...</div>
+</div>
+
+</section>
+
+</main>
+
+<main id="page-withdraw" class="page">
+
+<div class="sectionTitle">
+  <h2>💸 Withdraw</h2>
+  <span>USDT BEP20</span>
+</div>
+
+<section class="card">
+
+<div class="withdrawInfo">
+
+<div>
+  <span>Your points</span>
+  <b id="withdrawPoints">0</b>
+</div>
+
+<div>
+  <span>Available USDT</span>
+  <b id="withdrawUsd">$0.0000</b>
+</div>
+
+<div>
+  <span>Minimum</span>
+  <b>10,000 points</b>
+</div>
+
+</div>
+
+<label class="label">
+  BEP20 / BNB Smart Chain address
+</label>
+
+<input class="input"
+       id="withdrawAddress"
+       placeholder="0x..."
+       autocomplete="off">
+
+<button class="btn primary full"
+        id="withdrawBtn"
+        onclick="requestWithdraw()">
+  💸 Withdraw $0.10
+</button>
+
+<div class="notice">
+  Withdrawals are processed by the backend.
+  Never enter your seed phrase.
+</div>
+
+</section>
+
+<section class="card">
+
+<div class="sectionTitle">
+  <h2>📜 Withdrawal History</h2>
+</div>
+
+<div id="withdrawHistory">
+  <div class="empty">No withdrawals yet.</div>
+</div>
+
+</section>
+
+</main>
+
+</div>
 
 <nav class="bottomNav hidden" id="bottomNav">
 
-  <button class="navBtn active"
-          data-page="home"
-          onclick="go('home')">
-    <span>🏠</span>
-    Home
-  </button>
+<button class="navBtn active" data-page="home" onclick="go('home')">
+  <span>🏠</span>Home
+</button>
 
-  <button class="navBtn"
-          data-page="tasks"
-          onclick="go('tasks')">
-    <span>🎯</span>
-    Tasks
-  </button>
+<button class="navBtn" data-page="tasks" onclick="go('tasks')">
+  <span>🎯</span>Tasks
+</button>
 
-  <button class="navBtn"
-          data-page="games"
-          onclick="go('games')">
-    <span>🎮</span>
-    Games
-  </button>
+<button class="navBtn" data-page="games" onclick="go('games')">
+  <span>🎮</span>Games
+</button>
 
-  <button class="navBtn"
-          data-page="referral"
-          onclick="go('referral')">
-    <span>👥</span>
-    Referral
-  </button>
+<button class="navBtn" data-page="referral" onclick="go('referral')">
+  <span>👥</span>Referral
+</button>
 
-  <button class="navBtn"
-          data-page="withdraw"
-          onclick="go('withdraw')">
-    <span>💸</span>
-    Withdraw
-  </button>
+<button class="navBtn" data-page="withdraw" onclick="go('withdraw')">
+  <span>💸</span>Withdraw
+</button>
 
 </nav>
 
-
-<!-- MANDATORY CHANNEL MODAL -->
+<!-- CHANNEL MODAL -->
 
 <div class="overlay hidden" id="channelModal">
 
-  <div class="modal">
+<div class="modal">
 
-    <div class="modalIcon">🔐</div>
+<div class="modalIcon">🔐</div>
 
-    <h2>Join Required Channels</h2>
+<h2>Join Required Channels</h2>
 
-    <p>
-      You must join both official USDT Hub channels before
-      you can access the app.
-    </p>
+<p>
+You must join both official USDT Hub channels before
+you can access the app.
+</p>
 
-    <a class="channelBtn"
-       href="https://t.me/birr_gram"
-       target="_blank">
-      <b>📢 Birr Gram</b>
-      <span>JOIN →</span>
-    </a>
+<a class="channelBtn"
+   href="https://t.me/birr_gram"
+   target="_blank">
+  <b>📢 Birr Gram</b>
+  <span>JOIN →</span>
+</a>
 
-    <a class="channelBtn"
-       href="https://t.me/usdt_g_ram"
-       target="_blank">
-      <b>📢 USDT Gram</b>
-      <span>JOIN →</span>
-    </a>
+<a class="channelBtn"
+   href="https://t.me/usdt_g_ram"
+   target="_blank">
+  <b>📢 USDT Gram</b>
+  <span>JOIN →</span>
+</a>
 
-    <button class="btn primary full"
-            style="margin-top:12px"
-            onclick="verifyChannels()">
-      ✅ I've Joined
-    </button>
+<button class="btn primary full"
+        style="margin-top:12px"
+        id="verifyBtn"
+        onclick="verifyChannels()">
+  ✅ I've Joined
+</button>
 
-    <div class="notice">
-      Membership is checked by the backend.
-    </div>
-
-  </div>
-
+<div class="notice">
+Membership is checked by the backend.
 </div>
 
+</div>
+</div>
 
-<!-- WELCOME ADDRESS MODAL -->
+<!-- WELCOME MODAL -->
 
 <div class="overlay hidden" id="welcomeModal">
 
-  <div class="modal">
+<div class="modal">
 
-    <div class="modalIcon">🎁</div>
+<div class="modalIcon">🎁</div>
 
-    <h2>Welcome Bonus</h2>
+<h2>Welcome Bonus</h2>
 
-    <p>
-      Enter your BEP20 address to receive your one-time
-      welcome bonus of <b>0.01 USDT</b>.
-    </p>
+<p>
+Enter your BEP20 address to receive your one-time
+welcome bonus of <b>0.01 USDT</b>.
+</p>
 
-    <input
-      class="input"
-      id="welcomeAddress"
-      placeholder="0x..."
-      autocomplete="off"
-    >
+<input class="input"
+       id="welcomeAddress"
+       placeholder="0x..."
+       autocomplete="off">
 
-    <button class="btn primary full"
-            id="welcomeBtn"
-            onclick="claimWelcome()">
-      🎁 Claim 0.01 USDT
-    </button>
+<button class="btn primary full"
+        id="welcomeBtn"
+        onclick="claimWelcome()">
+  🎁 Claim 0.01 USDT
+</button>
 
-    <div class="notice">
-      One welcome bonus per wallet address.
-    </div>
-
-  </div>
-
+<div class="notice">
+One welcome bonus per wallet address.
 </div>
 
+</div>
+</div>
 
 <div class="toast" id="toast"></div>
 
-
 <script>
+"use strict";
+
 /* =========================================================
-   USDT HUB FRONTEND
+   CONFIG
    ========================================================= */
 
 const tg = window.Telegram?.WebApp;
+const API = "/api";
+
+/*
+ IMPORTANT:
+ Replace this with your REAL BOT USERNAME.
+
+ Example:
+ const BOT_USERNAME = "usdt_hub_bot";
+
+ Do NOT put the bot token here.
+*/
+const BOT_USERNAME = "YOUR_USDT_HUB_BOT_USERNAME";
+
+
+/* =========================================================
+   TELEGRAM
+   ========================================================= */
 
 if(tg){
   tg.ready();
   tg.expand();
+
+  try{
+    tg.setHeaderColor("#070912");
+    tg.setBackgroundColor("#070912");
+  }catch(e){}
 }
 
-/*
-  IMPORTANT:
-  No bot token.
-  No Firebase private key.
-  No wallet private key.
-  No seed phrase.
-  No payout secret.
 
-  All of those belong on the backend/Vercel environment.
-*/
-
-const API = "/api";
+/* =========================================================
+   STATE
+   ========================================================= */
 
 let state = {
   user:null,
   verified:false,
+  welcomeClaimed:false,
   selectedGame:"xo",
+
   xoBoard:Array(9).fill(""),
-  xoTurn:"X",
   xoPlaying:false,
+
   aviatorPlaying:false,
   aviatorMultiplier:1,
   aviatorTimer:null
@@ -1353,45 +1274,107 @@ let state = {
    ========================================================= */
 
 function toast(message){
-  const el = document.getElementById("toast");
-  el.textContent = message;
+
+  const el=document.getElementById("toast");
+
+  el.textContent=message;
   el.classList.add("show");
 
   clearTimeout(window.toastTimer);
 
-  window.toastTimer = setTimeout(()=>{
+  window.toastTimer=setTimeout(()=>{
     el.classList.remove("show");
   },2800);
 }
 
 
 function tgData(){
+
   return tg?.initData || "";
 }
 
 
-async function api(path, options={}){
-  const headers = {
+function startParam(){
+
+  /*
+    Telegram Mini Apps provide start_param here when opened
+    through a startapp/deep-link parameter.
+  */
+
+  return (
+    tg?.initDataUnsafe?.start_param ||
+    new URLSearchParams(location.search).get("tgWebAppStartParam") ||
+    ""
+  );
+}
+
+
+async function api(path,options={}){
+
+  const headers={
     "Content-Type":"application/json",
     "X-Telegram-Init-Data":tgData(),
     ...(options.headers || {})
   };
 
-  const response = await fetch(API + path,{
-    ...options,
-    headers
-  });
-
-  let data;
+  let response;
 
   try{
-    data = await response.json();
-  }catch{
-    throw new Error("Invalid server response");
+
+    response=await fetch(API+path,{
+      ...options,
+      headers
+    });
+
+  }catch(error){
+
+    throw new Error(
+      "Cannot connect to the USDT Hub server."
+    );
   }
 
-  if(!response.ok || data.success === false){
-    throw new Error(data.message || "Request failed");
+
+  const text=await response.text();
+
+  let data=null;
+
+  try{
+
+    data=text ? JSON.parse(text) : {};
+
+  }catch(error){
+
+    console.error(
+      "Non-JSON API response:",
+      response.status,
+      text.slice(0,500)
+    );
+
+    if(response.status===404){
+      throw new Error(
+        "API route not found: "+path
+      );
+    }
+
+    if(response.status>=500){
+      throw new Error(
+        "Server error on "+path
+      );
+    }
+
+    throw new Error(
+      "Server returned an invalid response."
+    );
+  }
+
+
+  if(!response.ok || data.success===false){
+
+    throw new Error(
+      data.message ||
+      data.error ||
+      `Request failed (${response.status})`
+    );
   }
 
   return data;
@@ -1399,17 +1382,85 @@ async function api(path, options={}){
 
 
 function formatPoints(points){
-  return Number(points || 0).toLocaleString();
+
+  return Number(points || 0)
+    .toLocaleString();
 }
 
 
 function pointsToUsd(points){
-  return (Number(points || 0) / 100000).toFixed(4);
+
+  return (
+    Number(points || 0)/100000
+  ).toFixed(4);
 }
 
 
 function validBep20(address){
-  return /^0x[a-fA-F0-9]{40}$/.test(address.trim());
+
+  return /^0x[a-fA-F0-9]{40}$/
+    .test(String(address).trim());
+}
+
+
+function escapeHtml(value){
+
+  return String(value ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+
+/* =========================================================
+   REFERRAL LINK
+   ========================================================= */
+
+function buildReferralLink(){
+
+  /*
+    Best source is backend-generated referralLink.
+    Otherwise create a Telegram Mini App startapp link.
+
+    Example:
+    https://t.me/usdt_hub_bot?startapp=ref_123456
+  */
+
+  if(state.user?.referralLink){
+    return state.user.referralLink;
+  }
+
+  if(!BOT_USERNAME ||
+     BOT_USERNAME==="YOUR_USDT_HUB_BOT_USERNAME"){
+    return "";
+  }
+
+  const userId =
+    state.user?.id ||
+    state.user?.telegramId ||
+    tg?.initDataUnsafe?.user?.id;
+
+  if(!userId){
+    return "";
+  }
+
+  return (
+    "https://t.me/" +
+    BOT_USERNAME +
+    "?startapp=ref_" +
+    encodeURIComponent(String(userId))
+  );
+}
+
+
+function updateReferralUI(){
+
+  const link=buildReferralLink();
+
+  document.getElementById("refLink").value=link;
+  document.getElementById("refLink2").value=link;
 }
 
 
@@ -1418,6 +1469,12 @@ function validBep20(address){
    ========================================================= */
 
 function go(page){
+
+  if(!state.verified){
+
+    toast("Join both channels first 🔐");
+    return;
+  }
 
   document.querySelectorAll(".page")
     .forEach(x=>x.classList.remove("active"));
@@ -1429,7 +1486,7 @@ function go(page){
     .forEach(btn=>{
       btn.classList.toggle(
         "active",
-        btn.dataset.page === page
+        btn.dataset.page===page
       );
     });
 
@@ -1438,14 +1495,22 @@ function go(page){
     behavior:"smooth"
   });
 
-  if(page==="tasks") loadTasks();
-  if(page==="referral") loadReferrals();
-  if(page==="withdraw") loadWithdrawHistory();
+  if(page==="tasks"){
+    loadTasks();
+  }
+
+  if(page==="referral"){
+    loadReferrals();
+  }
+
+  if(page==="withdraw"){
+    loadWithdrawHistory();
+  }
 }
 
 
 /* =========================================================
-   USER INITIALIZATION
+   USER
    ========================================================= */
 
 async function init(){
@@ -1453,18 +1518,27 @@ async function init(){
   try{
 
     if(!tgData()){
-      toast("Open USDT Hub inside Telegram.");
+
+      throw new Error(
+        "Open USDT Hub inside Telegram."
+      );
     }
 
-    const data = await api("/user",{
+    const data=await api("/user",{
       method:"POST",
       body:JSON.stringify({
+
         initData:tgData(),
-        startParam:tg?.initDataUnsafe?.start_param || ""
+
+        /*
+          Send referral/start parameter to backend.
+          This is what connects the new user to the inviter.
+        */
+        startParam:startParam()
       })
     });
 
-    state.user = data.user || data;
+    state.user=data.user || data;
 
     updateUI();
 
@@ -1474,22 +1548,31 @@ async function init(){
 
     console.error(error);
 
+    toast(error.message);
+
     /*
-      The frontend can still load while the backend is being
-      configured, but rewards must remain backend-controlled.
+      Don't expose the application if account initialization
+      failed. This prevents fake/unauthenticated actions.
     */
 
-    toast(error.message || "Unable to load account.");
+    document.getElementById("app")
+      .classList.add("hidden");
+
+    document.getElementById("bottomNav")
+      .classList.add("hidden");
   }
 
   document.getElementById("loader")
     .classList.add("hidden");
 
-  document.getElementById("app")
-    .classList.remove("hidden");
+  if(state.user){
 
-  document.getElementById("bottomNav")
-    .classList.remove("hidden");
+    document.getElementById("app")
+      .classList.remove("hidden");
+
+    document.getElementById("bottomNav")
+      .classList.remove("hidden");
+  }
 }
 
 
@@ -1499,156 +1582,162 @@ async function init(){
 
 function updateUI(){
 
-  const u = state.user || {};
+  const u=state.user || {};
 
-  const points =
-    Number(
-      u.points ??
-      u.balance ??
-      u.balancePoints ??
+  const points=Number(
+    u.points ??
+    u.balance ??
+    u.balancePoints ??
+    0
+  );
+
+  document.getElementById("balance")
+    .textContent=formatPoints(points);
+
+  document.getElementById("balanceUsd")
+    .textContent="$"+pointsToUsd(points);
+
+  document.getElementById("withdrawPoints")
+    .textContent=formatPoints(points);
+
+  document.getElementById("withdrawUsd")
+    .textContent="$"+pointsToUsd(points);
+
+  document.getElementById("statAds")
+    .textContent=formatPoints(
+      u.adsWatched ??
+      u.totalAds ??
       0
     );
 
-  document.getElementById("balance").textContent =
-    formatPoints(points);
-
-  document.getElementById("balanceUsd").textContent =
-    "$" + pointsToUsd(points);
-
-  document.getElementById("withdrawPoints").textContent =
-    formatPoints(points);
-
-  document.getElementById("withdrawUsd").textContent =
-    "$" + pointsToUsd(points);
-
-  document.getElementById("statAds").textContent =
-    formatPoints(u.adsWatched || u.totalAds || 0);
-
-  document.getElementById("statRefs").textContent =
-    formatPoints(u.referrals || u.referralCount || 0);
-
-  document.getElementById("statTasks").textContent =
-    formatPoints(u.tasksCompleted || 0);
-
-  document.getElementById("statGames").textContent =
-    formatPoints(u.gamesPlayed || 0);
-
-  const username =
-    u.username ||
-    tg?.initDataUnsafe?.user?.username;
-
-  const ref =
-    u.referralLink ||
-    (
-      username
-      ? "https://t.me/" + username
-      : ""
+  document.getElementById("statRefs")
+    .textContent=formatPoints(
+      u.referrals ??
+      u.referralCount ??
+      0
     );
 
-  document.getElementById("refLink").value = ref;
-  document.getElementById("refLink2").value = ref;
+  document.getElementById("statTasks")
+    .textContent=formatPoints(
+      u.tasksCompleted ??
+      0
+    );
 
-  const photo =
+  document.getElementById("statGames")
+    .textContent=formatPoints(
+      u.gamesPlayed ??
+      0
+    );
+
+
+  const photo=
     u.photoUrl ||
     tg?.initDataUnsafe?.user?.photo_url;
 
   if(photo){
-    document.getElementById("avatar").innerHTML =
+
+    document.getElementById("avatar").innerHTML=
       `<img src="${escapeHtml(photo)}" alt="">`;
   }
-}
 
 
-function escapeHtml(value){
-  return String(value)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+  updateReferralUI();
+  updateAdProgress();
+
+  const xoToday=Number(
+    u.xoToday ??
+    u.xoGamesToday ??
+    0
+  );
+
+  document.getElementById("xoLimit")
+    .textContent=
+    `XO limit: ${xoToday} / 3 today`;
 }
 
 
 /* =========================================================
-   MANDATORY CHANNELS
+   CHANNEL VERIFICATION
    ========================================================= */
 
 async function checkMembership(){
 
   try{
 
-    const data = await api("/verify-membership",{
+    const data=await api("/verify-membership",{
       method:"POST",
       body:JSON.stringify({
         initData:tgData()
       })
     });
 
-    const joined =
-      data.joined === true ||
-      data.verified === true ||
-      data.success === true;
+    const joined=
+      data.joined===true &&
+      (
+        data.birrGram===undefined ||
+        data.birrGram===true
+      ) &&
+      (
+        data.usdtGram===undefined ||
+        data.usdtGram===true
+      );
 
     if(!joined){
 
-      state.verified = false;
+      state.verified=false;
 
       document.getElementById("channelModal")
         .classList.remove("hidden");
 
-      return;
+      return false;
     }
 
-    state.verified = true;
+    state.verified=true;
+
+    document.getElementById("channelModal")
+      .classList.add("hidden");
 
     await checkWelcome();
+
+    return true;
 
   }catch(error){
 
     console.error(error);
 
+    state.verified=false;
+
     document.getElementById("channelModal")
       .classList.remove("hidden");
+
+    toast(error.message);
+
+    return false;
   }
 }
 
 
 async function verifyChannels(){
 
-  const btn =
-    event?.currentTarget;
+  const btn=
+    document.getElementById("verifyBtn");
 
-  if(btn){
-    btn.disabled = true;
-    btn.textContent = "Checking...";
-  }
+  btn.disabled=true;
+  btn.textContent="Checking...";
 
   try{
 
-    const data = await api("/verify-membership",{
-      method:"POST",
-      body:JSON.stringify({
-        initData:tgData()
-      })
-    });
+    const success=
+      await checkMembership();
 
-    const joined =
-      data.joined === true ||
-      data.verified === true ||
-      data.success === true;
+    if(!success){
 
-    if(!joined){
+      toast(
+        "You haven't joined both channels yet."
+      );
 
-      toast("You haven't joined both channels yet.");
       return;
     }
-
-    state.verified = true;
-
-    document.getElementById("channelModal")
-      .classList.add("hidden");
-
-    await checkWelcome();
 
     toast("Channels verified ✅");
 
@@ -1658,10 +1747,8 @@ async function verifyChannels(){
 
   }finally{
 
-    if(btn){
-      btn.disabled = false;
-      btn.textContent = "✅ I've Joined";
-    }
+    btn.disabled=false;
+    btn.textContent="✅ I've Joined";
   }
 }
 
@@ -1674,68 +1761,91 @@ async function checkWelcome(){
 
   try{
 
-    const data = await api("/claim-welcome",{
+    const data=await api("/claim-welcome",{
       method:"GET"
     });
 
-    const claimed =
-      data.claimed === true ||
-      data.alreadyClaimed === true;
+    const claimed=
+      data.claimed===true ||
+      data.alreadyClaimed===true ||
+      data.completed===true;
+
+    state.welcomeClaimed=claimed;
 
     if(!claimed){
 
       document.getElementById("welcomeModal")
         .classList.remove("hidden");
 
+    }else{
+
+      document.getElementById("welcomeModal")
+        .classList.add("hidden");
     }
 
   }catch(error){
 
-    console.log("Welcome status:",error.message);
-
     /*
-      If the backend returns 404 because the endpoint is not
-      deployed yet, don't permanently block the UI.
+      IMPORTANT:
+      Don't silently ignore a missing backend endpoint.
     */
+
+    console.error(
+      "Welcome endpoint:",
+      error.message
+    );
+
+    toast(
+      "Welcome bonus system is not connected."
+    );
   }
 }
 
 
 async function claimWelcome(){
 
-  const input =
+  const input=
     document.getElementById("welcomeAddress");
 
-  const btn =
+  const btn=
     document.getElementById("welcomeBtn");
 
-  const address =
-    input.value.trim();
+  const address=input.value.trim();
 
   if(!validBep20(address)){
-    toast("Enter a valid BEP20 address.");
+
+    toast(
+      "Enter a valid BEP20 address."
+    );
+
     return;
   }
 
-  btn.disabled = true;
-  btn.textContent = "Processing...";
+  btn.disabled=true;
+  btn.textContent="Processing...";
 
   try{
 
-    const data = await api("/claim-welcome",{
+    const data=await api("/claim-welcome",{
       method:"POST",
       body:JSON.stringify({
         address
       })
     });
 
+    state.welcomeClaimed=true;
+
     document.getElementById("welcomeModal")
       .classList.add("hidden");
 
     if(data.user){
-      state.user = data.user;
+
+      state.user=data.user;
+
       updateUI();
+
     }else{
+
       await refreshUser();
     }
 
@@ -1750,32 +1860,34 @@ async function claimWelcome(){
 
   }finally{
 
-    btn.disabled = false;
-    btn.textContent = "🎁 Claim 0.01 USDT";
+    btn.disabled=false;
+    btn.textContent="🎁 Claim 0.01 USDT";
   }
 }
 
 
 /* =========================================================
-   REFRESH USER
+   REFRESH
    ========================================================= */
 
 async function refreshUser(){
 
   try{
 
-    const data = await api("/user",{
+    const data=await api("/user",{
       method:"POST",
       body:JSON.stringify({
-        initData:tgData()
+        initData:tgData(),
+        startParam:startParam()
       })
     });
 
-    state.user = data.user || data;
+    state.user=data.user || data;
 
     updateUI();
 
   }catch(error){
+
     console.error(error);
   }
 }
@@ -1787,29 +1899,35 @@ async function refreshUser(){
 
 async function watchMonetag(){
 
-  const btn =
+  const btn=
     document.getElementById("monetagBtn");
 
-  btn.disabled = true;
-  btn.textContent = "Loading...";
+  btn.disabled=true;
+  btn.textContent="Loading...";
 
   try{
 
-    /*
-      Monetag SDK is public in the browser.
-      Reward MUST be confirmed by your backend.
-    */
+    if(
+      typeof window.show_11526625!=="function"
+    ){
 
-    if(typeof window.show_11526625 === "function"){
-
-      await window.show_11526625();
-
-    }else{
-
-      throw new Error("Monetag SDK not loaded.");
+      throw new Error(
+        "Monetag SDK not loaded."
+      );
     }
 
-    const result = await api("/ads",{
+    /*
+      Show the advertisement first.
+    */
+
+    await window.show_11526625();
+
+    /*
+      IMPORTANT:
+      The backend decides whether the ad reward is valid.
+    */
+
+    const result=await api("/ads",{
       method:"POST",
       body:JSON.stringify({
         provider:"monetag"
@@ -1817,9 +1935,12 @@ async function watchMonetag(){
     });
 
     if(result.user){
-      state.user = result.user;
+
+      state.user=result.user;
       updateUI();
+
     }else{
+
       await refreshUser();
     }
 
@@ -1836,64 +1957,40 @@ async function watchMonetag(){
 
   }finally{
 
-    btn.disabled = false;
-    btn.textContent = "Watch Ad";
+    btn.disabled=false;
+    btn.textContent="Watch Ad";
   }
 }
 
 
 async function watchAdsgram(){
 
-  const btn =
+  const btn=
     document.getElementById("adsgramBtn");
 
-  btn.disabled = true;
-  btn.textContent = "Loading...";
+  btn.disabled=true;
+  btn.textContent="Loading...";
 
   try{
 
-    /*
-      Adsgram SDK will be inserted here once you provide
-      the Adsgram SDK/block ID.
+    if(
+      typeof window.Adsgram==="undefined"
+    ){
 
-      Do NOT award points from the frontend.
-    */
-
-    if(typeof window.Adsgram === "undefined"){
       throw new Error(
         "Adsgram is not configured yet."
       );
     }
 
     /*
-      Example integration point:
+      Your Adsgram block ID must be configured here
+      when you have one.
 
-      const AdController = window.Adsgram.init({
-        blockId: "YOUR_BLOCK_ID"
-      });
-
-      await AdController.show();
+      Do NOT award points from the frontend.
     */
 
-    const result = await api("/ads",{
-      method:"POST",
-      body:JSON.stringify({
-        provider:"adsgram"
-      })
-    });
-
-    if(result.user){
-      state.user = result.user;
-      updateUI();
-    }else{
-      await refreshUser();
-    }
-
-    updateAdProgress(result);
-
-    toast(
-      result.message ||
-      "+75 points 🎉"
+    throw new Error(
+      "Adsgram block ID is not configured."
     );
 
   }catch(error){
@@ -1902,41 +1999,43 @@ async function watchAdsgram(){
 
   }finally{
 
-    btn.disabled = false;
-    btn.textContent = "Watch Ad";
+    btn.disabled=false;
+    btn.textContent="Watch Ad";
   }
 }
 
 
 function updateAdProgress(data={}){
 
-  const m =
-    Number(
-      data.monetagCount ??
-      state.user?.monetagAdsToday ??
-      state.user?.monetagToday ??
-      0
-    );
+  const user=state.user || {};
 
-  const a =
-    Number(
-      data.adsgramCount ??
-      state.user?.adsgramAdsToday ??
-      state.user?.adsgramToday ??
-      0
-    );
+  const m=Number(
+    data.monetagCount ??
+    user.monetagAdsToday ??
+    user.monetagToday ??
+    0
+  );
+
+  const a=Number(
+    data.adsgramCount ??
+    user.adsgramAdsToday ??
+    user.adsgramToday ??
+    0
+  );
 
   document.getElementById("monetagCount")
-    .textContent = `${m} / 25`;
+    .textContent=`${m} / 25`;
 
   document.getElementById("adsgramCount")
-    .textContent = `${a} / 15`;
+    .textContent=`${a} / 15`;
 
   document.getElementById("monetagProgress")
-    .style.width = Math.min(100,m/25*100)+"%";
+    .style.width=
+      Math.min(100,m/25*100)+"%";
 
   document.getElementById("adsgramProgress")
-    .style.width = Math.min(100,a/15*100)+"%";
+    .style.width=
+      Math.min(100,a/15*100)+"%";
 }
 
 
@@ -1946,85 +2045,85 @@ function updateAdProgress(data={}){
 
 async function loadTasks(){
 
-  const box =
+  const box=
     document.getElementById("tasksList");
 
-  box.innerHTML =
+  box.innerHTML=
     `<div class="empty">Loading tasks...</div>`;
 
   try{
 
-    const data = await api("/tasks",{
+    const data=await api("/tasks",{
       method:"GET"
     });
 
-    const tasks =
+    const tasks=
       data.tasks ||
       data.items ||
       [];
 
     if(!tasks.length){
 
-      box.innerHTML =
-        `<div class="empty">No tasks available right now.</div>`;
+      box.innerHTML=
+        `<div class="empty">
+          No tasks available right now.
+        </div>`;
 
       return;
     }
 
-    box.innerHTML =
-      tasks.map(task=>{
+    box.innerHTML=tasks.map(task=>{
 
-        const id =
-          escapeHtml(task.id);
+      const id=escapeHtml(task.id);
 
-        const title =
-          escapeHtml(
-            task.title ||
-            task.name ||
-            "Telegram Task"
-          );
+      const title=escapeHtml(
+        task.title ||
+        task.name ||
+        "Telegram Task"
+      );
 
-        const description =
-          escapeHtml(
-            task.description ||
-            "Complete this task."
-          );
+      const description=escapeHtml(
+        task.description ||
+        "Complete this task."
+      );
 
-        const reward =
-          Number(task.reward || 0);
+      const reward=
+        Number(task.reward || 0);
 
-        return `
-          <div class="task">
+      return `
+        <div class="task">
 
-            <div class="taskTop">
+          <div class="taskTop">
 
-              <div>
-                <h3>${title}</h3>
-                <p>${description}</p>
-              </div>
-
-              <div class="reward">
-                +${formatPoints(reward)}
-              </div>
-
+            <div>
+              <h3>${title}</h3>
+              <p>${description}</p>
             </div>
 
-            <button
-              class="btn primary full"
-              style="margin-top:12px"
-              onclick="completeTask('${id}')">
-              Complete Task
-            </button>
+            <div class="reward">
+              +${formatPoints(reward)}
+            </div>
 
           </div>
-        `;
 
-      }).join("");
+          <button
+            class="btn primary full"
+            style="margin-top:12px"
+            onclick="completeTask('${id}')">
+            Complete Task
+          </button>
+
+        </div>
+      `;
+
+    }).join("");
 
   }catch(error){
 
-    box.innerHTML =
-      `<div class="empty">${escapeHtml(error.message)}</div>`;
+    box.innerHTML=
+      `<div class="empty">
+        ${escapeHtml(error.message)}
+      </div>`;
   }
 }
 
@@ -2033,7 +2132,7 @@ async function completeTask(id){
 
   try{
 
-    const data = await api("/tasks",{
+    const data=await api("/tasks",{
       method:"POST",
       body:JSON.stringify({
         action:"complete",
@@ -2042,9 +2141,12 @@ async function completeTask(id){
     });
 
     if(data.user){
-      state.user = data.user;
+
+      state.user=data.user;
       updateUI();
+
     }else{
+
       await refreshUser();
     }
 
@@ -2064,17 +2166,17 @@ async function completeTask(id){
 
 function openCreateTask(){
 
-  const title =
-    prompt("Task title:");
+  const title=prompt("Task title:");
 
-  if(!title) return;
+  if(!title)return;
 
-  const link =
-    prompt("Telegram channel/bot link:");
+  const link=prompt(
+    "Telegram channel/bot link:"
+  );
 
-  if(!link) return;
+  if(!link)return;
 
-  const description =
+  const description=
     prompt("Task description:") ||
     "Join and complete the Telegram task.";
 
@@ -2090,7 +2192,7 @@ async function createTask(task){
 
   try{
 
-    const data = await api("/tasks",{
+    const data=await api("/tasks",{
       method:"POST",
       body:JSON.stringify({
         action:"create",
@@ -2118,78 +2220,99 @@ async function createTask(task){
 
 function selectGame(game){
 
-  state.selectedGame = game;
+  state.selectedGame=game;
 
   document.getElementById("chooseXO")
-    .classList.toggle("active",game==="xo");
+    .classList.toggle(
+      "active",
+      game==="xo"
+    );
 
   document.getElementById("chooseAviator")
-    .classList.toggle("active",game==="aviator");
+    .classList.toggle(
+      "active",
+      game==="aviator"
+    );
 
   document.getElementById("xoPanel")
-    .classList.toggle("hidden",game!=="xo");
+    .classList.toggle(
+      "hidden",
+      game!=="xo"
+    );
 
   document.getElementById("aviatorPanel")
-    .classList.toggle("hidden",game!=="aviator");
+    .classList.toggle(
+      "hidden",
+      game!=="aviator"
+    );
 }
 
 
-/* ===================== XO ===================== */
+/* =========================================================
+   XO
+   ========================================================= */
 
 document.querySelectorAll(".xoCell")
   .forEach(cell=>{
+
     cell.addEventListener("click",()=>{
-      xoClick(Number(cell.dataset.i));
+      xoClick(
+        Number(cell.dataset.i)
+      );
     });
+
   });
 
 
 function startXO(){
 
-  const played =
-    Number(
-      state.user?.xoToday ??
-      state.user?.xoGamesToday ??
-      0
+  const played=Number(
+    state.user?.xoToday ??
+    state.user?.xoGamesToday ??
+    0
+  );
+
+  if(played>=3){
+
+    toast(
+      "You've reached today's XO limit."
     );
 
-  if(played >= 3){
-
-    toast("You've reached today's XO limit.");
     return;
   }
 
-  state.xoBoard = Array(9).fill("");
-  state.xoTurn = "X";
-  state.xoPlaying = true;
+  state.xoBoard=Array(9).fill("");
+  state.xoPlaying=true;
 
   renderXO();
 
   document.getElementById("xoStart")
-    .disabled = true;
+    .disabled=true;
 }
 
 
 function xoClick(index){
 
-  if(!state.xoPlaying) return;
-  if(state.xoBoard[index]) return;
+  if(!state.xoPlaying)return;
+  if(state.xoBoard[index])return;
 
-  state.xoBoard[index] = "X";
+  state.xoBoard[index]="X";
 
   renderXO();
 
   if(checkWinner(state.xoBoard,"X")){
+
     finishXO("win");
+
     return;
   }
 
   if(state.xoBoard.every(Boolean)){
+
     finishXO("draw");
+
     return;
   }
-
-  state.xoTurn = "O";
 
   setTimeout(aiXO,350);
 }
@@ -2197,37 +2320,39 @@ function xoClick(index){
 
 function aiXO(){
 
-  if(!state.xoPlaying) return;
+  if(!state.xoPlaying)return;
 
-  const empty =
+  const empty=
     state.xoBoard
       .map((v,i)=>v?null:i)
       .filter(v=>v!==null);
 
-  if(!empty.length) return;
+  if(!empty.length)return;
 
-  /*
-    Simple AI.
-    Backend decides actual reward.
-  */
+  const index=
+    empty[
+      Math.floor(
+        Math.random()*empty.length
+      )
+    ];
 
-  const index =
-    empty[Math.floor(Math.random()*empty.length)];
-
-  state.xoBoard[index] = "O";
+  state.xoBoard[index]="O";
 
   renderXO();
 
   if(checkWinner(state.xoBoard,"O")){
+
     finishXO("loss");
+
     return;
   }
 
   if(state.xoBoard.every(Boolean)){
-    finishXO("draw");
-  }
 
-  state.xoTurn = "X";
+    finishXO("draw");
+
+    return;
+  }
 }
 
 
@@ -2235,8 +2360,10 @@ function renderXO(){
 
   document.querySelectorAll(".xoCell")
     .forEach((cell,i)=>{
-      cell.textContent =
+
+      cell.textContent=
         state.xoBoard[i];
+
     });
 }
 
@@ -2255,7 +2382,7 @@ function checkWinner(board,p){
   ];
 
   return wins.some(
-    ([a,b,c]) =>
+    ([a,b,c])=>
       board[a]===p &&
       board[b]===p &&
       board[c]===p
@@ -2265,14 +2392,14 @@ function checkWinner(board,p){
 
 async function finishXO(result){
 
-  state.xoPlaying = false;
+  state.xoPlaying=false;
 
   document.getElementById("xoStart")
-    .disabled = false;
+    .disabled=false;
 
   try{
 
-    const data = await api("/games",{
+    const data=await api("/games",{
       method:"POST",
       body:JSON.stringify({
         game:"xo",
@@ -2281,30 +2408,34 @@ async function finishXO(result){
     });
 
     if(data.user){
-      state.user = data.user;
+
+      state.user=data.user;
       updateUI();
+
     }else{
+
       await refreshUser();
     }
 
-    const played =
-      Number(
-        data.xoToday ??
-        state.user?.xoToday ??
-        0
-      );
+    const played=Number(
+      data.xoToday ??
+      state.user?.xoToday ??
+      0
+    );
 
     document.getElementById("xoLimit")
-      .textContent =
+      .textContent=
       `XO limit: ${played} / 3 today`;
 
     toast(
       data.message ||
-      (result==="win"
-        ? "You won 🎉"
-        : result==="draw"
-          ? "Draw 🤝"
-          : "Better luck next time 😭")
+      (
+        result==="win"
+          ? "You won 🎉"
+          : result==="draw"
+            ? "Draw 🤝"
+            : "Better luck next time 😭"
+      )
     );
 
   }catch(error){
@@ -2314,15 +2445,17 @@ async function finishXO(result){
 }
 
 
-/* ===================== AVIATOR ===================== */
+/* =========================================================
+   AVIATOR
+   ========================================================= */
 
 async function startAviator(){
 
-  if(state.aviatorPlaying) return;
+  if(state.aviatorPlaying)return;
 
   try{
 
-    const data = await api("/games",{
+    const data=await api("/games",{
       method:"POST",
       body:JSON.stringify({
         game:"aviator",
@@ -2330,8 +2463,8 @@ async function startAviator(){
       })
     });
 
-    state.aviatorPlaying = true;
-    state.aviatorMultiplier = 1;
+    state.aviatorPlaying=true;
+    state.aviatorMultiplier=1;
 
     document.getElementById("aviatorStart")
       .classList.add("hidden");
@@ -2340,54 +2473,61 @@ async function startAviator(){
       .classList.remove("hidden");
 
     /*
-      The frontend animation is visual only.
-      The backend must determine the crash point.
+      This is only visual.
+      Backend must validate cashout.
     */
 
-    const crashAt =
-      Number(data.crashAt || 1.4 + Math.random()*1.7);
+    const crashAt=Number(
+      data.crashAt || 2
+    );
 
-    state.aviatorTimer =
-      setInterval(()=>{
+    state.aviatorTimer=setInterval(()=>{
 
-        state.aviatorMultiplier += .03;
+      state.aviatorMultiplier+=.03;
 
-        document.getElementById("multiplier")
-          .textContent =
-          state.aviatorMultiplier.toFixed(2)+"x";
+      document.getElementById("multiplier")
+        .textContent=
+        state.aviatorMultiplier
+          .toFixed(2)+"x";
 
-        document.getElementById("plane")
-          .style.left =
-          Math.min(
-            82,
-            15 + state.aviatorMultiplier*20
-          )+"%";
+      document.getElementById("plane")
+        .style.left=
+        Math.min(
+          82,
+          15+
+          state.aviatorMultiplier*20
+        )+"%";
 
-        document.getElementById("plane")
-          .style.bottom =
-          Math.min(
-            80,
-            25 + state.aviatorMultiplier*13
-          )+"%";
+      document.getElementById("plane")
+        .style.bottom=
+        Math.min(
+          80,
+          25+
+          state.aviatorMultiplier*13
+        )+"%";
 
-        if(state.aviatorMultiplier >= crashAt){
+      if(
+        state.aviatorMultiplier>=crashAt
+      ){
 
-          clearInterval(state.aviatorTimer);
+        clearInterval(
+          state.aviatorTimer
+        );
 
-          state.aviatorPlaying = false;
+        state.aviatorPlaying=false;
 
-          document.getElementById("cashoutBtn")
-            .classList.add("hidden");
+        document.getElementById("cashoutBtn")
+          .classList.add("hidden");
 
-          document.getElementById("aviatorStart")
-            .classList.remove("hidden");
+        document.getElementById("aviatorStart")
+          .classList.remove("hidden");
 
-          toast("Plane crashed 💥");
+        toast("Plane crashed 💥");
 
-          refreshUser();
-        }
+        refreshUser();
+      }
 
-      },100);
+    },100);
 
   }catch(error){
 
@@ -2398,14 +2538,16 @@ async function startAviator(){
 
 async function cashoutAviator(){
 
-  if(!state.aviatorPlaying) return;
+  if(!state.aviatorPlaying)return;
 
-  clearInterval(state.aviatorTimer);
+  clearInterval(
+    state.aviatorTimer
+  );
 
-  const multiplier =
+  const multiplier=
     state.aviatorMultiplier;
 
-  state.aviatorPlaying = false;
+  state.aviatorPlaying=false;
 
   document.getElementById("cashoutBtn")
     .classList.add("hidden");
@@ -2415,7 +2557,7 @@ async function cashoutAviator(){
 
   try{
 
-    const data = await api("/games",{
+    const data=await api("/games",{
       method:"POST",
       body:JSON.stringify({
         game:"aviator",
@@ -2425,9 +2567,12 @@ async function cashoutAviator(){
     });
 
     if(data.user){
-      state.user = data.user;
+
+      state.user=data.user;
       updateUI();
+
     }else{
+
       await refreshUser();
     }
 
@@ -2444,56 +2589,27 @@ async function cashoutAviator(){
 
 
 /* =========================================================
-   PROMO CODES
+   PROMO
    ========================================================= */
-
-const PROMO_CODES = [
-  "USDTHUB",
-  "MONDAYUSDT",
-  "TUESDAYUSDT",
-  "MONEYTIME",
-  "CRYPTOBONUS",
-  "BIRRGRAM2026",
-  "FASTUSDT",
-  "DAILYCLAIM",
-  "LUCKYWIN",
-  "REWARD777",
-  "TELEGRAMVIP",
-  "EARNMORE",
-  "BINANCEHUB",
-  "FREEUSDT200",
-  "CLAIMNOW",
-  "MEGAREWARD",
-  "SUPERPAY",
-  "BOOSTPOINTS",
-  "STARTHUB",
-  "GOLDENUSDT"
-];
-
 
 async function redeemPromo(){
 
-  const input =
+  const input=
     document.getElementById("promoInput");
 
-  const code =
+  const code=
     input.value.trim().toUpperCase();
 
   if(!code){
 
     toast("Enter a promo code.");
-    return;
-  }
 
-  if(!PROMO_CODES.includes(code)){
-
-    toast("Invalid promo code.");
     return;
   }
 
   try{
 
-    const data = await api("/promo",{
+    const data=await api("/promo",{
       method:"POST",
       body:JSON.stringify({
         code
@@ -2501,13 +2617,16 @@ async function redeemPromo(){
     });
 
     if(data.user){
-      state.user = data.user;
+
+      state.user=data.user;
       updateUI();
+
     }else{
+
       await refreshUser();
     }
 
-    input.value = "";
+    input.value="";
 
     toast(
       data.message ||
@@ -2529,53 +2648,60 @@ async function loadReferrals(){
 
   try{
 
-    const data = await api("/referral",{
+    const data=await api("/referral",{
       method:"GET"
     });
 
     if(data.user){
-      state.user = data.user;
+
+      state.user=data.user;
       updateUI();
     }
 
     renderLeaderboard(
-      data.leaderboard ||
-      []
+      data.leaderboard || []
     );
 
     renderReferralList(
-      data.referrals ||
-      []
+      data.referrals || []
     );
 
   }catch(error){
 
-    document.getElementById("leaderboard").innerHTML =
-      `<div class="empty">${escapeHtml(error.message)}</div>`;
+    document.getElementById("leaderboard")
+      .innerHTML=
+      `<div class="empty">
+        ${escapeHtml(error.message)}
+      </div>`;
 
-    document.getElementById("referralList").innerHTML =
-      `<div class="empty">${escapeHtml(error.message)}</div>`;
+    document.getElementById("referralList")
+      .innerHTML=
+      `<div class="empty">
+        ${escapeHtml(error.message)}
+      </div>`;
   }
 }
 
 
 function renderLeaderboard(list){
 
-  const box =
+  const box=
     document.getElementById("leaderboard");
 
   if(!list.length){
 
-    box.innerHTML =
-      `<div class="empty">No leaderboard data yet.</div>`;
+    box.innerHTML=
+      `<div class="empty">
+        No leaderboard data yet.
+      </div>`;
 
     return;
   }
 
-  box.innerHTML =
+  box.innerHTML=
     list.slice(0,20).map((u,i)=>{
 
-      const name =
+      const name=
         escapeHtml(
           u.username ||
           u.name ||
@@ -2586,7 +2712,15 @@ function renderLeaderboard(list){
         <div class="rank">
 
           <div class="rankNumber">
-            ${i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1}
+            ${
+              i===0
+                ?"🥇"
+                :i===1
+                  ?"🥈"
+                  :i===2
+                    ?"🥉"
+                    :i+1
+            }
           </div>
 
           <div class="rankUser">
@@ -2607,28 +2741,30 @@ function renderLeaderboard(list){
 
 function renderReferralList(list){
 
-  const box =
+  const box=
     document.getElementById("referralList");
 
   if(!list.length){
 
-    box.innerHTML =
-      `<div class="empty">No referrals yet. Invite someone 🔥</div>`;
+    box.innerHTML=
+      `<div class="empty">
+        No referrals yet. Invite someone 🔥
+      </div>`;
 
     return;
   }
 
-  box.innerHTML =
+  box.innerHTML=
     list.map(u=>{
 
-      const name =
+      const name=
         escapeHtml(
           u.username ||
           u.name ||
           "Telegram User"
         );
 
-      const status =
+      const status=
         u.adsRequirementMet
           ? "Completed"
           : "Waiting for 2 ads";
@@ -2644,7 +2780,9 @@ function renderReferralList(list){
           </div>
 
           <div class="rankPoints">
-            ${formatPoints(u.pointsEarned || 0)}
+            ${formatPoints(
+              u.pointsEarned || 0
+            )}
           </div>
 
         </div>
@@ -2654,59 +2792,66 @@ function renderReferralList(list){
 }
 
 
-function copyReferral(){
+async function copyReferral(){
 
-  const value =
+  const value=
     document.getElementById("refLink").value;
 
   if(!value){
 
-    toast("Referral link not ready.");
+    toast(
+      "Referral link isn't ready. Set your bot username."
+    );
+
     return;
   }
 
-  navigator.clipboard
-    ?.writeText(value)
-    .then(()=>{
-      toast("Referral link copied 🔗");
-    })
-    .catch(()=>{
-      toast("Copy failed.");
-    });
+  try{
+
+    await navigator.clipboard.writeText(value);
+
+    toast(
+      "Referral link copied 🔗"
+    );
+
+  }catch(error){
+
+    toast("Copy failed.");
+  }
 }
 
 
 function shareReferral(){
 
-  const link =
+  const link=
     document.getElementById("refLink").value;
 
   if(!link){
 
-    toast("Referral link not ready.");
+    toast(
+      "Referral link isn't ready."
+    );
+
     return;
   }
 
-  const text =
+  const text=
     "🔥 Join USDT Hub and earn points with me!";
 
-  if(tg?.openTelegramLink){
+  const url=
+    "https://t.me/share/url?url="+
+    encodeURIComponent(link)+
+    "&text="+
+    encodeURIComponent(text);
 
-    const url =
-      "https://t.me/share/url?url="+
-      encodeURIComponent(link)+
-      "&text="+
-      encodeURIComponent(text);
+  if(tg?.openTelegramLink){
 
     tg.openTelegramLink(url);
 
   }else{
 
     window.open(
-      "https://t.me/share/url?url="+
-      encodeURIComponent(link)+
-      "&text="+
-      encodeURIComponent(text),
+      url,
       "_blank"
     );
   }
@@ -2719,38 +2864,43 @@ function shareReferral(){
 
 async function requestWithdraw(){
 
-  const address =
+  const address=
     document.getElementById("withdrawAddress")
       .value.trim();
 
-  const btn =
+  const btn=
     document.getElementById("withdrawBtn");
 
   if(!validBep20(address)){
 
-    toast("Enter a valid BEP20 address.");
-    return;
-  }
-
-  const points =
-    Number(
-      state.user?.points ??
-      state.user?.balance ??
-      0
+    toast(
+      "Enter a valid BEP20 address."
     );
 
-  if(points < 10000){
-
-    toast("You need at least 10,000 points.");
     return;
   }
 
-  btn.disabled = true;
-  btn.textContent = "Processing...";
+  const points=Number(
+    state.user?.points ??
+    state.user?.balance ??
+    0
+  );
+
+  if(points<10000){
+
+    toast(
+      "You need at least 10,000 points."
+    );
+
+    return;
+  }
+
+  btn.disabled=true;
+  btn.textContent="Processing...";
 
   try{
 
-    const data = await api("/withdraw",{
+    const data=await api("/withdraw",{
       method:"POST",
       body:JSON.stringify({
         address,
@@ -2760,14 +2910,18 @@ async function requestWithdraw(){
     });
 
     if(data.user){
-      state.user = data.user;
+
+      state.user=data.user;
       updateUI();
+
     }else{
+
       await refreshUser();
     }
 
-    document.getElementById("withdrawAddress")
-      .value = "";
+    document.getElementById(
+      "withdrawAddress"
+    ).value="";
 
     toast(
       data.message ||
@@ -2782,46 +2936,52 @@ async function requestWithdraw(){
 
   }finally{
 
-    btn.disabled = false;
-    btn.textContent = "💸 Withdraw $0.10";
+    btn.disabled=false;
+    btn.textContent=
+      "💸 Withdraw $0.10";
   }
 }
 
 
 async function loadWithdrawHistory(){
 
-  const box =
-    document.getElementById("withdrawHistory");
+  const box=
+    document.getElementById(
+      "withdrawHistory"
+    );
 
   try{
 
-    const data = await api("/withdraw",{
+    const data=await api("/withdraw",{
       method:"GET"
     });
 
-    const list =
-      data.withdrawals ||
-      [];
+    const list=
+      data.withdrawals || [];
 
     if(!list.length){
 
-      box.innerHTML =
-        `<div class="empty">No withdrawals yet.</div>`;
+      box.innerHTML=
+        `<div class="empty">
+          No withdrawals yet.
+        </div>`;
 
       return;
     }
 
-    box.innerHTML =
+    box.innerHTML=
       list.map(w=>{
 
-        const status =
+        const status=
           escapeHtml(
             w.status ||
             "pending"
           );
 
-        const amount =
-          Number(w.amount || .1);
+        const amount=
+          Number(
+            w.amount || .1
+          );
 
         return `
           <div class="rank">
@@ -2829,8 +2989,13 @@ async function loadWithdrawHistory(){
             <div class="rankNumber">💸</div>
 
             <div class="rankUser">
-              <b>$${amount.toFixed(2)} USDT</b>
-              <small>${status}</small>
+              <b>
+                $${amount.toFixed(2)} USDT
+              </b>
+
+              <small>
+                ${status}
+              </small>
             </div>
 
             <div class="rankPoints">
@@ -2846,28 +3011,12 @@ async function loadWithdrawHistory(){
 
   }catch(error){
 
-    box.innerHTML =
-      `<div class="empty">No withdrawal history available.</div>`;
+    box.innerHTML=
+      `<div class="empty">
+        ${escapeHtml(error.message)}
+      </div>`;
   }
 }
-
-
-/* =========================================================
-   CREATE TASK PAYMENT NOTICE
-   ========================================================= */
-
-window.addEventListener("load",()=>{
-
-  /*
-    All task creation payments must be validated server-side.
-
-    The backend should require 100,000 points / $1 before
-    creating a normal user's task.
-
-    Admin-created tasks can bypass this requirement.
-  */
-
-});
 
 
 /* =========================================================
@@ -2879,4 +3028,4 @@ init();
 </script>
 
 </body>
-</html>
+  </html>
