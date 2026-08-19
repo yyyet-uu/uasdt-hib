@@ -3,12 +3,12 @@ import { validateInitData, getInitData } from "../lib/auth.js";
 import { getChatMember } from "../lib/telegram.js";
 import { CONFIG } from "../lib/config.js";
 
-function memberOK(x) {
+function memberOK(member) {
   return [
     "member",
     "administrator",
     "creator"
-  ].includes(x.status);
+  ].includes(member.status);
 }
 
 export default async function handler(req, res) {
@@ -24,24 +24,30 @@ export default async function handler(req, res) {
       validateInitData(getInitData(req));
 
     const uid = String(user.id);
-    const action = req.body.action;
+    const action = String(req.body?.action || "");
 
+    // =========================
+    // LIST TASKS
+    // =========================
     if (action === "list") {
-      const snap =
-        await db.collection("tasks")
-          .where("status", "==", "active")
-          .limit(100)
-          .get();
+      const snap = await db
+        .collection("tasks")
+        .where("status", "==", "active")
+        .limit(100)
+        .get();
 
       return res.json({
         success: true,
-        tasks: snap.docs.map(d => ({
-          id: d.id,
-          ...d.data()
+        tasks: snap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
         }))
       });
     }
 
+    // =========================
+    // CREATE TASK
+    // =========================
     if (action === "create") {
       const {
         title,
@@ -65,22 +71,26 @@ export default async function handler(req, res) {
         db.collection("tasks").doc();
 
       await db.runTransaction(async tx => {
-        const snap =
+        const userSnap =
           await tx.get(userRef);
 
-        if (!snap.exists) {
+        if (!userSnap.exists) {
           throw new Error("USER_NOT_FOUND");
         }
 
-        const u = snap.data();
+        const u = userSnap.data();
 
         const isAdmin =
-          uid === String(process.env.TELEGRAM_ADMIN_ID);
+          uid === String(
+            process.env.TELEGRAM_ADMIN_ID || ""
+          );
+
+        const balance =
+          Number(u.balance || 0);
 
         if (
           !isAdmin &&
-          Number(u.balance || 0) <
-            CONFIG.TASK_CREATE_COST
+          balance < CONFIG.TASK_CREATE_COST
         ) {
           throw new Error("INSUFFICIENT_POINTS");
         }
@@ -90,21 +100,40 @@ export default async function handler(req, res) {
             balance:
               FieldValue.increment(
                 -CONFIG.TASK_CREATE_COST
-              )
+              ),
+            updatedAt:
+              FieldValue.serverTimestamp()
           });
         }
 
         tx.create(taskRef, {
           ownerId: uid,
-          title: String(title).slice(0, 120),
-          link: String(link).slice(0, 500),
-          chatId: String(chatId),
+
+          title:
+            String(title).slice(0, 120),
+
+          link:
+            String(link).slice(0, 500),
+
+          chatId:
+            String(chatId),
+
           type,
-          reward: CONFIG.TASK_REWARD,
+
+          reward:
+            CONFIG.TASK_REWARD,
+
           completions: 0,
-          maxCompletions: CONFIG.TASK_LIMIT,
+
+          maxCompletions:
+            CONFIG.TASK_LIMIT,
+
           status: "active",
+
           createdAt:
+            FieldValue.serverTimestamp(),
+
+          updatedAt:
             FieldValue.serverTimestamp()
         });
       });
@@ -115,9 +144,16 @@ export default async function handler(req, res) {
       });
     }
 
+    // =========================
+    // COMPLETE TASK
+    // =========================
     if (action === "complete") {
       const taskId =
-        String(req.body.taskId || "");
+        String(req.body?.taskId || "");
+
+      if (!taskId) {
+        throw new Error("TASK_ID_REQUIRED");
+      }
 
       const taskRef =
         db.collection("tasks").doc(taskId);
@@ -129,10 +165,40 @@ export default async function handler(req, res) {
       const userRef =
         db.collection("users").doc(uid);
 
+      // Get task first so we know where
+      // the user must join.
+      const taskSnap =
+        await taskRef.get();
+
+      if (!taskSnap.exists) {
+        throw new Error("TASK_NOT_FOUND");
+      }
+
+      const task =
+        taskSnap.data();
+
+      if (task.status !== "active") {
+        throw new Error("TASK_CLOSED");
+      }
+
+      // IMPORTANT:
+      // Verify membership BEFORE giving points.
+      const member =
+        await getChatMember(
+          task.chatId,
+          uid
+        );
+
+      if (!memberOK(member)) {
+        throw new Error(
+          "TELEGRAM_MEMBERSHIP_REQUIRED"
+        );
+      }
+
       let reward = 0;
 
       await db.runTransaction(async tx => {
-        const task =
+        const freshTask =
           await tx.get(taskRef);
 
         const completion =
@@ -141,7 +207,7 @@ export default async function handler(req, res) {
         const user =
           await tx.get(userRef);
 
-        if (!task.exists) {
+        if (!freshTask.exists) {
           throw new Error("TASK_NOT_FOUND");
         }
 
@@ -153,20 +219,25 @@ export default async function handler(req, res) {
           throw new Error("ALREADY_COMPLETED");
         }
 
-        const t = task.data();
+        const t =
+          freshTask.data();
 
         if (t.status !== "active") {
           throw new Error("TASK_CLOSED");
         }
 
-        if (
-          Number(t.completions || 0) >=
-          CONFIG.TASK_LIMIT
-        ) {
+        const current =
+          Number(t.completions || 0);
+
+        if (current >= CONFIG.TASK_LIMIT) {
           throw new Error("TASK_FULL");
         }
 
-        reward = CONFIG.TASK_REWARD;
+        reward =
+          Number(CONFIG.TASK_REWARD);
+
+        const newCount =
+          current + 1;
 
         tx.create(completionRef, {
           userId: uid,
@@ -176,15 +247,16 @@ export default async function handler(req, res) {
             FieldValue.serverTimestamp()
         });
 
-        const newCount =
-          Number(t.completions || 0) + 1;
-
         tx.update(taskRef, {
           completions: newCount,
+
           status:
             newCount >= CONFIG.TASK_LIMIT
               ? "completed"
-              : "active"
+              : "active",
+
+          updatedAt:
+            FieldValue.serverTimestamp()
         });
 
         tx.update(userRef, {
@@ -192,31 +264,12 @@ export default async function handler(req, res) {
             FieldValue.increment(reward),
 
           tasksCompleted:
-            FieldValue.increment(1)
+            FieldValue.increment(1),
+
+          updatedAt:
+            FieldValue.serverTimestamp()
         });
       });
-
-      /*
-       * Membership is checked BEFORE this transaction
-       * so users cannot claim arbitrary rewards.
-       */
-
-      const taskData =
-        (await taskRef.get()).data();
-
-      const member =
-        await getChatMember(
-          taskData.chatId,
-          uid
-        );
-
-      if (!memberOK(member)) {
-        await completionRef.delete();
-
-        throw new Error(
-          "TELEGRAM_MEMBERSHIP_REQUIRED"
-        );
-      }
 
       return res.json({
         success: true,
@@ -227,11 +280,11 @@ export default async function handler(req, res) {
     throw new Error("UNKNOWN_ACTION");
 
   } catch (error) {
-    console.error(error);
+    console.error("TASK ERROR:", error);
 
     return res.status(400).json({
       success: false,
-      error: error.message
+      error: error.message || "Task request failed"
     });
   }
         }
