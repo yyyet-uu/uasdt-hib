@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     const uid = String(user.id);
 
     const address =
-      String(req.body.address || "").trim();
+      String(req.body?.address || "").trim();
 
     if (!ethers.isAddress(address)) {
       throw new Error("INVALID_ADDRESS");
@@ -37,53 +37,64 @@ export default async function handler(req, res) {
     const withdrawalRef =
       db.collection("withdrawals").doc();
 
+    const withdrawalPoints =
+      Number(CONFIG.WITHDRAW_MIN_POINTS);
+
+    const withdrawalAmount =
+      withdrawalPoints /
+      Number(CONFIG.POINTS_PER_USDT);
+
     await db.runTransaction(async tx => {
-      const snap =
+      const userSnap =
         await tx.get(userRef);
 
-      if (!snap.exists) {
+      if (!userSnap.exists) {
         throw new Error("USER_NOT_FOUND");
       }
 
-      const u = snap.data();
+      const u = userSnap.data();
 
       if (!u.channelsVerified) {
         throw new Error("CHANNELS_REQUIRED");
       }
 
-      const points =
+      const balance =
         Number(u.balance || 0);
 
-      if (
-        points <
-        CONFIG.WITHDRAW_MIN_POINTS
-      ) {
+      if (balance < withdrawalPoints) {
         throw new Error("MINIMUM_NOT_REACHED");
       }
 
       withdrawalId =
         withdrawalRef.id;
 
+      // Reserve exactly 10,000 points.
       tx.update(userRef, {
         balance:
-          FieldValue.increment(-points),
+          FieldValue.increment(
+            -withdrawalPoints
+          ),
 
         withdrawals:
           FieldValue.increment(1),
 
         lastWithdrawalId:
-          withdrawalId
+          withdrawalId,
+
+        updatedAt:
+          FieldValue.serverTimestamp()
       });
 
       tx.create(withdrawalRef, {
         userId: uid,
         address: destination,
 
-        points,
+        points: withdrawalPoints,
 
         amountUSDT:
-          points /
-          CONFIG.POINTS_PER_USDT,
+          Number(
+            withdrawalAmount.toFixed(8)
+          ),
 
         status: "processing",
 
@@ -92,20 +103,12 @@ export default async function handler(req, res) {
       });
     });
 
-    const amount =
-      Number(
-        (
-          Number(
-            (await withdrawalRef.get()).data()
-              .amountUSDT
-          )
-        ).toFixed(8)
-      );
-
     const payment =
       await sendUSDT(
         destination,
-        amount
+        Number(
+          withdrawalAmount.toFixed(8)
+        )
       );
 
     await withdrawalRef.update({
@@ -118,60 +121,80 @@ export default async function handler(req, res) {
     try {
       await sendMessage(
         uid,
-        `✅ <b>Withdrawal successful</b>\n\n💰 ${amount} USDT\n🔗 ${payment.txHash}`
+        `✅ <b>Withdrawal successful!</b>\n\n💰 0.10 USDT\n📍 ${destination}\n🔗 ${payment.txHash}`
       );
     } catch {}
 
     return res.json({
       success: true,
-      amount,
+      amount: 0.10,
+      points: withdrawalPoints,
       txHash: payment.txHash
     });
 
   } catch (error) {
-    console.error(error);
+    console.error(
+      "WITHDRAW ERROR:",
+      error
+    );
 
+    // Refund the reserved points if payment failed.
     if (withdrawalId) {
       try {
-        const ref =
+        const withdrawalRef =
           db.collection("withdrawals")
             .doc(withdrawalId);
 
-        const snap = await ref.get();
+        const withdrawalSnap =
+          await withdrawalRef.get();
 
-        if (
-          snap.exists &&
-          snap.data().status === "processing"
-        ) {
-          const data = snap.data();
+        if (withdrawalSnap.exists) {
+          const data =
+            withdrawalSnap.data();
 
-          await db.runTransaction(async tx => {
-            tx.update(
-              db.collection("users").doc(
-                data.userId
-              ),
-              {
-                balance:
-                  FieldValue.increment(
-                    Number(data.points || 0)
-                  )
+          if (data.status === "processing") {
+            await db.runTransaction(
+              async tx => {
+                tx.update(
+                  db.collection("users")
+                    .doc(data.userId),
+                  {
+                    balance:
+                      FieldValue.increment(
+                        Number(data.points || 0)
+                      ),
+
+                    updatedAt:
+                      FieldValue.serverTimestamp()
+                  }
+                );
+
+                tx.update(
+                  withdrawalRef,
+                  {
+                    status: "failed",
+                    error: error.message,
+                    updatedAt:
+                      FieldValue.serverTimestamp()
+                  }
+                );
               }
             );
-
-            tx.update(ref, {
-              status: "failed",
-              error: error.message,
-              updatedAt:
-                FieldValue.serverTimestamp()
-            });
-          });
+          }
         }
-      } catch {}
+      } catch (refundError) {
+        console.error(
+          "REFUND ERROR:",
+          refundError
+        );
+      }
     }
 
     return res.status(400).json({
       success: false,
-      error: error.message
+      error:
+        error.message ||
+        "Withdrawal failed"
     });
   }
-        }
+                  }
