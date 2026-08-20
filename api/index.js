@@ -1,16 +1,24 @@
 import { db, FieldValue } from "../lib/firebase.js";
-import { validateInitData, getInitData } from "../lib/auth.js";
+
+import {
+  validateInitData,
+  getInitData
+} from "../lib/auth.js";
+
 import {
   getChatMember,
   sendMessage
 } from "../lib/telegram.js";
+
 import { sendUSDT } from "../lib/payout.js";
+
 import { CONFIG } from "../lib/config.js";
+
 import { ethers } from "ethers";
 
 
 // =====================================================
-// HELPERS
+// BASIC HELPERS
 // =====================================================
 
 function today() {
@@ -39,14 +47,24 @@ function getPath(req) {
   ).replace(/\/+$/, "");
 }
 
+function num(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 
 // =====================================================
 // USER REGISTER
 // =====================================================
 
 async function register(req, res) {
-  const { user, startParam } =
-    validateInitData(getInitData(req));
+
+  const {
+    user,
+    startParam
+  } = validateInitData(
+    getInitData(req)
+  );
 
   const uid = String(user.id);
 
@@ -57,6 +75,7 @@ async function register(req, res) {
     await userRef.get();
 
   if (existing.exists) {
+
     return res.json({
       success: true,
       newUser: false,
@@ -70,6 +89,7 @@ async function register(req, res) {
     startParam &&
     startParam.startsWith("ref_")
   ) {
+
     const possible =
       startParam.slice(4);
 
@@ -77,6 +97,7 @@ async function register(req, res) {
       possible &&
       possible !== uid
     ) {
+
       const inviter =
         await db
           .collection("users")
@@ -90,6 +111,7 @@ async function register(req, res) {
   }
 
   const userData = {
+
     telegramId: uid,
 
     firstName:
@@ -104,34 +126,49 @@ async function register(req, res) {
     balance: 0,
 
     adsWatched: 0,
+
     monetagAds: 0,
+
     adsgramAds: 0,
 
     monetagToday: 0,
+
     adsgramToday: 0,
+
     adDate: null,
 
     tasksCompleted: 0,
 
     referrals: 0,
+
     referralPoints: 0,
 
     welcomeBonusClaimed: false,
+
     welcomeBonusStatus: "none",
+
     welcomeAddress: null,
 
     channelsVerified: false,
+
     appUnlocked: false,
 
     xoDailyPlays: 0,
+
     xoPlayDate: null,
+
     xoPlays: 0,
+
     xoWins: 0,
 
     aviatorGames: 0,
+
     aviatorWins: 0,
 
+    aviatorActiveRound: null,
+
     withdrawals: 0,
+
     lastWithdrawalId: null,
 
     referralCode:
@@ -156,13 +193,16 @@ async function register(req, res) {
   );
 
   if (inviterId) {
+
     const referralRef =
-      db.collection("referrals")
+      db
+        .collection("referrals")
         .doc(`${inviterId}_${uid}`);
 
     batch.create(
       referralRef,
       {
+
         inviterId,
 
         referredUserId:
@@ -175,6 +215,7 @@ async function register(req, res) {
           CONFIG.REFERRAL_ADS,
 
         channelRewarded: false,
+
         adsRewarded: false,
 
         createdAt:
@@ -183,9 +224,12 @@ async function register(req, res) {
     );
 
     batch.update(
-      db.collection("users")
+      db
+        .collection("users")
         .doc(inviterId),
+
       {
+
         referrals:
           FieldValue.increment(1),
 
@@ -198,22 +242,30 @@ async function register(req, res) {
   await batch.commit();
 
   try {
+
     await sendMessage(
       uid,
+
       "🎉 <b>Welcome to USDT Hub!</b>\n\nYour account has been created successfully."
     );
 
     if (inviterId) {
+
       await sendMessage(
         inviterId,
+
         "👥 <b>New referral!</b>\nSomeone registered using your referral link."
       );
     }
+
   } catch {}
 
   return res.status(201).json({
+
     success: true,
+
     newUser: true,
+
     user: userData
   });
 }
@@ -224,6 +276,7 @@ async function register(req, res) {
 // =====================================================
 
 async function verifyMembership(req, res) {
+
   const { user } =
     validateInitData(
       getInitData(req)
@@ -247,8 +300,11 @@ async function verifyMembership(req, res) {
     results.every(memberOK);
 
   if (!joined) {
+
     return res.json({
+
       success: true,
+
       joined: false
     });
   }
@@ -257,13 +313,17 @@ async function verifyMembership(req, res) {
     .collection("users")
     .doc(uid)
     .update({
+
       channelsVerified: true,
+
       updatedAt:
         FieldValue.serverTimestamp()
     });
 
   return res.json({
+
     success: true,
+
     joined: true
   });
 }
@@ -274,6 +334,7 @@ async function verifyMembership(req, res) {
 // =====================================================
 
 async function claimWelcome(req, res) {
+
   const { user } =
     validateInitData(
       getInitData(req)
@@ -288,9 +349,13 @@ async function claimWelcome(req, res) {
     ).trim();
 
   if (!ethers.isAddress(address)) {
+
     return res.status(400).json({
+
       success: false,
-      error: "INVALID_ADDRESS"
+
+      error:
+        "INVALID_ADDRESS"
     });
   }
 
@@ -298,15 +363,18 @@ async function claimWelcome(req, res) {
     ethers.getAddress(address);
 
   const userRef =
-    db.collection("users")
+    db
+      .collection("users")
       .doc(uid);
 
   const addressRef =
-    db.collection("welcomeClaims")
+    db
+      .collection("welcomeClaims")
       .doc(normalized.toLowerCase());
 
   const payoutRef =
-    db.collection("payouts")
+    db
+      .collection("payouts")
       .doc();
 
   await db.runTransaction(
@@ -319,6 +387,7 @@ async function claimWelcome(req, res) {
         await tx.get(addressRef);
 
       if (!userSnap.exists) {
+
         throw new Error(
           "USER_NOT_FOUND"
         );
@@ -328,18 +397,21 @@ async function claimWelcome(req, res) {
         userSnap.data();
 
       if (!u.channelsVerified) {
+
         throw new Error(
           "CHANNELS_REQUIRED"
         );
       }
 
       if (u.welcomeBonusClaimed) {
+
         throw new Error(
           "WELCOME_ALREADY_CLAIMED"
         );
       }
 
       if (addressSnap.exists) {
+
         throw new Error(
           "ADDRESS_ALREADY_USED"
         );
@@ -348,9 +420,13 @@ async function claimWelcome(req, res) {
       tx.set(
         addressRef,
         {
+
           userId: uid,
+
           address: normalized,
-          payoutId: payoutRef.id,
+
+          payoutId:
+            payoutRef.id,
 
           createdAt:
             FieldValue.serverTimestamp()
@@ -360,6 +436,7 @@ async function claimWelcome(req, res) {
       tx.set(
         payoutRef,
         {
+
           type: "welcome",
 
           userId: uid,
@@ -369,7 +446,8 @@ async function claimWelcome(req, res) {
           amount:
             CONFIG.WELCOME_USDT,
 
-          status: "processing",
+          status:
+            "processing",
 
           createdAt:
             FieldValue.serverTimestamp()
@@ -379,7 +457,9 @@ async function claimWelcome(req, res) {
       tx.update(
         userRef,
         {
-          welcomeBonusClaimed: true,
+
+          welcomeBonusClaimed:
+            true,
 
           welcomeBonusStatus:
             "processing",
@@ -387,7 +467,8 @@ async function claimWelcome(req, res) {
           welcomeAddress:
             normalized,
 
-          appUnlocked: true,
+          appUnlocked:
+            true,
 
           updatedAt:
             FieldValue.serverTimestamp()
@@ -405,6 +486,7 @@ async function claimWelcome(req, res) {
       );
 
     await payoutRef.update({
+
       status: "paid",
 
       txHash:
@@ -415,20 +497,26 @@ async function claimWelcome(req, res) {
     });
 
     await userRef.update({
-      welcomeBonusStatus: "paid",
+
+      welcomeBonusStatus:
+        "paid",
 
       updatedAt:
         FieldValue.serverTimestamp()
     });
 
     try {
+
       await sendMessage(
         uid,
+
         `🎁 <b>Welcome bonus sent!</b>\n\n💰 ${CONFIG.WELCOME_USDT} USDT\n🔗 ${payment.txHash}`
       );
+
     } catch {}
 
     return res.json({
+
       success: true,
 
       amount:
@@ -441,6 +529,7 @@ async function claimWelcome(req, res) {
   } catch (error) {
 
     await payoutRef.update({
+
       status: "failed",
 
       error:
@@ -451,6 +540,7 @@ async function claimWelcome(req, res) {
     });
 
     await userRef.update({
+
       welcomeBonusStatus:
         "failed",
 
@@ -464,10 +554,11 @@ async function claimWelcome(req, res) {
 
 
 // =====================================================
-// ADS
+// MONETAG POSTBACK
 // =====================================================
 
 function isMonetagPostback(req) {
+
   return Boolean(
     req.query?.telegram_id &&
     req.query?.ymid
@@ -477,16 +568,22 @@ function isMonetagPostback(req) {
 async function monetagPostback(req, res) {
 
   const {
+
     telegram_id,
+
     ymid,
+
     reward_event_type,
+
     zone_id
+
   } = req.query;
 
   if (
     !telegram_id ||
     !ymid
   ) {
+
     return res
       .status(400)
       .send("missing");
@@ -497,6 +594,7 @@ async function monetagPostback(req, res) {
     req.query.secret !==
       process.env.MONETAG_POSTBACK_SECRET
   ) {
+
     return res
       .status(403)
       .send("forbidden");
@@ -506,6 +604,7 @@ async function monetagPostback(req, res) {
     reward_event_type &&
     reward_event_type !== "valued"
   ) {
+
     return res
       .status(200)
       .send("ignored");
@@ -515,11 +614,13 @@ async function monetagPostback(req, res) {
     `monetag_${ymid}_${zone_id || "default"}`;
 
   const eventRef =
-    db.collection("monetagEvents")
+    db
+      .collection("monetagEvents")
       .doc(eventId);
 
   const userRef =
-    db.collection("users")
+    db
+      .collection("users")
       .doc(String(telegram_id));
 
   await db.runTransaction(
@@ -536,6 +637,7 @@ async function monetagPostback(req, res) {
         await tx.get(userRef);
 
       if (!user.exists) {
+
         throw new Error(
           "USER_NOT_FOUND"
         );
@@ -544,6 +646,7 @@ async function monetagPostback(req, res) {
       tx.create(
         eventRef,
         {
+
           userId:
             String(telegram_id),
 
@@ -563,6 +666,7 @@ async function monetagPostback(req, res) {
       tx.update(
         userRef,
         {
+
           balance:
             FieldValue.increment(
               CONFIG.AD_REWARD
@@ -586,6 +690,11 @@ async function monetagPostback(req, res) {
     .send("ok");
 }
 
+
+// =====================================================
+// ADS
+// =====================================================
+
 async function rewardAd(req, res) {
 
   const { user } =
@@ -602,21 +711,22 @@ async function rewardAd(req, res) {
     );
 
   if (
-    !["monetag", "adsgram"]
-      .includes(provider)
+    ![
+      "monetag",
+      "adsgram"
+    ].includes(provider)
   ) {
+
     throw new Error(
       "INVALID_PROVIDER"
     );
   }
 
   const userRef =
-    db.collection("users")
-      .doc(uid);
+    db.collection("users").doc(uid);
 
   const rewardRef =
-    db.collection("adRewards")
-      .doc();
+    db.collection("adRewards").doc();
 
   let result;
 
@@ -627,6 +737,7 @@ async function rewardAd(req, res) {
         await tx.get(userRef);
 
       if (!snap.exists) {
+
         throw new Error(
           "USER_NOT_FOUND"
         );
@@ -636,6 +747,7 @@ async function rewardAd(req, res) {
         snap.data();
 
       if (!u.channelsVerified) {
+
         throw new Error(
           "CHANNELS_REQUIRED"
         );
@@ -655,7 +767,9 @@ async function rewardAd(req, res) {
         );
 
       if (u.adDate !== d) {
+
         monetagToday = 0;
+
         adsgramToday = 0;
       }
 
@@ -664,6 +778,7 @@ async function rewardAd(req, res) {
         monetagToday >=
           CONFIG.MONETAG_LIMIT
       ) {
+
         throw new Error(
           "MONETAG_LIMIT"
         );
@@ -674,6 +789,7 @@ async function rewardAd(req, res) {
         adsgramToday >=
           CONFIG.ADSGRAM_LIMIT
       ) {
+
         throw new Error(
           "ADSGRAM_LIMIT"
         );
@@ -682,14 +798,18 @@ async function rewardAd(req, res) {
       if (
         provider === "monetag"
       ) {
+
         monetagToday++;
+
       } else {
+
         adsgramToday++;
       }
 
       tx.update(
         userRef,
         {
+
           balance:
             FieldValue.increment(
               CONFIG.AD_REWARD
@@ -715,6 +835,7 @@ async function rewardAd(req, res) {
       tx.create(
         rewardRef,
         {
+
           userId: uid,
 
           provider,
@@ -730,6 +851,7 @@ async function rewardAd(req, res) {
       );
 
       result = {
+
         reward:
           CONFIG.AD_REWARD,
 
@@ -741,14 +863,785 @@ async function rewardAd(req, res) {
   );
 
   return res.json({
+
     success: true,
+
     ...result
   });
 }
 
 
 // =====================================================
-// GAMES
+// AVIATOR
+// =====================================================
+
+function randomCrashMultiplier() {
+
+  const r =
+    Math.random();
+
+  let crash;
+
+  if (r < 0.35) {
+
+    crash =
+      1.01 +
+      Math.random() * 0.49;
+
+  } else if (r < 0.65) {
+
+    crash =
+      1.50 +
+      Math.random() * 0.99;
+
+  } else if (r < 0.82) {
+
+    crash =
+      2.50 +
+      Math.random() * 1.49;
+
+  } else if (r < 0.93) {
+
+    crash =
+      4.00 +
+      Math.random() * 2.99;
+
+  } else if (r < 0.985) {
+
+    crash =
+      7.00 +
+      Math.random() * 8.00;
+
+  } else {
+
+    crash =
+      15.00 +
+      Math.random() * 35.00;
+  }
+
+  return Number(
+    crash.toFixed(2)
+  );
+}
+
+
+// Smooth live multiplier.
+//
+// 1.00x at launch.
+// Slowly accelerates over time.
+// The server NEVER trusts a multiplier
+// sent by the frontend.
+
+function calculateMultiplier(
+  startedAt,
+  now = Date.now()
+) {
+
+  const elapsed =
+    Math.max(
+      0,
+      now - startedAt
+    );
+
+  const seconds =
+    elapsed / 1000;
+
+  const multiplier =
+    Math.exp(
+      seconds * 0.115
+    );
+
+  return Number(
+    Math.max(
+      1,
+      multiplier
+    ).toFixed(2)
+  );
+}
+
+
+function aviatorRoundData(
+  round,
+  now = Date.now()
+) {
+
+  const multiplier =
+    calculateMultiplier(
+      round.startedAt,
+      now
+    );
+
+  const crashed =
+    now >= round.crashAt;
+
+  return {
+
+    roundId:
+      round.id,
+
+    status:
+      crashed
+        ? "crashed"
+        : round.status,
+
+    multiplier:
+      crashed
+        ? Number(
+            round.crashMultiplier
+          )
+        : Math.min(
+            multiplier,
+            Number(
+              round.crashMultiplier
+            )
+          ),
+
+    startedAt:
+      round.startedAt,
+
+    crashAt:
+      round.crashAt,
+
+    serverTime:
+      now
+  };
+}
+
+
+async function aviatorStart(
+  uid,
+  req,
+  res
+) {
+
+  const bet =
+    Number(
+      req.body?.bet
+    );
+
+  if (
+    !Number.isInteger(bet) ||
+    bet <= 0
+  ) {
+
+    throw new Error(
+      "INVALID_BET"
+    );
+  }
+
+  const maxBet =
+    Number(
+      CONFIG.AVIATOR_MAX_BET ||
+      100000
+    );
+
+  if (bet > maxBet) {
+
+    throw new Error(
+      "BET_TOO_HIGH"
+    );
+  }
+
+  const userRef =
+    db
+      .collection("users")
+      .doc(uid);
+
+  const roundRef =
+    db
+      .collection("aviatorRounds")
+      .doc();
+
+  const now =
+    Date.now();
+
+  const crashMultiplier =
+    randomCrashMultiplier();
+
+  /*
+    The duration is calculated from the
+    same multiplier curve used by the
+    frontend/server.
+
+    This means the game looks live instead
+    of jumping instantly to the result.
+  */
+
+  const crashSeconds =
+    Math.log(
+      crashMultiplier
+    ) / 0.115;
+
+  const crashAt =
+    now +
+    Math.max(
+      1000,
+      Math.floor(
+        crashSeconds * 1000
+      )
+    );
+
+  await db.runTransaction(
+    async tx => {
+
+      const userSnap =
+        await tx.get(userRef);
+
+      if (!userSnap.exists) {
+
+        throw new Error(
+          "USER_NOT_FOUND"
+        );
+      }
+
+      const u =
+        userSnap.data();
+
+      if (!u.channelsVerified) {
+
+        throw new Error(
+          "CHANNELS_REQUIRED"
+        );
+      }
+
+      const existingRoundId =
+        u.aviatorActiveRound;
+
+      if (existingRoundId) {
+
+        const existingRef =
+          db
+            .collection("aviatorRounds")
+            .doc(
+              existingRoundId
+            );
+
+        const existingSnap =
+          await tx.get(
+            existingRef
+          );
+
+        if (existingSnap.exists) {
+
+          const existing =
+            existingSnap.data();
+
+          if (
+            existing.status ===
+              "active" &&
+            Date.now() <
+              Number(
+                existing.crashAt
+              )
+          ) {
+
+            throw new Error(
+              "AVIATOR_ALREADY_ACTIVE"
+            );
+          }
+        }
+      }
+
+      const balance =
+        num(u.balance);
+
+      if (balance < bet) {
+
+        throw new Error(
+          "INSUFFICIENT_POINTS"
+        );
+      }
+
+      tx.create(
+        roundRef,
+        {
+
+          id:
+            roundRef.id,
+
+          userId:
+            uid,
+
+          bet,
+
+          status:
+            "active",
+
+          startedAt:
+            now,
+
+          crashAt,
+
+          crashMultiplier,
+
+          cashoutMultiplier:
+            null,
+
+          payout:
+            0,
+
+          createdAt:
+            FieldValue.serverTimestamp(),
+
+          updatedAt:
+            FieldValue.serverTimestamp()
+        }
+      );
+
+      tx.update(
+        userRef,
+        {
+
+          balance:
+            FieldValue.increment(
+              -bet
+            ),
+
+          aviatorGames:
+            FieldValue.increment(1),
+
+          aviatorActiveRound:
+            roundRef.id,
+
+          updatedAt:
+            FieldValue.serverTimestamp()
+        }
+      );
+    }
+  );
+
+  return res.json({
+
+    success: true,
+
+    round: {
+
+      id:
+        roundRef.id,
+
+      status:
+        "active",
+
+      bet,
+
+      startedAt:
+        now,
+
+      serverTime:
+        now,
+
+      multiplier:
+        1,
+
+      /*
+        The exact crash multiplier is
+        deliberately NOT returned.
+      */
+
+      crashAt:
+        crashAt
+    }
+  });
+}
+
+
+async function aviatorState(
+  uid,
+  req,
+  res
+) {
+
+  const userRef =
+    db
+      .collection("users")
+      .doc(uid);
+
+  const userSnap =
+    await userRef.get();
+
+  if (!userSnap.exists) {
+
+    throw new Error(
+      "USER_NOT_FOUND"
+    );
+  }
+
+  const u =
+    userSnap.data();
+
+  const roundId =
+    u.aviatorActiveRound;
+
+  if (!roundId) {
+
+    return res.json({
+
+      success: true,
+
+      active: false,
+
+      serverTime:
+        Date.now()
+    });
+  }
+
+  const roundRef =
+    db
+      .collection("aviatorRounds")
+      .doc(roundId);
+
+  const roundSnap =
+    await roundRef.get();
+
+  if (!roundSnap.exists) {
+
+    await userRef.update({
+
+      aviatorActiveRound:
+        null,
+
+      updatedAt:
+        FieldValue.serverTimestamp()
+    });
+
+    return res.json({
+
+      success: true,
+
+      active: false,
+
+      serverTime:
+        Date.now()
+    });
+  }
+
+  const round =
+    roundSnap.data();
+
+  const now =
+    Date.now();
+
+  if (
+    round.status === "active" &&
+    now >= Number(round.crashAt)
+  ) {
+
+    await db.runTransaction(
+      async tx => {
+
+        const fresh =
+          await tx.get(
+            roundRef
+          );
+
+        if (!fresh.exists) {
+          return;
+        }
+
+        const data =
+          fresh.data();
+
+        if (
+          data.status !==
+          "active"
+        ) {
+          return;
+        }
+
+        tx.update(
+          roundRef,
+          {
+
+            status:
+              "crashed",
+
+            updatedAt:
+              FieldValue.serverTimestamp()
+          }
+        );
+
+        tx.update(
+          userRef,
+          {
+
+            aviatorActiveRound:
+              null,
+
+            updatedAt:
+              FieldValue.serverTimestamp()
+          }
+        );
+      }
+    );
+
+    return res.json({
+
+      success: true,
+
+      active: false,
+
+      crashed: true,
+
+      roundId,
+
+      multiplier:
+        Number(
+          round.crashMultiplier
+        ),
+
+      serverTime:
+        now
+    });
+  }
+
+  return res.json({
+
+    success: true,
+
+    active: true,
+
+    roundId,
+
+    bet:
+      Number(round.bet),
+
+    multiplier:
+      Math.min(
+        calculateMultiplier(
+          Number(
+            round.startedAt
+          ),
+          now
+        ),
+        Number(
+          round.crashMultiplier
+        )
+      ),
+
+    serverTime:
+      now,
+
+    startedAt:
+      Number(
+        round.startedAt
+      )
+  });
+}
+
+
+async function aviatorCashout(
+  uid,
+  req,
+  res
+) {
+
+  const userRef =
+    db
+      .collection("users")
+      .doc(uid);
+
+  let result = null;
+
+  await db.runTransaction(
+    async tx => {
+
+      const userSnap =
+        await tx.get(userRef);
+
+      if (!userSnap.exists) {
+
+        throw new Error(
+          "USER_NOT_FOUND"
+        );
+      }
+
+      const u =
+        userSnap.data();
+
+      const roundId =
+        u.aviatorActiveRound;
+
+      if (!roundId) {
+
+        throw new Error(
+          "NO_ACTIVE_ROUND"
+        );
+      }
+
+      const roundRef =
+        db
+          .collection("aviatorRounds")
+          .doc(roundId);
+
+      const roundSnap =
+        await tx.get(
+          roundRef
+        );
+
+      if (!roundSnap.exists) {
+
+        throw new Error(
+          "ROUND_NOT_FOUND"
+        );
+      }
+
+      const round =
+        roundSnap.data();
+
+      if (
+        round.status !==
+        "active"
+      ) {
+
+        throw new Error(
+          "ROUND_NOT_ACTIVE"
+        );
+      }
+
+      const now =
+        Date.now();
+
+      if (
+        now >=
+        Number(
+          round.crashAt
+        )
+      ) {
+
+        tx.update(
+          roundRef,
+          {
+
+            status:
+              "crashed",
+
+            updatedAt:
+              FieldValue.serverTimestamp()
+          }
+        );
+
+        tx.update(
+          userRef,
+          {
+
+            aviatorActiveRound:
+              null,
+
+            updatedAt:
+              FieldValue.serverTimestamp()
+          }
+        );
+
+        throw new Error(
+          "AVIATOR_CRASHED"
+        );
+      }
+
+      const currentMultiplier =
+        Math.min(
+
+          calculateMultiplier(
+            Number(
+              round.startedAt
+            ),
+            now
+          ),
+
+          Number(
+            round.crashMultiplier
+          )
+        );
+
+      const multiplier =
+        Number(
+          currentMultiplier.toFixed(2)
+        );
+
+      const bet =
+        Number(
+          round.bet
+        );
+
+      const payout =
+        Math.floor(
+          bet * multiplier
+        );
+
+      tx.update(
+        roundRef,
+        {
+
+          status:
+            "cashed_out",
+
+          cashoutMultiplier:
+            multiplier,
+
+          payout,
+
+          cashedOutAt:
+            now,
+
+          updatedAt:
+            FieldValue.serverTimestamp()
+        }
+      );
+
+      tx.update(
+        userRef,
+        {
+
+          balance:
+            FieldValue.increment(
+              payout
+            ),
+
+          aviatorWins:
+            FieldValue.increment(1),
+
+          aviatorActiveRound:
+            null,
+
+          updatedAt:
+            FieldValue.serverTimestamp()
+        }
+      );
+
+      result = {
+
+        roundId,
+
+        bet,
+
+        multiplier,
+
+        payout,
+
+        profit:
+          payout - bet,
+
+        balance:
+          num(u.balance) -
+          bet +
+          payout,
+
+        serverTime:
+          now
+      };
+    }
+  );
+
+  return res.json({
+
+    success: true,
+
+    ...result
+  });
+}
+
+
+// =====================================================
+// GAMES ROUTER
 // =====================================================
 
 async function games(req, res) {
@@ -764,11 +1657,52 @@ async function games(req, res) {
   const action =
     String(
       req.body?.action || ""
-    );
+    ).toLowerCase();
 
-  const userRef =
-    db.collection("users")
-      .doc(uid);
+  /*
+    ================================
+    LIVE AVIATOR
+    ================================
+  */
+
+  if (
+    action === "aviator:start"
+  ) {
+
+    return await aviatorStart(
+      uid,
+      req,
+      res
+    );
+  }
+
+  if (
+    action === "aviator:state"
+  ) {
+
+    return await aviatorState(
+      uid,
+      req,
+      res
+    );
+  }
+
+  if (
+    action === "aviator:cashout"
+  ) {
+
+    return await aviatorCashout(
+      uid,
+      req,
+      res
+    );
+  }
+
+  /*
+    ================================
+    XO
+    ================================
+  */
 
   if (action === "xo") {
 
@@ -778,12 +1712,21 @@ async function games(req, res) {
       ).toLowerCase();
 
     if (
-      !["x", "o"].includes(choice)
+      ![
+        "x",
+        "o"
+      ].includes(choice)
     ) {
+
       throw new Error(
         "INVALID_CHOICE"
       );
     }
+
+    const userRef =
+      db
+        .collection("users")
+        .doc(uid);
 
     let result;
 
@@ -794,6 +1737,7 @@ async function games(req, res) {
           await tx.get(userRef);
 
         if (!snap.exists) {
+
           throw new Error(
             "USER_NOT_FOUND"
           );
@@ -816,15 +1760,19 @@ async function games(req, res) {
           plays >=
           CONFIG.XO_LIMIT
         ) {
+
           throw new Error(
             "XO_LIMIT"
           );
         }
 
         if (
-          Number(u.balance || 0) <
-          CONFIG.XO_ENTRY
+          num(u.balance) <
+          Number(
+            CONFIG.XO_ENTRY
+          )
         ) {
+
           throw new Error(
             "INSUFFICIENT_POINTS"
           );
@@ -837,17 +1785,22 @@ async function games(req, res) {
 
         const payout =
           win
-            ? CONFIG.XO_WIN
+            ? Number(
+                CONFIG.XO_WIN
+              )
             : 0;
 
         const newBalance =
-          Number(u.balance || 0)
-          - CONFIG.XO_ENTRY
-          + payout;
+          num(u.balance) -
+          Number(
+            CONFIG.XO_ENTRY
+          ) +
+          payout;
 
         tx.update(
           userRef,
           {
+
             balance:
               newBalance,
 
@@ -863,11 +1816,15 @@ async function games(req, res) {
             xoWins:
               win
                 ? FieldValue.increment(1)
-                : FieldValue.increment(0)
+                : FieldValue.increment(0),
+
+            updatedAt:
+              FieldValue.serverTimestamp()
           }
         );
 
         result = {
+
           win,
 
           payout,
@@ -875,7 +1832,8 @@ async function games(req, res) {
           plays,
 
           remaining:
-            CONFIG.XO_LIMIT - plays,
+            CONFIG.XO_LIMIT -
+            plays,
 
           balance:
             newBalance
@@ -884,118 +1842,9 @@ async function games(req, res) {
     );
 
     return res.json({
+
       success: true,
-      ...result
-    });
-  }
 
-  if (action === "aviator") {
-
-    const bet =
-      Number(req.body?.bet);
-
-    if (
-      !Number.isInteger(bet) ||
-      bet <= 0
-    ) {
-      throw new Error(
-        "INVALID_BET"
-      );
-    }
-
-    if (bet > 100000) {
-      throw new Error(
-        "BET_TOO_HIGH"
-      );
-    }
-
-    let result;
-
-    await db.runTransaction(
-      async tx => {
-
-        const snap =
-          await tx.get(userRef);
-
-        if (!snap.exists) {
-          throw new Error(
-            "USER_NOT_FOUND"
-          );
-        }
-
-        const u =
-          snap.data();
-
-        if (
-          Number(u.balance || 0) <
-          bet
-        ) {
-          throw new Error(
-            "INSUFFICIENT_POINTS"
-          );
-        }
-
-        const r =
-          Math.random();
-
-        let multiplier;
-
-        if (r < 0.55)
-          multiplier = 1;
-        else if (r < 0.75)
-          multiplier = 1.2;
-        else if (r < 0.88)
-          multiplier = 1.5;
-        else if (r < 0.96)
-          multiplier = 2;
-        else if (r < 0.985)
-          multiplier = 3;
-        else if (r < 0.995)
-          multiplier = 5;
-        else
-          multiplier = 10;
-
-        const payout =
-          multiplier > 1
-            ? Math.floor(
-                bet * multiplier
-              )
-            : 0;
-
-        const balance =
-          Number(u.balance || 0)
-          - bet
-          + payout;
-
-        tx.update(
-          userRef,
-          {
-            balance,
-
-            aviatorGames:
-              FieldValue.increment(1),
-
-            aviatorWins:
-              multiplier > 1
-                ? FieldValue.increment(1)
-                : FieldValue.increment(0)
-          }
-        );
-
-        result = {
-          bet,
-
-          multiplier,
-
-          payout,
-
-          balance
-        };
-      }
-    );
-
-    return res.json({
-      success: true,
       ...result
     });
   }
@@ -1011,27 +1860,48 @@ async function games(req, res) {
 // =====================================================
 
 const CODES = [
+
   "USDTHUB",
+
   "MONDAYUSDT",
+
   "TUESDAYUSDT",
+
   "MONEYTIME",
+
   "CRYPTOBONUS",
+
   "BIRRGRAM2026",
+
   "FASTUSDT",
+
   "DAILYCLAIM",
+
   "LUCKYWIN",
+
   "REWARD777",
+
   "TELEGRAMVIP",
+
   "EARNMORE",
+
   "BINANCEHUB",
+
   "FREEUSDT200",
+
   "CLAIMNOW",
+
   "MEGAREWARD",
+
   "SUPERPAY",
+
   "BOOSTPOINTS",
+
   "STARTHUB",
+
   "GOLDENUSDT"
 ];
+
 
 async function promo(req, res) {
 
@@ -1051,35 +1921,44 @@ async function promo(req, res) {
       .toUpperCase();
 
   if (!CODES.includes(code)) {
+
     throw new Error(
       "INVALID_CODE"
     );
   }
 
   const claimRef =
-    db.collection("promoClaims")
+    db
+      .collection("promoClaims")
       .doc(`${uid}_${code}`);
 
   const userRef =
-    db.collection("users")
+    db
+      .collection("users")
       .doc(uid);
 
   await db.runTransaction(
     async tx => {
 
       const claim =
-        await tx.get(claimRef);
+        await tx.get(
+          claimRef
+        );
 
       const u =
-        await tx.get(userRef);
+        await tx.get(
+          userRef
+        );
 
       if (!u.exists) {
+
         throw new Error(
           "USER_NOT_FOUND"
         );
       }
 
       if (claim.exists) {
+
         throw new Error(
           "ALREADY_CLAIMED"
         );
@@ -1088,6 +1967,7 @@ async function promo(req, res) {
       tx.create(
         claimRef,
         {
+
           userId: uid,
 
           code,
@@ -1103,16 +1983,21 @@ async function promo(req, res) {
       tx.update(
         userRef,
         {
+
           balance:
             FieldValue.increment(
               CONFIG.PROMO_REWARD
-            )
+            ),
+
+          updatedAt:
+            FieldValue.serverTimestamp()
         }
       );
     }
   );
 
   return res.json({
+
     success: true,
 
     reward:
@@ -1153,13 +2038,19 @@ async function referral(req, res) {
         .get();
 
     return res.json({
+
       success: true,
 
       referrals:
-        snap.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
+        snap.docs.map(
+          doc => ({
+
+            id:
+              doc.id,
+
+            ...doc.data()
+          })
+        )
     });
   }
 
@@ -1177,6 +2068,7 @@ async function referral(req, res) {
         .get();
 
     if (snap.empty) {
+
       return res.json({
         success: true
       });
@@ -1192,13 +2084,17 @@ async function referral(req, res) {
       async tx => {
 
         const refRef =
-          db.collection("referrals")
+          db
+            .collection("referrals")
             .doc(refId);
 
         const refSnap =
-          await tx.get(refRef);
+          await tx.get(
+            refRef
+          );
 
         if (!refSnap.exists) {
+
           throw new Error(
             "REFERRAL_NOT_FOUND"
           );
@@ -1208,13 +2104,17 @@ async function referral(req, res) {
           refSnap.data();
 
         const referredRef =
-          db.collection("users")
+          db
+            .collection("users")
             .doc(uid);
 
         const inviterRef =
-          db.collection("users")
+          db
+            .collection("users")
             .doc(
-              String(ref.inviterId)
+              String(
+                ref.inviterId
+              )
             );
 
         const referredSnap =
@@ -1228,12 +2128,14 @@ async function referral(req, res) {
           );
 
         if (!referredSnap.exists) {
+
           throw new Error(
             "USER_NOT_FOUND"
           );
         }
 
         if (!inviterSnap.exists) {
+
           throw new Error(
             "INVITER_NOT_FOUND"
           );
@@ -1244,16 +2146,15 @@ async function referral(req, res) {
 
         const refUpdates = {};
 
-        let inviterBalance =
-          0;
+        let inviterBalance = 0;
 
-        let inviterReferralPoints =
-          0;
+        let inviterReferralPoints = 0;
 
         if (
           u.channelsVerified &&
           !ref.channelRewarded
         ) {
+
           refUpdates.channelRewarded =
             true;
 
@@ -1269,9 +2170,12 @@ async function referral(req, res) {
         }
 
         if (
-          Number(u.adsWatched || 0) >= 2 &&
+          Number(
+            u.adsWatched || 0
+          ) >= 2 &&
           !ref.adsRewarded
         ) {
+
           refUpdates.adsRewarded =
             true;
 
@@ -1289,9 +2193,11 @@ async function referral(req, res) {
         if (
           inviterBalance > 0
         ) {
+
           tx.update(
             inviterRef,
             {
+
               balance:
                 FieldValue.increment(
                   inviterBalance
@@ -1309,8 +2215,11 @@ async function referral(req, res) {
         }
 
         if (
-          Object.keys(refUpdates).length
+          Object.keys(
+            refUpdates
+          ).length
         ) {
+
           tx.update(
             refRef,
             refUpdates
@@ -1363,13 +2272,19 @@ async function tasks(req, res) {
         .get();
 
     return res.json({
+
       success: true,
 
       tasks:
-        snap.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
+        snap.docs.map(
+          doc => ({
+
+            id:
+              doc.id,
+
+            ...doc.data()
+          })
+        )
     });
   }
 
@@ -1387,35 +2302,44 @@ async function tasks(req, res) {
       !link ||
       !chatId
     ) {
+
       throw new Error(
         "TASK_DATA_REQUIRED"
       );
     }
 
     if (
-      !["channel", "bot"]
-        .includes(type)
+      ![
+        "channel",
+        "bot"
+      ].includes(type)
     ) {
+
       throw new Error(
         "INVALID_TASK_TYPE"
       );
     }
 
     const userRef =
-      db.collection("users")
+      db
+        .collection("users")
         .doc(uid);
 
     const taskRef =
-      db.collection("tasks")
+      db
+        .collection("tasks")
         .doc();
 
     await db.runTransaction(
       async tx => {
 
         const userSnap =
-          await tx.get(userRef);
+          await tx.get(
+            userRef
+          );
 
         if (!userSnap.exists) {
+
           throw new Error(
             "USER_NOT_FOUND"
           );
@@ -1425,21 +2349,23 @@ async function tasks(req, res) {
           userSnap.data();
 
         const isAdmin =
-          uid === String(
+          uid ===
+          String(
             process.env.TELEGRAM_ADMIN_ID ||
             ""
           );
 
         const balance =
-          Number(
-            u.balance || 0
-          );
+          num(u.balance);
 
         if (
           !isAdmin &&
           balance <
-            CONFIG.TASK_CREATE_COST
+            Number(
+              CONFIG.TASK_CREATE_COST
+            )
         ) {
+
           throw new Error(
             "INSUFFICIENT_POINTS"
           );
@@ -1450,9 +2376,12 @@ async function tasks(req, res) {
           tx.update(
             userRef,
             {
+
               balance:
                 FieldValue.increment(
-                  -CONFIG.TASK_CREATE_COST
+                  -Number(
+                    CONFIG.TASK_CREATE_COST
+                  )
                 ),
 
               updatedAt:
@@ -1464,6 +2393,7 @@ async function tasks(req, res) {
         tx.create(
           taskRef,
           {
+
             ownerId: uid,
 
             title:
@@ -1487,7 +2417,8 @@ async function tasks(req, res) {
             maxCompletions:
               CONFIG.TASK_LIMIT,
 
-            status: "active",
+            status:
+              "active",
 
             createdAt:
               FieldValue.serverTimestamp(),
@@ -1500,6 +2431,7 @@ async function tasks(req, res) {
     );
 
     return res.json({
+
       success: true,
 
       taskId:
@@ -1515,27 +2447,34 @@ async function tasks(req, res) {
       );
 
     if (!taskId) {
+
       throw new Error(
         "TASK_ID_REQUIRED"
       );
     }
 
     const taskRef =
-      db.collection("tasks")
+      db
+        .collection("tasks")
         .doc(taskId);
 
     const completionRef =
-      db.collection("taskCompletions")
-        .doc(`${uid}_${taskId}`);
+      db
+        .collection("taskCompletions")
+        .doc(
+          `${uid}_${taskId}`
+        );
 
     const userRef =
-      db.collection("users")
+      db
+        .collection("users")
         .doc(uid);
 
     const taskSnap =
       await taskRef.get();
 
     if (!taskSnap.exists) {
+
       throw new Error(
         "TASK_NOT_FOUND"
       );
@@ -1545,8 +2484,10 @@ async function tasks(req, res) {
       taskSnap.data();
 
     if (
-      task.status !== "active"
+      task.status !==
+      "active"
     ) {
+
       throw new Error(
         "TASK_CLOSED"
       );
@@ -1559,6 +2500,7 @@ async function tasks(req, res) {
       );
 
     if (!memberOK(member)) {
+
       throw new Error(
         "TELEGRAM_MEMBERSHIP_REQUIRED"
       );
@@ -1570,7 +2512,9 @@ async function tasks(req, res) {
       async tx => {
 
         const freshTask =
-          await tx.get(taskRef);
+          await tx.get(
+            taskRef
+          );
 
         const completion =
           await tx.get(
@@ -1578,21 +2522,26 @@ async function tasks(req, res) {
           );
 
         const user =
-          await tx.get(userRef);
+          await tx.get(
+            userRef
+          );
 
         if (!freshTask.exists) {
+
           throw new Error(
             "TASK_NOT_FOUND"
           );
         }
 
         if (!user.exists) {
+
           throw new Error(
             "USER_NOT_FOUND"
           );
         }
 
         if (completion.exists) {
+
           throw new Error(
             "ALREADY_COMPLETED"
           );
@@ -1602,22 +2551,27 @@ async function tasks(req, res) {
           freshTask.data();
 
         if (
-          t.status !== "active"
+          t.status !==
+          "active"
         ) {
+
           throw new Error(
             "TASK_CLOSED"
           );
         }
 
         const current =
-          Number(
-            t.completions || 0
+          num(
+            t.completions
           );
 
         if (
           current >=
-          CONFIG.TASK_LIMIT
+          Number(
+            CONFIG.TASK_LIMIT
+          )
         ) {
+
           throw new Error(
             "TASK_FULL"
           );
@@ -1634,6 +2588,7 @@ async function tasks(req, res) {
         tx.create(
           completionRef,
           {
+
             userId: uid,
 
             taskId,
@@ -1648,12 +2603,15 @@ async function tasks(req, res) {
         tx.update(
           taskRef,
           {
+
             completions:
               newCount,
 
             status:
               newCount >=
-              CONFIG.TASK_LIMIT
+              Number(
+                CONFIG.TASK_LIMIT
+              )
                 ? "completed"
                 : "active",
 
@@ -1665,6 +2623,7 @@ async function tasks(req, res) {
         tx.update(
           userRef,
           {
+
             balance:
               FieldValue.increment(
                 reward
@@ -1681,7 +2640,9 @@ async function tasks(req, res) {
     );
 
     return res.json({
+
       success: true,
+
       reward
     });
   }
@@ -1712,6 +2673,7 @@ async function withdraw(req, res) {
     ).trim();
 
   if (!ethers.isAddress(address)) {
+
     throw new Error(
       "INVALID_ADDRESS"
     );
@@ -1721,11 +2683,13 @@ async function withdraw(req, res) {
     ethers.getAddress(address);
 
   const userRef =
-    db.collection("users")
+    db
+      .collection("users")
       .doc(uid);
 
   const withdrawalRef =
-    db.collection("withdrawals")
+    db
+      .collection("withdrawals")
       .doc();
 
   const withdrawalPoints =
@@ -1739,8 +2703,7 @@ async function withdraw(req, res) {
       CONFIG.POINTS_PER_USDT
     );
 
-  let withdrawalId =
-    null;
+  let withdrawalId = null;
 
   try {
 
@@ -1748,9 +2711,12 @@ async function withdraw(req, res) {
       async tx => {
 
         const userSnap =
-          await tx.get(userRef);
+          await tx.get(
+            userRef
+          );
 
         if (!userSnap.exists) {
+
           throw new Error(
             "USER_NOT_FOUND"
           );
@@ -1760,20 +2726,20 @@ async function withdraw(req, res) {
           userSnap.data();
 
         if (!u.channelsVerified) {
+
           throw new Error(
             "CHANNELS_REQUIRED"
           );
         }
 
         const balance =
-          Number(
-            u.balance || 0
-          );
+          num(u.balance);
 
         if (
           balance <
           withdrawalPoints
         ) {
+
           throw new Error(
             "MINIMUM_NOT_REACHED"
           );
@@ -1785,6 +2751,7 @@ async function withdraw(req, res) {
         tx.update(
           userRef,
           {
+
             balance:
               FieldValue.increment(
                 -withdrawalPoints
@@ -1804,6 +2771,7 @@ async function withdraw(req, res) {
         tx.create(
           withdrawalRef,
           {
+
             userId: uid,
 
             address:
@@ -1838,7 +2806,9 @@ async function withdraw(req, res) {
       );
 
     await withdrawalRef.update({
-      status: "paid",
+
+      status:
+        "paid",
 
       txHash:
         payment.txHash,
@@ -1848,13 +2818,17 @@ async function withdraw(req, res) {
     });
 
     try {
+
       await sendMessage(
         uid,
+
         `✅ <b>Withdrawal successful!</b>\n\n💰 ${withdrawalAmount.toFixed(8)} USDT\n📍 ${destination}\n🔗 ${payment.txHash}`
       );
+
     } catch {}
 
     return res.json({
+
       success: true,
 
       amount:
@@ -1891,6 +2865,7 @@ async function withdraw(req, res) {
               tx.update(
                 userRef,
                 {
+
                   balance:
                     FieldValue.increment(
                       withdrawalPoints
@@ -1904,6 +2879,7 @@ async function withdraw(req, res) {
               tx.update(
                 withdrawalRef,
                 {
+
                   status:
                     "failed",
 
@@ -1943,9 +2919,13 @@ async function admin(req, res) {
       process.env.TELEGRAM_ADMIN_ID
     )
   ) {
+
     return res.status(403).json({
+
       success: false,
-      error: "Admin only"
+
+      error:
+        "Admin only"
     });
   }
 
@@ -1955,7 +2935,8 @@ async function admin(req, res) {
     );
 
   if (
-    action === "withdrawals"
+    action ===
+    "withdrawals"
   ) {
 
     const snap =
@@ -1970,18 +2951,25 @@ async function admin(req, res) {
         .get();
 
     return res.json({
+
       success: true,
 
       withdrawals:
-        snap.docs.map(d => ({
-          id: d.id,
-          ...d.data()
-        }))
+        snap.docs.map(
+          d => ({
+
+            id:
+              d.id,
+
+            ...d.data()
+          })
+        )
     });
   }
 
   if (
-    action === "closeTask"
+    action ===
+    "closeTask"
   ) {
 
     const taskId =
@@ -1990,6 +2978,7 @@ async function admin(req, res) {
       );
 
     if (!taskId) {
+
       throw new Error(
         "TASK_ID_REQUIRED"
       );
@@ -1999,7 +2988,9 @@ async function admin(req, res) {
       .collection("tasks")
       .doc(taskId)
       .update({
-        status: "closed",
+
+        status:
+          "closed",
 
         updatedAt:
           FieldValue.serverTimestamp()
@@ -2010,7 +3001,10 @@ async function admin(req, res) {
     });
   }
 
-  if (action === "stats") {
+  if (
+    action ===
+    "stats"
+  ) {
 
     const users =
       await db
@@ -2025,6 +3019,7 @@ async function admin(req, res) {
         .get();
 
     return res.json({
+
       success: true,
 
       users:
@@ -2058,9 +3053,13 @@ async function payout(req, res) {
       process.env.TELEGRAM_ADMIN_ID
     )
   ) {
+
     return res.status(403).json({
+
       success: false,
-      error: "Forbidden"
+
+      error:
+        "Forbidden"
     });
   }
 
@@ -2070,13 +3069,15 @@ async function payout(req, res) {
     );
 
   if (!withdrawalId) {
+
     throw new Error(
       "WITHDRAWAL_ID_REQUIRED"
     );
   }
 
   const withdrawalRef =
-    db.collection("withdrawals")
+    db
+      .collection("withdrawals")
       .doc(withdrawalId);
 
   let alreadyPaid = null;
@@ -2090,6 +3091,7 @@ async function payout(req, res) {
         );
 
       if (!snap.exists) {
+
         throw new Error(
           "WITHDRAWAL_NOT_FOUND"
         );
@@ -2099,10 +3101,12 @@ async function payout(req, res) {
         snap.data();
 
       if (
-        data.status === "paid"
+        data.status ===
+        "paid"
       ) {
 
         alreadyPaid = {
+
           txHash:
             data.txHash
         };
@@ -2114,6 +3118,7 @@ async function payout(req, res) {
         data.status !==
         "processing"
       ) {
+
         throw new Error(
           "WITHDRAWAL_NOT_PROCESSING"
         );
@@ -2122,7 +3127,9 @@ async function payout(req, res) {
       tx.update(
         withdrawalRef,
         {
-          status: "paying",
+
+          status:
+            "paying",
 
           updatedAt:
             FieldValue.serverTimestamp()
@@ -2132,7 +3139,9 @@ async function payout(req, res) {
   );
 
   if (alreadyPaid) {
+
     return res.json({
+
       success: true,
 
       alreadyPaid: true,
@@ -2143,319 +3152,4 @@ async function payout(req, res) {
   }
 
   const snap =
-    await withdrawalRef.get();
-
-  const data =
-    snap.data();
-
-  const payment =
-    await sendUSDT(
-      data.address,
-      data.amountUSDT
-    );
-
-  await withdrawalRef.update({
-    status: "paid",
-
-    txHash:
-      payment.txHash,
-
-    paidAt:
-      FieldValue.serverTimestamp()
-  });
-
-  return res.json({
-    success: true,
-
-    txHash:
-      payment.txHash
-  });
-}
-
-
-// =====================================================
-// TELEGRAM WEBHOOK
-// =====================================================
-
-async function telegram(req, res) {
-
-  const update =
-    req.body;
-
-  if (
-    update?.message?.text ===
-    "/start"
-  ) {
-
-    const chatId =
-      update.message.chat.id;
-
-    const webAppUrl =
-      process.env.WEBAPP_URL;
-
-    await sendMessage(
-      chatId,
-
-      "🔥 <b>Welcome to USDT Hub!</b>\n\nEarn points from ads, tasks and referrals, then withdraw your rewards.",
-
-      {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text:
-                  "🚀 OPEN USDT HUB",
-
-                web_app: {
-                  url:
-                    webAppUrl
-                }
-              }
-            ]
-          ]
-        }
-      }
-    );
-  }
-
-  return res.json({
-    success: true
-  });
-}
-
-
-// =====================================================
-// MAIN HANDLER
-// =====================================================
-
-export default async function handler(
-  req,
-  res
-) {
-
-  try {
-
-    const path =
-      getPath(req);
-
-    const action =
-      getAction(req);
-
-
-    // Monetag GET callback
-    if (
-      path === "/api/ads" &&
-      isMonetagPostback(req)
-    ) {
-      return await monetagPostback(
-        req,
-        res
-      );
-    }
-
-
-    // Allow Telegram webhook
-    if (
-      path === "/api/telegram"
-    ) {
-      return await telegram(
-        req,
-        res
-      );
-    }
-
-
-    if (
-      req.method !== "POST"
-    ) {
-      return res.status(405).json({
-        success: false,
-        error:
-          "Method not allowed"
-      });
-    }
-
-
-    // -----------------------------
-    // /api/user
-    // -----------------------------
-
-    if (
-      path === "/api/user" ||
-      action === "user"
-    ) {
-      return await register(
-        req,
-        res
-      );
-    }
-
-
-    // -----------------------------
-    // /api/verify-membership
-    // -----------------------------
-
-    if (
-      path ===
-        "/api/verify-membership" ||
-      action ===
-        "verify-membership"
-    ) {
-      return await verifyMembership(
-        req,
-        res
-      );
-    }
-
-
-    // -----------------------------
-    // /api/claim-welcome
-    // -----------------------------
-
-    if (
-      path ===
-        "/api/claim-welcome" ||
-      action ===
-        "claim-welcome"
-    ) {
-      return await claimWelcome(
-        req,
-        res
-      );
-    }
-
-
-    // -----------------------------
-    // /api/ads
-    // -----------------------------
-
-    if (
-      path === "/api/ads"
-    ) {
-      return await rewardAd(
-        req,
-        res
-      );
-    }
-
-
-    // -----------------------------
-    // /api/games
-    // -----------------------------
-
-    if (
-      path === "/api/games"
-    ) {
-      return await games(
-        req,
-        res
-      );
-    }
-
-
-    // -----------------------------
-    // /api/promo
-    // -----------------------------
-
-    if (
-      path === "/api/promo"
-    ) {
-      return await promo(
-        req,
-        res
-      );
-    }
-
-
-    // -----------------------------
-    // /api/referral
-    // -----------------------------
-
-    if (
-      path === "/api/referral"
-    ) {
-      return await referral(
-        req,
-        res
-      );
-    }
-
-
-    // -----------------------------
-    // /api/tasks
-    // -----------------------------
-
-    if (
-      path === "/api/tasks"
-    ) {
-      return await tasks(
-        req,
-        res
-      );
-    }
-
-
-    // -----------------------------
-    // /api/withdraw
-    // -----------------------------
-
-    if (
-      path === "/api/withdraw"
-    ) {
-      return await withdraw(
-        req,
-        res
-      );
-    }
-
-
-    // -----------------------------
-    // /api/admin
-    // -----------------------------
-
-    if (
-      path === "/api/admin"
-    ) {
-      return await admin(
-        req,
-        res
-      );
-    }
-
-
-    // -----------------------------
-    // /api/payout
-    // -----------------------------
-
-    if (
-      path === "/api/payout"
-    ) {
-      return await payout(
-        req,
-        res
-      );
-    }
-
-
-    return res.status(404).json({
-      success: false,
-      error:
-        "API route not found"
-    });
-
-  } catch (error) {
-
-    console.error(
-      "USDT HUB API ERROR:",
-      error
-    );
-
-    return res.status(400).json({
-      success: false,
-
-      error:
-        error.message ||
-        "Request failed"
-    });
-  }
-}
+   
