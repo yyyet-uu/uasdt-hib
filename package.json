@@ -4,16 +4,10 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": "22.x"
-  },
-  "scripts": {
-    "start": "vercel dev"
+    "node": "20.x"
   },
   "dependencies": {
     "ethers": "^6.15.0",
-    "firebase-admin": "^13.5.0"
-  },
-  "devDependencies": {
-    "vercel": "^48.10.0"
+    "firebase-admin": "^13.4.0"
   }
 }
