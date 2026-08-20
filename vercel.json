@@ -1,56 +1,14 @@
 {
+  "version": 2,
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 60
+    }
+  },
   "rewrites": [
     {
-      "source": "/api/user",
-      "destination": "/api/index?action=user"
-    },
-    {
-      "source": "/api/verify-membership",
-      "destination": "/api/index?action=verify-membership"
-    },
-    {
-      "source": "/api/claim-welcome",
-      "destination": "/api/index?action=claim-welcome"
-    },
-    {
-      "source": "/api/ads",
-      "destination": "/api/ads"
-    },
-    {
-      "source": "/api/monetag-postback",
-      "destination": "/api/ads"
-    },
-    {
-      "source": "/api/tasks",
-      "destination": "/api/tasks"
-    },
-    {
-      "source": "/api/referral",
-      "destination": "/api/referral"
-    },
-    {
-      "source": "/api/promo",
-      "destination": "/api/promo"
-    },
-    {
-      "source": "/api/games",
-      "destination": "/api/games"
-    },
-    {
-      "source": "/api/withdraw",
-      "destination": "/api/withdraw"
-    },
-    {
-      "source": "/api/payout",
-      "destination": "/api/payout"
-    },
-    {
-      "source": "/api/admin",
-      "destination": "/api/admin"
-    },
-    {
-      "source": "/api/telegram",
-      "destination": "/api/telegram"
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
     }
   ]
 }
