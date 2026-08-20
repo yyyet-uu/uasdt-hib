@@ -1,403 +1,59 @@
-import crypto from "node:crypto";
-import { initializeApp, cert, getApps } from "firebase-admin/app";
-import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { db, FieldValue } from "../lib/firebase.js";
+import { validateInitData, getInitData } from "../lib/auth.js";
+import { getChatMember, sendMessage } from "../lib/telegram.js";
+import { sendUSDT } from "../lib/payout.js";
+import { CONFIG } from "../lib/config.js";
 import { ethers } from "ethers";
 
-// ============================================================
-// CONFIG
-// ============================================================
 
-const CONFIG = {
-  CHANNELS: [
-    process.env.CHANNEL_1 || "@birr_gram",
-    process.env.CHANNEL_2 || "@usdt_g_ram"
-  ],
-
-  WELCOME_USDT: Number(process.env.WELCOME_USDT || "0.01"),
-
-  AD_REWARD: Number(process.env.AD_REWARD || "0.02"),
-
-  MONETAG_LIMIT: Number(
-    process.env.MONETAG_LIMIT || "25"
-  ),
-
-  ADSGRAM_LIMIT: Number(
-    process.env.ADSGRAM_LIMIT || "25"
-  ),
-
-  REFERRAL_CHANNEL: Number(
-    process.env.REFERRAL_CHANNEL || "0.10"
-  ),
-
-  REFERRAL_ADS: Number(
-    process.env.REFERRAL_ADS || "0.10"
-  ),
-
-  PROMO_REWARD: Number(
-    process.env.PROMO_REWARD || "0.10"
-  ),
-
-  TASK_CREATE_COST: Number(
-    process.env.TASK_CREATE_COST || "1"
-  ),
-
-  TASK_REWARD: Number(
-    process.env.TASK_REWARD || "0.02"
-  ),
-
-  TASK_LIMIT: Number(
-    process.env.TASK_LIMIT || "50"
-  ),
-
-  WITHDRAW_MIN_POINTS: Number(
-    process.env.WITHDRAW_MIN_POINTS || "10"
-  ),
-
-  POINTS_PER_USDT: Number(
-    process.env.POINTS_PER_USDT || "100"
-  )
-};
-
-// ============================================================
-// FIREBASE
-// ============================================================
-
-function required(name) {
-  const value = process.env[name];
-
-  if (!value || !String(value).trim()) {
-    throw new Error(
-      `Missing environment variable: ${name}`
-    );
-  }
-
-  return String(value).trim();
-}
-
-const firebaseApp =
-  getApps().length > 0
-    ? getApps()[0]
-    : initializeApp({
-        credential: cert({
-          projectId:
-            required("FIREBASE_PROJECT_ID"),
-
-          clientEmail:
-            required("FIREBASE_CLIENT_EMAIL"),
-
-          privateKey:
-            required("FIREBASE_PRIVATE_KEY")
-              .replace(/\\n/g, "\n")
-        })
-      });
-
-const db = getFirestore(firebaseApp);
-
-// ============================================================
-// BASIC HELPERS
-// ============================================================
+// =====================================================
+// HELPERS
+// =====================================================
 
 function today() {
-  return new Date()
-    .toISOString()
-    .slice(0, 10);
+  return new Date().toISOString().slice(0, 10);
+}
+
+function memberOK(member) {
+  return ["member", "administrator", "creator"].includes(
+    member?.status
+  );
+}
+
+function getAction(req) {
+  return String(
+    req.query?.action ||
+    req.body?.action ||
+    ""
+  ).toLowerCase();
 }
 
 function getPath(req) {
   return String(req.url || "")
     .split("?")[0]
-    .replace(/\/+$/, "");
+    .replace(/\/+$/, "") || "/";
 }
 
-function action(req) {
-  return String(
-    req.body?.action ||
-    req.query?.action ||
-    ""
-  ).toLowerCase();
-}
-
-function memberOK(member) {
-  return [
-    "member",
-    "administrator",
-    "creator"
-  ].includes(member?.status);
-}
-
-function errorResponse(res, error) {
-  console.error(
-    "USDT HUB ERROR:",
-    error
-  );
-
-  const message =
-    error?.message ||
-    "REQUEST_FAILED";
-
-  const statusMap = {
-    INVALID_INIT_DATA: 401,
-    INIT_DATA_EXPIRED: 401,
-    TELEGRAM_INIT_DATA_REQUIRED: 401,
-    TELEGRAM_USER_REQUIRED: 401,
-
-    USER_NOT_FOUND: 404,
-
-    CHANNELS_REQUIRED: 403,
-
-    INVALID_ADDRESS: 400,
-
-    MINIMUM_NOT_REACHED: 400,
-
-    ALREADY_COMPLETED: 409,
-
-    ADDRESS_ALREADY_USED: 409,
-
-    WELCOME_ALREADY_CLAIMED: 409
-  };
-
-  return res.status(
-    statusMap[message] || 400
-  ).json({
+function jsonError(res, status, error) {
+  return res.status(status).json({
     success: false,
-    error: message
+    error
   });
 }
 
-// ============================================================
-// TELEGRAM AUTH
-// ============================================================
 
-function getInitData(req) {
-  const value =
-    req.headers?.["x-telegram-init-data"] ||
-    req.body?.initData ||
-    req.query?.initData ||
-    "";
-
-  if (!value) {
-    throw new Error(
-      "TELEGRAM_INIT_DATA_REQUIRED"
-    );
-  }
-
-  return String(value);
-}
-
-function validateInitData(initData) {
-  const token =
-    process.env.TELEGRAM_BOT_TOKEN;
-
-  if (!token) {
-    throw new Error(
-      "TELEGRAM_BOT_TOKEN_MISSING"
-    );
-  }
-
-  const params =
-    new URLSearchParams(initData);
-
-  const hash =
-    params.get("hash");
-
-  if (!hash) {
-    throw new Error(
-      "INVALID_INIT_DATA"
-    );
-  }
-
-  const authDate =
-    Number(params.get("auth_date"));
-
-  if (
-    !authDate ||
-    Math.abs(
-      Date.now() / 1000 -
-      authDate
-    ) > 86400
-  ) {
-    throw new Error(
-      "INIT_DATA_EXPIRED"
-    );
-  }
-
-  const pairs = [];
-
-  for (
-    const [key, value]
-    of params.entries()
-  ) {
-    if (key !== "hash") {
-      pairs.push(
-        `${key}=${value}`
-      );
-    }
-  }
-
-  pairs.sort();
-
-  const dataCheckString =
-    pairs.join("\n");
-
-  const secret =
-    crypto
-      .createHmac(
-        "sha256",
-        "WebAppData"
-      )
-      .update(token)
-      .digest();
-
-  const expected =
-    crypto
-      .createHmac(
-        "sha256",
-        secret
-      )
-      .update(dataCheckString)
-      .digest("hex");
-
-  const a =
-    Buffer.from(expected, "utf8");
-
-  const b =
-    Buffer.from(hash, "utf8");
-
-  if (
-    a.length !== b.length ||
-    !crypto.timingSafeEqual(a, b)
-  ) {
-    throw new Error(
-      "INVALID_INIT_DATA"
-    );
-  }
-
-  let user;
-
-  try {
-    user = JSON.parse(
-      params.get("user") || "{}"
-    );
-  } catch {
-    throw new Error(
-      "INVALID_USER_DATA"
-    );
-  }
-
-  if (!user?.id) {
-    throw new Error(
-      "TELEGRAM_USER_REQUIRED"
-    );
-  }
-
-  return {
-    user,
-
-    startParam:
-      params.get("start_param") ||
-      params.get("startapp") ||
-      ""
-  };
-}
-
-// ============================================================
-// TELEGRAM API
-// ============================================================
-
-async function telegram(method, payload) {
-  const token =
-    process.env.TELEGRAM_BOT_TOKEN;
-
-  if (!token) {
-    throw new Error(
-      "TELEGRAM_BOT_TOKEN_MISSING"
-    );
-  }
-
-  const response =
-    await fetch(
-      `https://api.telegram.org/bot${token}/${method}`,
-      {
-        method: "POST",
-
-        headers: {
-          "content-type":
-            "application/json"
-        },
-
-        body:
-          JSON.stringify(payload)
-      }
-    );
-
-  const data =
-    await response.json();
-
-  if (!data.ok) {
-    throw new Error(
-      data.description ||
-      "TELEGRAM_API_ERROR"
-    );
-  }
-
-  return data.result;
-}
-
-async function getChatMember(
-  chatId,
-  userId
-) {
-  return telegram(
-    "getChatMember",
-    {
-      chat_id: chatId,
-      user_id: userId
-    }
-  );
-}
-
-async function sendMessage(
-  chatId,
-  text,
-  extra = {}
-) {
-  return telegram(
-    "sendMessage",
-    {
-      chat_id: chatId,
-      text,
-      parse_mode: "HTML",
-      disable_web_page_preview: true,
-      ...extra
-    }
-  );
-}
-
-// ============================================================
+// =====================================================
 // USER
-// ============================================================
+// =====================================================
 
-async function userEndpoint(
-  req,
-  res
-) {
-  const {
-    user,
-    startParam
-  } =
-    validateInitData(
-      getInitData(req)
-    );
+async function register(req, res) {
+  const { user, startParam } =
+    validateInitData(getInitData(req));
 
-  const uid =
-    String(user.id);
+  const uid = String(user.id);
+  const userRef = db.collection("users").doc(uid);
 
-  const userRef =
-    db.collection("users")
-      .doc(uid);
-
-  const existing =
-    await userRef.get();
+  const existing = await userRef.get();
 
   if (existing.exists) {
     return res.json({
@@ -410,20 +66,16 @@ async function userEndpoint(
   let inviterId = null;
 
   if (
+    startParam &&
     startParam.startsWith("ref_")
   ) {
-    const possible =
-      startParam.slice(4);
+    const possible = startParam.slice(4);
 
-    if (
-      possible &&
-      possible !== uid
-    ) {
-      const inviter =
-        await db
-          .collection("users")
-          .doc(possible)
-          .get();
+    if (possible && possible !== uid) {
+      const inviter = await db
+        .collection("users")
+        .doc(possible)
+        .get();
 
       if (inviter.exists) {
         inviterId = possible;
@@ -434,115 +86,77 @@ async function userEndpoint(
   const userData = {
     telegramId: uid,
 
-    firstName:
-      user.first_name || "",
-
-    lastName:
-      user.last_name || "",
-
-    username:
-      user.username || "",
+    firstName: user.first_name || "",
+    lastName: user.last_name || "",
+    username: user.username || "",
 
     balance: 0,
 
     adsWatched: 0,
-
     monetagAds: 0,
-
     adsgramAds: 0,
 
     monetagToday: 0,
-
     adsgramToday: 0,
-
     adDate: null,
 
     tasksCompleted: 0,
 
     referrals: 0,
-
     referralPoints: 0,
 
     welcomeBonusClaimed: false,
-
-    welcomeBonusStatus:
-      "none",
-
+    welcomeBonusStatus: "none",
     welcomeAddress: null,
 
     channelsVerified: false,
-
     appUnlocked: false,
 
-    aviatorGames: 0,
+    xoDailyPlays: 0,
+    xoPlayDate: null,
+    xoPlays: 0,
+    xoWins: 0,
 
+    aviatorGames: 0,
     aviatorWins: 0,
 
     withdrawals: 0,
-
     lastWithdrawalId: null,
 
-    referralCode:
-      `ref_${uid}`,
+    referralCode: `ref_${uid}`,
+    referredBy: inviterId,
 
-    referredBy:
-      inviterId,
-
-    createdAt:
-      FieldValue.serverTimestamp(),
-
-    updatedAt:
-      FieldValue.serverTimestamp()
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp()
   };
 
-  const batch =
-    db.batch();
+  const batch = db.batch();
 
-  batch.create(
-    userRef,
-    userData
-  );
+  batch.create(userRef, userData);
 
   if (inviterId) {
-    batch.create(
-      db
-        .collection("referrals")
-        .doc(
-          `${inviterId}_${uid}`
-        ),
-      {
-        inviterId,
+    const referralRef = db
+      .collection("referrals")
+      .doc(`${inviterId}_${uid}`);
 
-        referredUserId:
-          uid,
+    batch.create(referralRef, {
+      inviterId,
+      referredUserId: uid,
 
-        channelReward:
-          CONFIG.REFERRAL_CHANNEL,
+      channelReward: CONFIG.REFERRAL_CHANNEL,
+      adsReward: CONFIG.REFERRAL_ADS,
 
-        adsReward:
-          CONFIG.REFERRAL_ADS,
+      channelRewarded: false,
+      adsRewarded: false,
 
-        channelRewarded:
-          false,
-
-        adsRewarded:
-          false,
-
-        createdAt:
-          FieldValue.serverTimestamp()
-      }
-    );
+      createdAt: FieldValue.serverTimestamp()
+    });
 
     batch.update(
-      db
-        .collection("users")
-        .doc(inviterId),
+      db.collection("users").doc(inviterId),
       {
-        referrals:
-          FieldValue.increment(1),
-
-        updatedAt:
-          FieldValue.serverTimestamp()
+        referrals: FieldValue.increment(1),
+        updatedAt: FieldValue.serverTimestamp()
       }
     );
   }
@@ -552,48 +166,54 @@ async function userEndpoint(
   try {
     await sendMessage(
       uid,
-      "🎉 <b>Welcome to USDT Hub!</b>\n\nYour account has been created."
+      "🎉 <b>Welcome to USDT Hub!</b>\n\nYour account has been created successfully."
     );
+
+    if (inviterId) {
+      await sendMessage(
+        inviterId,
+        "👥 <b>New referral!</b>\nSomeone registered using your referral link."
+      );
+    }
   } catch {}
 
   return res.status(201).json({
     success: true,
-
     newUser: true,
-
     user: userData
   });
 }
 
-// ============================================================
+
+// =====================================================
 // CHANNEL VERIFICATION
-// ============================================================
+// =====================================================
 
-async function verifyMembership(
-  req,
-  res
-) {
+async function verifyMembership(req, res) {
   const { user } =
-    validateInitData(
-      getInitData(req)
+    validateInitData(getInitData(req));
+
+  const uid = String(user.id);
+
+  const channels = Array.isArray(CONFIG.CHANNELS)
+    ? CONFIG.CHANNELS
+    : [];
+
+  if (!channels.length) {
+    return jsonError(
+      res,
+      500,
+      "CHANNELS_NOT_CONFIGURED"
     );
+  }
 
-  const uid =
-    String(user.id);
+  const results = await Promise.all(
+    channels.map(channel =>
+      getChatMember(channel, uid)
+    )
+  );
 
-  const results =
-    await Promise.all(
-      CONFIG.CHANNELS.map(
-        channel =>
-          getChatMember(
-            channel,
-            uid
-          )
-      )
-    );
-
-  const joined =
-    results.every(memberOK);
+  const joined = results.every(memberOK);
 
   if (!joined) {
     return res.json({
@@ -605,18 +225,10 @@ async function verifyMembership(
   await db
     .collection("users")
     .doc(uid)
-    .set(
-      {
-        channelsVerified:
-          true,
-
-        updatedAt:
-          FieldValue.serverTimestamp()
-      },
-      {
-        merge: true
-      }
-    );
+    .update({
+      channelsVerified: true,
+      updatedAt: FieldValue.serverTimestamp()
+    });
 
   return res.json({
     success: true,
@@ -624,341 +236,323 @@ async function verifyMembership(
   });
 }
 
-// ============================================================
+
+// =====================================================
 // WELCOME BONUS
-// ============================================================
+// =====================================================
 
-async function claimWelcome(
-  req,
-  res
-) {
+async function claimWelcome(req, res) {
   const { user } =
-    validateInitData(
-      getInitData(req)
-    );
+    validateInitData(getInitData(req));
 
-  const uid =
-    String(user.id);
+  const uid = String(user.id);
 
-  const address =
-    String(
-      req.body?.address || ""
-    ).trim();
+  const address = String(
+    req.body?.address || ""
+  ).trim();
 
-  if (
-    !ethers.isAddress(address)
-  ) {
-    throw new Error(
+  if (!ethers.isAddress(address)) {
+    return jsonError(
+      res,
+      400,
       "INVALID_ADDRESS"
     );
   }
 
-  const normalized =
-    ethers.getAddress(address);
+  const normalized = ethers.getAddress(address);
 
-  const userRef =
-    db.collection("users")
-      .doc(uid);
+  const userRef = db
+    .collection("users")
+    .doc(uid);
 
-  const addressRef =
-    db
-      .collection("welcomeClaims")
-      .doc(
-        normalized.toLowerCase()
-      );
+  const addressRef = db
+    .collection("welcomeClaims")
+    .doc(normalized.toLowerCase());
 
-  const payoutRef =
-    db
-      .collection("payouts")
-      .doc();
+  const payoutRef = db
+    .collection("payouts")
+    .doc();
 
-  await db.runTransaction(
-    async tx => {
-      const userSnap =
-        await tx.get(userRef);
+  await db.runTransaction(async tx => {
+    const userSnap = await tx.get(userRef);
+    const addressSnap = await tx.get(addressRef);
 
-      const addressSnap =
-        await tx.get(addressRef);
-
-      if (!userSnap.exists) {
-        throw new Error(
-          "USER_NOT_FOUND"
-        );
-      }
-
-      const u =
-        userSnap.data();
-
-      if (!u.channelsVerified) {
-        throw new Error(
-          "CHANNELS_REQUIRED"
-        );
-      }
-
-      if (u.welcomeBonusClaimed) {
-        throw new Error(
-          "WELCOME_ALREADY_CLAIMED"
-        );
-      }
-
-      if (addressSnap.exists) {
-        throw new Error(
-          "ADDRESS_ALREADY_USED"
-        );
-      }
-
-      tx.create(
-        addressRef,
-        {
-          userId: uid,
-
-          address: normalized,
-
-          payoutId:
-            payoutRef.id,
-
-          createdAt:
-            FieldValue.serverTimestamp()
-        }
-      );
-
-      tx.create(
-        payoutRef,
-        {
-          type: "welcome",
-
-          userId: uid,
-
-          address: normalized,
-
-          amount:
-            CONFIG.WELCOME_USDT,
-
-          status: "processing",
-
-          createdAt:
-            FieldValue.serverTimestamp()
-        }
-      );
-
-      tx.update(
-        userRef,
-        {
-          welcomeBonusClaimed:
-            true,
-
-          welcomeBonusStatus:
-            "processing",
-
-          welcomeAddress:
-            normalized,
-
-          appUnlocked:
-            true,
-
-          updatedAt:
-            FieldValue.serverTimestamp()
-        }
-      );
+    if (!userSnap.exists) {
+      throw new Error("USER_NOT_FOUND");
     }
-  );
+
+    const u = userSnap.data();
+
+    if (!u.channelsVerified) {
+      throw new Error("CHANNELS_REQUIRED");
+    }
+
+    if (u.welcomeBonusClaimed) {
+      throw new Error("WELCOME_ALREADY_CLAIMED");
+    }
+
+    if (addressSnap.exists) {
+      throw new Error("ADDRESS_ALREADY_USED");
+    }
+
+    tx.set(addressRef, {
+      userId: uid,
+      address: normalized,
+      payoutId: payoutRef.id,
+      createdAt: FieldValue.serverTimestamp()
+    });
+
+    tx.set(payoutRef, {
+      type: "welcome",
+      userId: uid,
+      address: normalized,
+      amount: CONFIG.WELCOME_USDT,
+      status: "processing",
+      createdAt: FieldValue.serverTimestamp()
+    });
+
+    tx.update(userRef, {
+      welcomeBonusClaimed: true,
+      welcomeBonusStatus: "processing",
+      welcomeAddress: normalized,
+      appUnlocked: true,
+      updatedAt: FieldValue.serverTimestamp()
+    });
+  });
 
   try {
-    const payment =
-      await sendUSDT(
-        normalized,
-        CONFIG.WELCOME_USDT
-      );
+    const payment = await sendUSDT(
+      normalized,
+      CONFIG.WELCOME_USDT
+    );
 
     await payoutRef.update({
       status: "paid",
-
-      txHash:
-        payment.txHash,
-
-      paidAt:
-        FieldValue.serverTimestamp()
+      txHash: payment.txHash,
+      paidAt: FieldValue.serverTimestamp()
     });
 
     await userRef.update({
-      welcomeBonusStatus:
-        "paid",
-
-      updatedAt:
-        FieldValue.serverTimestamp()
+      welcomeBonusStatus: "paid",
+      updatedAt: FieldValue.serverTimestamp()
     });
+
+    try {
+      await sendMessage(
+        uid,
+        `🎁 <b>Welcome bonus sent!</b>\n\n💰 ${CONFIG.WELCOME_USDT} USDT\n🔗 ${payment.txHash}`
+      );
+    } catch {}
 
     return res.json({
       success: true,
-
-      amount:
-        CONFIG.WELCOME_USDT,
-
-      txHash:
-        payment.txHash
+      amount: CONFIG.WELCOME_USDT,
+      txHash: payment.txHash
     });
 
   } catch (error) {
     await payoutRef.update({
       status: "failed",
-
-      error:
-        error.message,
-
-      updatedAt:
-        FieldValue.serverTimestamp()
+      error: error.message,
+      updatedAt: FieldValue.serverTimestamp()
     });
 
     await userRef.update({
-      welcomeBonusStatus:
-        "failed",
-
-      updatedAt:
-        FieldValue.serverTimestamp()
+      welcomeBonusStatus: "failed",
+      updatedAt: FieldValue.serverTimestamp()
     });
 
     throw error;
   }
 }
 
-// ============================================================
+
+// =====================================================
 // ADS
-// ============================================================
+// =====================================================
 
-async function rewardAd(
-  req,
-  res
-) {
-  const { user } =
-    validateInitData(
-      getInitData(req)
-    );
+function isMonetagPostback(req) {
+  return Boolean(
+    req.query?.telegram_id &&
+    req.query?.ymid
+  );
+}
 
-  const uid =
-    String(user.id);
+async function monetagPostback(req, res) {
+  const {
+    telegram_id,
+    ymid,
+    reward_event_type,
+    zone_id
+  } = req.query;
 
-  const provider =
-    String(
-      req.body?.provider || ""
-    );
-
-  if (
-    ![
-      "monetag",
-      "adsgram"
-    ].includes(provider)
-  ) {
-    throw new Error(
-      "INVALID_PROVIDER"
-    );
+  if (!telegram_id || !ymid) {
+    return res.status(400).send("missing");
   }
 
-  const userRef =
-    db.collection("users")
-      .doc(uid);
+  if (
+    process.env.MONETAG_POSTBACK_SECRET &&
+    req.query.secret !==
+      process.env.MONETAG_POSTBACK_SECRET
+  ) {
+    return res.status(403).send("forbidden");
+  }
+
+  if (
+    reward_event_type &&
+    reward_event_type !== "valued"
+  ) {
+    return res.status(200).send("ignored");
+  }
+
+  const eventId =
+    `monetag_${ymid}_${zone_id || "default"}`;
+
+  const eventRef = db
+    .collection("monetagEvents")
+    .doc(eventId);
+
+  const userRef = db
+    .collection("users")
+    .doc(String(telegram_id));
+
+  await db.runTransaction(async tx => {
+    const oldEvent = await tx.get(eventRef);
+
+    if (oldEvent.exists) {
+      return;
+    }
+
+    const user = await tx.get(userRef);
+
+    if (!user.exists) {
+      throw new Error("USER_NOT_FOUND");
+    }
+
+    tx.create(eventRef, {
+      userId: String(telegram_id),
+      ymid,
+      zoneId: zone_id || null,
+      reward: CONFIG.AD_REWARD,
+      createdAt: FieldValue.serverTimestamp()
+    });
+
+    tx.update(userRef, {
+      balance: FieldValue.increment(
+        CONFIG.AD_REWARD
+      ),
+
+      adsWatched: FieldValue.increment(1),
+      monetagAds: FieldValue.increment(1),
+
+      updatedAt: FieldValue.serverTimestamp()
+    });
+  });
+
+  return res.status(200).send("ok");
+}
+
+async function rewardAd(req, res) {
+  const { user } =
+    validateInitData(getInitData(req));
+
+  const uid = String(user.id);
+
+  const provider = String(
+    req.body?.provider || ""
+  );
+
+  if (!["monetag", "adsgram"].includes(provider)) {
+    throw new Error("INVALID_PROVIDER");
+  }
+
+  const userRef = db
+    .collection("users")
+    .doc(uid);
+
+  const rewardRef = db
+    .collection("adRewards")
+    .doc();
 
   let result;
 
-  await db.runTransaction(
-    async tx => {
-      const snap =
-        await tx.get(userRef);
+  await db.runTransaction(async tx => {
+    const snap = await tx.get(userRef);
 
-      if (!snap.exists) {
-        throw new Error(
-          "USER_NOT_FOUND"
-        );
-      }
-
-      const u =
-        snap.data();
-
-      if (!u.channelsVerified) {
-        throw new Error(
-          "CHANNELS_REQUIRED"
-        );
-      }
-
-      const d =
-        today();
-
-      let monetagToday =
-        u.adDate === d
-          ? Number(
-              u.monetagToday || 0
-            )
-          : 0;
-
-      let adsgramToday =
-        u.adDate === d
-          ? Number(
-              u.adsgramToday || 0
-            )
-          : 0;
-
-      if (
-        provider === "monetag" &&
-        monetagToday >=
-          CONFIG.MONETAG_LIMIT
-      ) {
-        throw new Error(
-          "MONETAG_LIMIT"
-        );
-      }
-
-      if (
-        provider === "adsgram" &&
-        adsgramToday >=
-          CONFIG.ADSGRAM_LIMIT
-      ) {
-        throw new Error(
-          "ADSGRAM_LIMIT"
-        );
-      }
-
-      if (
-        provider === "monetag"
-      ) {
-        monetagToday++;
-      } else {
-        adsgramToday++;
-      }
-
-      tx.update(
-        userRef,
-        {
-          balance:
-            FieldValue.increment(
-              CONFIG.AD_REWARD
-            ),
-
-          adsWatched:
-            FieldValue.increment(1),
-
-          [`${provider}Ads`]:
-            FieldValue.increment(1),
-
-          monetagToday,
-
-          adsgramToday,
-
-          adDate: d,
-
-          updatedAt:
-            FieldValue.serverTimestamp()
-        }
-      );
-
-      result = {
-        reward:
-          CONFIG.AD_REWARD,
-
-        monetagToday,
-
-        adsgramToday
-      };
+    if (!snap.exists) {
+      throw new Error("USER_NOT_FOUND");
     }
-  );
+
+    const u = snap.data();
+
+    if (!u.channelsVerified) {
+      throw new Error("CHANNELS_REQUIRED");
+    }
+
+    const d = today();
+
+    let monetagToday =
+      Number(u.monetagToday || 0);
+
+    let adsgramToday =
+      Number(u.adsgramToday || 0);
+
+    if (u.adDate !== d) {
+      monetagToday = 0;
+      adsgramToday = 0;
+    }
+
+    if (
+      provider === "monetag" &&
+      monetagToday >= CONFIG.MONETAG_LIMIT
+    ) {
+      throw new Error("MONETAG_LIMIT");
+    }
+
+    if (
+      provider === "adsgram" &&
+      adsgramToday >= CONFIG.ADSGRAM_LIMIT
+    ) {
+      throw new Error("ADSGRAM_LIMIT");
+    }
+
+    if (provider === "monetag") {
+      monetagToday++;
+    } else {
+      adsgramToday++;
+    }
+
+    tx.update(userRef, {
+      balance: FieldValue.increment(
+        CONFIG.AD_REWARD
+      ),
+
+      adsWatched: FieldValue.increment(1),
+
+      [`${provider}Ads`]:
+        FieldValue.increment(1),
+
+      monetagToday,
+      adsgramToday,
+      adDate: d,
+
+      updatedAt: FieldValue.serverTimestamp()
+    });
+
+    tx.create(rewardRef, {
+      userId: uid,
+      provider,
+      reward: CONFIG.AD_REWARD,
+      date: d,
+      createdAt: FieldValue.serverTimestamp()
+    });
+
+    result = {
+      reward: CONFIG.AD_REWARD,
+      monetagToday,
+      adsgramToday
+    };
+  });
 
   return res.json({
     success: true,
@@ -966,11 +560,213 @@ async function rewardAd(
   });
 }
 
-// ============================================================
-// PROMO
-// ============================================================
 
-const PROMO_CODES = [
+// =====================================================
+// GAMES
+// =====================================================
+
+async function games(req, res) {
+  const { user } =
+    validateInitData(getInitData(req));
+
+  const uid = String(user.id);
+  const action = String(
+    req.body?.action || ""
+  );
+
+  const userRef = db
+    .collection("users")
+    .doc(uid);
+
+  // -----------------------------
+  // XO
+  // -----------------------------
+
+  if (action === "xo") {
+    const choice = String(
+      req.body?.choice || ""
+    ).toLowerCase();
+
+    if (!["x", "o"].includes(choice)) {
+      throw new Error("INVALID_CHOICE");
+    }
+
+    let result;
+
+    await db.runTransaction(async tx => {
+      const snap = await tx.get(userRef);
+
+      if (!snap.exists) {
+        throw new Error("USER_NOT_FOUND");
+      }
+
+      const u = snap.data();
+      const d = today();
+
+      let plays =
+        u.xoPlayDate === d
+          ? Number(u.xoDailyPlays || 0)
+          : 0;
+
+      if (plays >= CONFIG.XO_LIMIT) {
+        throw new Error("XO_LIMIT");
+      }
+
+      if (
+        Number(u.balance || 0) <
+        Number(CONFIG.XO_ENTRY)
+      ) {
+        throw new Error("INSUFFICIENT_POINTS");
+      }
+
+      plays++;
+
+      const win = Math.random() < 0.42;
+
+      const payout = win
+        ? Number(CONFIG.XO_WIN)
+        : 0;
+
+      const newBalance =
+        Number(u.balance || 0) -
+        Number(CONFIG.XO_ENTRY) +
+        payout;
+
+      tx.update(userRef, {
+        balance: newBalance,
+
+        xoDailyPlays: plays,
+        xoPlayDate: d,
+
+        xoPlays:
+          FieldValue.increment(1),
+
+        xoWins:
+          win
+            ? FieldValue.increment(1)
+            : FieldValue.increment(0),
+
+        updatedAt:
+          FieldValue.serverTimestamp()
+      });
+
+      result = {
+        win,
+        payout,
+        plays,
+        remaining:
+          Number(CONFIG.XO_LIMIT) - plays,
+        balance: newBalance
+      };
+    });
+
+    return res.json({
+      success: true,
+      ...result
+    });
+  }
+
+  // -----------------------------
+  // AVIATOR
+  // -----------------------------
+
+  if (action === "aviator") {
+    const bet = Number(req.body?.bet);
+
+    if (
+      !Number.isInteger(bet) ||
+      bet <= 0
+    ) {
+      throw new Error("INVALID_BET");
+    }
+
+    if (bet > 100000) {
+      throw new Error("BET_TOO_HIGH");
+    }
+
+    let result;
+
+    await db.runTransaction(async tx => {
+      const snap = await tx.get(userRef);
+
+      if (!snap.exists) {
+        throw new Error("USER_NOT_FOUND");
+      }
+
+      const u = snap.data();
+
+      const balance =
+        Number(u.balance || 0);
+
+      if (balance < bet) {
+        throw new Error("INSUFFICIENT_POINTS");
+      }
+
+      /*
+       * IMPORTANT:
+       * The frontend can animate the multiplier live,
+       * but the final result is generated here on the
+       * server so the client cannot control the payout.
+       */
+
+      const r = Math.random();
+
+      let multiplier;
+
+      if (r < 0.55) multiplier = 1;
+      else if (r < 0.75) multiplier = 1.2;
+      else if (r < 0.88) multiplier = 1.5;
+      else if (r < 0.96) multiplier = 2;
+      else if (r < 0.985) multiplier = 3;
+      else if (r < 0.995) multiplier = 5;
+      else multiplier = 10;
+
+      const payout =
+        multiplier > 1
+          ? Math.floor(bet * multiplier)
+          : 0;
+
+      const newBalance =
+        balance - bet + payout;
+
+      tx.update(userRef, {
+        balance: newBalance,
+
+        aviatorGames:
+          FieldValue.increment(1),
+
+        aviatorWins:
+          multiplier > 1
+            ? FieldValue.increment(1)
+            : FieldValue.increment(0),
+
+        updatedAt:
+          FieldValue.serverTimestamp()
+      });
+
+      result = {
+        bet,
+        multiplier,
+        payout,
+        balance: newBalance
+      };
+    });
+
+    return res.json({
+      success: true,
+      ...result
+    });
+  }
+
+  throw new Error("UNKNOWN_GAME");
+}
+
+
+// =====================================================
+// PROMO
+// =====================================================
+
+const CODES = [
   "USDTHUB",
   "MONDAYUSDT",
   "TUESDAYUSDT",
@@ -993,158 +789,107 @@ const PROMO_CODES = [
   "GOLDENUSDT"
 ];
 
-async function promo(
-  req,
-  res
-) {
+async function promo(req, res) {
   const { user } =
-    validateInitData(
-      getInitData(req)
-    );
+    validateInitData(getInitData(req));
 
-  const uid =
-    String(user.id);
+  const uid = String(user.id);
 
-  const code =
-    String(
-      req.body?.code || ""
-    )
-      .trim()
-      .toUpperCase();
+  const code = String(
+    req.body?.code || ""
+  )
+    .trim()
+    .toUpperCase();
 
-  if (
-    !PROMO_CODES.includes(code)
-  ) {
-    throw new Error(
-      "INVALID_CODE"
-    );
+  if (!CODES.includes(code)) {
+    throw new Error("INVALID_CODE");
   }
 
-  const claimRef =
-    db
-      .collection("promoClaims")
-      .doc(
-        `${uid}_${code}`
-      );
+  const claimRef = db
+    .collection("promoClaims")
+    .doc(`${uid}_${code}`);
 
-  const userRef =
-    db.collection("users")
-      .doc(uid);
+  const userRef = db
+    .collection("users")
+    .doc(uid);
 
-  await db.runTransaction(
-    async tx => {
-      const claim =
-        await tx.get(claimRef);
+  await db.runTransaction(async tx => {
+    const claim = await tx.get(claimRef);
+    const u = await tx.get(userRef);
 
-      const u =
-        await tx.get(userRef);
-
-      if (!u.exists) {
-        throw new Error(
-          "USER_NOT_FOUND"
-        );
-      }
-
-      if (claim.exists) {
-        throw new Error(
-          "ALREADY_CLAIMED"
-        );
-      }
-
-      tx.create(
-        claimRef,
-        {
-          userId: uid,
-
-          code,
-
-          reward:
-            CONFIG.PROMO_REWARD,
-
-          createdAt:
-            FieldValue.serverTimestamp()
-        }
-      );
-
-      tx.update(
-        userRef,
-        {
-          balance:
-            FieldValue.increment(
-              CONFIG.PROMO_REWARD
-            ),
-
-          updatedAt:
-            FieldValue.serverTimestamp()
-        }
-      );
+    if (!u.exists) {
+      throw new Error("USER_NOT_FOUND");
     }
-  );
+
+    if (claim.exists) {
+      throw new Error("ALREADY_CLAIMED");
+    }
+
+    tx.create(claimRef, {
+      userId: uid,
+      code,
+      reward: CONFIG.PROMO_REWARD,
+      createdAt: FieldValue.serverTimestamp()
+    });
+
+    tx.update(userRef, {
+      balance:
+        FieldValue.increment(
+          CONFIG.PROMO_REWARD
+        ),
+
+      updatedAt:
+        FieldValue.serverTimestamp()
+    });
+  });
 
   return res.json({
     success: true,
-
-    reward:
-      CONFIG.PROMO_REWARD
+    reward: CONFIG.PROMO_REWARD
   });
 }
 
-// ============================================================
+
+// =====================================================
 // REFERRALS
-// ============================================================
+// =====================================================
 
-async function referral(
-  req,
-  res
-) {
+async function referral(req, res) {
   const { user } =
-    validateInitData(
-      getInitData(req)
-    );
+    validateInitData(getInitData(req));
 
-  const uid =
-    String(user.id);
+  const uid = String(user.id);
 
-  const a =
-    String(
-      req.body?.action || ""
-    );
+  const action = String(
+    req.body?.action || ""
+  );
 
-  if (a === "list") {
-    const snap =
-      await db
-        .collection("referrals")
-        .where(
-          "inviterId",
-          "==",
-          uid
-        )
-        .get();
+  if (action === "list") {
+    const snap = await db
+      .collection("referrals")
+      .where("inviterId", "==", uid)
+      .get();
 
     return res.json({
       success: true,
 
-      referrals:
-        snap.docs.map(
-          doc => ({
-            id: doc.id,
-            ...doc.data()
-          })
-        )
+      referrals: snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
     });
   }
 
-  if (a === "check") {
-    const snap =
-      await db
-        .collection("referrals")
-        .where(
-          "referredUserId",
-          "==",
-          uid
-        )
-        .limit(1)
-        .get();
+  if (action === "check") {
+    const snap = await db
+      .collection("referrals")
+      .where(
+        "referredUserId",
+        "==",
+        uid
+      )
+      .limit(1)
+      .get();
 
     if (snap.empty) {
       return res.json({
@@ -1152,343 +897,268 @@ async function referral(
       });
     }
 
-    const refRef =
-      snap.docs[0].ref;
+    const refDoc = snap.docs[0];
 
-    await db.runTransaction(
-      async tx => {
-        const refSnap =
-          await tx.get(refRef);
+    await db.runTransaction(async tx => {
+      const refRef = db
+        .collection("referrals")
+        .doc(refDoc.id);
 
-        const userRef =
-          db.collection("users")
-            .doc(uid);
+      const refSnap = await tx.get(refRef);
 
-        const userSnap =
-          await tx.get(userRef);
-
-        if (
-          !refSnap.exists ||
-          !userSnap.exists
-        ) {
-          throw new Error(
-            "USER_NOT_FOUND"
-          );
-        }
-
-        const ref =
-          refSnap.data();
-
-        const u =
-          userSnap.data();
-
-        const inviterRef =
-          db.collection("users")
-            .doc(
-              String(
-                ref.inviterId
-              )
-            );
-
-        const inviterSnap =
-          await tx.get(
-            inviterRef
-          );
-
-        if (!inviterSnap.exists) {
-          throw new Error(
-            "INVITER_NOT_FOUND"
-          );
-        }
-
-        let reward = 0;
-
-        const updates = {};
-
-        if (
-          u.channelsVerified &&
-          !ref.channelRewarded
-        ) {
-          updates.channelRewarded =
-            true;
-
-          reward +=
-            CONFIG.REFERRAL_CHANNEL;
-        }
-
-        if (
-          Number(
-            u.adsWatched || 0
-          ) >= 2 &&
-          !ref.adsRewarded
-        ) {
-          updates.adsRewarded =
-            true;
-
-          reward +=
-            CONFIG.REFERRAL_ADS;
-        }
-
-        if (reward > 0) {
-          tx.update(
-            inviterRef,
-            {
-              balance:
-                FieldValue.increment(
-                  reward
-                ),
-
-              referralPoints:
-                FieldValue.increment(
-                  reward
-                ),
-
-              updatedAt:
-                FieldValue.serverTimestamp()
-            }
-          );
-        }
-
-        if (
-          Object.keys(updates)
-            .length
-        ) {
-          tx.update(
-            refRef,
-            updates
-          );
-        }
+      if (!refSnap.exists) {
+        throw new Error("REFERRAL_NOT_FOUND");
       }
-    );
+
+      const ref = refSnap.data();
+
+      const referredRef = db
+        .collection("users")
+        .doc(uid);
+
+      const inviterRef = db
+        .collection("users")
+        .doc(String(ref.inviterId));
+
+      const referredSnap =
+        await tx.get(referredRef);
+
+      const inviterSnap =
+        await tx.get(inviterRef);
+
+      if (!referredSnap.exists) {
+        throw new Error("USER_NOT_FOUND");
+      }
+
+      if (!inviterSnap.exists) {
+        throw new Error("INVITER_NOT_FOUND");
+      }
+
+      const u = referredSnap.data();
+
+      const updates = {};
+
+      let balanceReward = 0;
+      let referralPoints = 0;
+
+      if (
+        u.channelsVerified &&
+        !ref.channelRewarded
+      ) {
+        updates.channelRewarded = true;
+
+        balanceReward +=
+          Number(CONFIG.REFERRAL_CHANNEL);
+
+        referralPoints +=
+          Number(CONFIG.REFERRAL_CHANNEL);
+      }
+
+      if (
+        Number(u.adsWatched || 0) >= 2 &&
+        !ref.adsRewarded
+      ) {
+        updates.adsRewarded = true;
+
+        balanceReward +=
+          Number(CONFIG.REFERRAL_ADS);
+
+        referralPoints +=
+          Number(CONFIG.REFERRAL_ADS);
+      }
+
+      if (balanceReward > 0) {
+        tx.update(inviterRef, {
+          balance:
+            FieldValue.increment(
+              balanceReward
+            ),
+
+          referralPoints:
+            FieldValue.increment(
+              referralPoints
+            ),
+
+          updatedAt:
+            FieldValue.serverTimestamp()
+        });
+      }
+
+      if (Object.keys(updates).length) {
+        tx.update(refRef, updates);
+      }
+    });
 
     return res.json({
       success: true
     });
   }
 
-  throw new Error(
-    "UNKNOWN_ACTION"
-  );
+  throw new Error("UNKNOWN_ACTION");
 }
 
-// ============================================================
+
+// =====================================================
 // TASKS
-// ============================================================
+// =====================================================
 
-async function tasks(
-  req,
-  res
-) {
+async function tasks(req, res) {
   const { user } =
-    validateInitData(
-      getInitData(req)
-    );
+    validateInitData(getInitData(req));
 
-  const uid =
-    String(user.id);
+  const uid = String(user.id);
 
-  const a =
-    String(
-      req.body?.action || ""
-    );
+  const action = String(
+    req.body?.action || ""
+  );
 
-  if (a === "list") {
-    const snap =
-      await db
-        .collection("tasks")
-        .where(
-          "status",
-          "==",
-          "active"
-        )
-        .limit(100)
-        .get();
+  if (action === "list") {
+    const snap = await db
+      .collection("tasks")
+      .where("status", "==", "active")
+      .limit(100)
+      .get();
 
     return res.json({
       success: true,
 
-      tasks:
-        snap.docs.map(
-          d => ({
-            id: d.id,
-            ...d.data()
-          })
-        )
+      tasks: snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
     });
   }
 
-  if (a === "create") {
+  if (action === "create") {
     const {
       title,
       link,
       chatId,
       type
-    } = req.body || {};
+    } = req.body;
 
-    if (
-      !title ||
-      !link ||
-      !chatId
-    ) {
-      throw new Error(
-        "TASK_DATA_REQUIRED"
-      );
+    if (!title || !link || !chatId) {
+      throw new Error("TASK_DATA_REQUIRED");
     }
 
-    if (
-      ![
-        "channel",
-        "bot"
-      ].includes(type)
-    ) {
-      throw new Error(
-        "INVALID_TASK_TYPE"
-      );
+    if (!["channel", "bot"].includes(type)) {
+      throw new Error("INVALID_TASK_TYPE");
     }
 
-    const userRef =
-      db.collection("users")
-        .doc(uid);
+    const userRef = db
+      .collection("users")
+      .doc(uid);
 
-    const taskRef =
-      db.collection("tasks")
-        .doc();
+    const taskRef = db
+      .collection("tasks")
+      .doc();
 
-    await db.runTransaction(
-      async tx => {
-        const snap =
-          await tx.get(userRef);
+    await db.runTransaction(async tx => {
+      const userSnap =
+        await tx.get(userRef);
 
-        if (!snap.exists) {
-          throw new Error(
-            "USER_NOT_FOUND"
-          );
-        }
+      if (!userSnap.exists) {
+        throw new Error("USER_NOT_FOUND");
+      }
 
-        const u =
-          snap.data();
+      const u = userSnap.data();
 
-        const isAdmin =
-          uid ===
-          String(
-            process.env
-              .TELEGRAM_ADMIN_ID ||
-            ""
-          );
+      const isAdmin =
+        uid === String(
+          process.env.TELEGRAM_ADMIN_ID || ""
+        );
 
-        if (
-          !isAdmin &&
-          Number(u.balance || 0) <
-            CONFIG.TASK_CREATE_COST
-        ) {
-          throw new Error(
-            "INSUFFICIENT_POINTS"
-          );
-        }
+      const balance =
+        Number(u.balance || 0);
 
-        if (!isAdmin) {
-          tx.update(
-            userRef,
-            {
-              balance:
-                FieldValue.increment(
-                  -CONFIG.TASK_CREATE_COST
-                ),
-
-              updatedAt:
-                FieldValue.serverTimestamp()
-            }
-          );
-        }
-
-        tx.create(
-          taskRef,
-          {
-            ownerId: uid,
-
-            title:
-              String(title)
-                .slice(0, 120),
-
-            link:
-              String(link)
-                .slice(0, 500),
-
-            chatId:
-              String(chatId),
-
-            type,
-
-            reward:
-              CONFIG.TASK_REWARD,
-
-            completions: 0,
-
-            maxCompletions:
-              CONFIG.TASK_LIMIT,
-
-            status:
-              "active",
-
-            createdAt:
-              FieldValue.serverTimestamp(),
-
-            updatedAt:
-              FieldValue.serverTimestamp()
-          }
+      if (
+        !isAdmin &&
+        balance < CONFIG.TASK_CREATE_COST
+      ) {
+        throw new Error(
+          "INSUFFICIENT_POINTS"
         );
       }
-    );
+
+      if (!isAdmin) {
+        tx.update(userRef, {
+          balance:
+            FieldValue.increment(
+              -CONFIG.TASK_CREATE_COST
+            ),
+
+          updatedAt:
+            FieldValue.serverTimestamp()
+        });
+      }
+
+      tx.create(taskRef, {
+        ownerId: uid,
+
+        title: String(title).slice(0, 120),
+        link: String(link).slice(0, 500),
+        chatId: String(chatId),
+
+        type,
+
+        reward: CONFIG.TASK_REWARD,
+
+        completions: 0,
+        maxCompletions: CONFIG.TASK_LIMIT,
+
+        status: "active",
+
+        createdAt:
+          FieldValue.serverTimestamp(),
+
+        updatedAt:
+          FieldValue.serverTimestamp()
+      });
+    });
 
     return res.json({
       success: true,
-
-      taskId:
-        taskRef.id
+      taskId: taskRef.id
     });
   }
 
-  if (a === "complete") {
-    const taskId =
-      String(
-        req.body?.taskId || ""
-      );
+  if (action === "complete") {
+    const taskId = String(
+      req.body?.taskId || ""
+    );
 
     if (!taskId) {
-      throw new Error(
-        "TASK_ID_REQUIRED"
-      );
+      throw new Error("TASK_ID_REQUIRED");
     }
 
-    const taskRef =
-      db.collection("tasks")
-        .doc(taskId);
+    const taskRef = db
+      .collection("tasks")
+      .doc(taskId);
 
-    const completionRef =
-      db
-        .collection("taskCompletions")
-        .doc(
-          `${uid}_${taskId}`
-        );
+    const completionRef = db
+      .collection("taskCompletions")
+      .doc(`${uid}_${taskId}`);
 
-    const userRef =
-      db.collection("users")
-        .doc(uid);
+    const userRef = db
+      .collection("users")
+      .doc(uid);
 
-    const taskSnap =
-      await taskRef.get();
+    const taskSnap = await taskRef.get();
 
     if (!taskSnap.exists) {
-      throw new Error(
-        "TASK_NOT_FOUND"
-      );
+      throw new Error("TASK_NOT_FOUND");
     }
 
-    const member =
-      await getChatMember(
-        taskSnap.data().chatId,
-        uid
-      );
+    const task = taskSnap.data();
+
+    if (task.status !== "active") {
+      throw new Error("TASK_CLOSED");
+    }
+
+    const member = await getChatMember(
+      task.chatId,
+      uid
+    );
 
     if (!memberOK(member)) {
       throw new Error(
@@ -1496,621 +1166,502 @@ async function tasks(
       );
     }
 
-    await db.runTransaction(
-      async tx => {
-        const freshTask =
-          await tx.get(taskRef);
+    let reward = 0;
 
-        const completion =
-          await tx.get(
-            completionRef
-          );
+    await db.runTransaction(async tx => {
+      const freshTask =
+        await tx.get(taskRef);
 
-        const userSnap =
-          await tx.get(userRef);
+      const completion =
+        await tx.get(completionRef);
 
-        if (
-          !freshTask.exists ||
-          !userSnap.exists
-        ) {
-          throw new Error(
-            "USER_NOT_FOUND"
-          );
-        }
+      const user =
+        await tx.get(userRef);
 
-        if (completion.exists) {
-          throw new Error(
-            "ALREADY_COMPLETED"
-          );
-        }
-
-        const task =
-          freshTask.data();
-
-        const count =
-          Number(
-            task.completions || 0
-          );
-
-        if (
-          task.status !==
-            "active" ||
-          count >=
-            CONFIG.TASK_LIMIT
-        ) {
-          throw new Error(
-            "TASK_FULL"
-          );
-        }
-
-        tx.create(
-          completionRef,
-          {
-            userId: uid,
-
-            taskId,
-
-            reward:
-              CONFIG.TASK_REWARD,
-
-            createdAt:
-              FieldValue.serverTimestamp()
-          }
-        );
-
-        const next =
-          count + 1;
-
-        tx.update(
-          taskRef,
-          {
-            completions:
-              next,
-
-            status:
-              next >=
-              CONFIG.TASK_LIMIT
-                ? "completed"
-                : "active",
-
-            updatedAt:
-              FieldValue.serverTimestamp()
-          }
-        );
-
-        tx.update(
-          userRef,
-          {
-            balance:
-              FieldValue.increment(
-                CONFIG.TASK_REWARD
-              ),
-
-            tasksCompleted:
-              FieldValue.increment(1),
-
-            updatedAt:
-              FieldValue.serverTimestamp()
-          }
-        );
+      if (!freshTask.exists) {
+        throw new Error("TASK_NOT_FOUND");
       }
-    );
+
+      if (!user.exists) {
+        throw new Error("USER_NOT_FOUND");
+      }
+
+      if (completion.exists) {
+        throw new Error("ALREADY_COMPLETED");
+      }
+
+      const t = freshTask.data();
+
+      if (t.status !== "active") {
+        throw new Error("TASK_CLOSED");
+      }
+
+      const current =
+        Number(t.completions || 0);
+
+      if (current >= CONFIG.TASK_LIMIT) {
+        throw new Error("TASK_FULL");
+      }
+
+      reward =
+        Number(CONFIG.TASK_REWARD);
+
+      const newCount = current + 1;
+
+      tx.create(completionRef, {
+        userId: uid,
+        taskId,
+        reward,
+        createdAt:
+          FieldValue.serverTimestamp()
+      });
+
+      tx.update(taskRef, {
+        completions: newCount,
+
+        status:
+          newCount >= CONFIG.TASK_LIMIT
+            ? "completed"
+            : "active",
+
+        updatedAt:
+          FieldValue.serverTimestamp()
+      });
+
+      tx.update(userRef, {
+        balance:
+          FieldValue.increment(reward),
+
+        tasksCompleted:
+          FieldValue.increment(1),
+
+        updatedAt:
+          FieldValue.serverTimestamp()
+      });
+    });
 
     return res.json({
       success: true,
-
-      reward:
-        CONFIG.TASK_REWARD
+      reward
     });
   }
 
-  throw new Error(
-    "UNKNOWN_ACTION"
-  );
+  throw new Error("UNKNOWN_ACTION");
 }
 
-// ============================================================
+
+// =====================================================
 // WITHDRAW
-// ============================================================
+// =====================================================
 
-async function sendUSDT(
-  address,
-  amount
-) {
-  const rpc =
-    process.env.BSC_RPC_URL;
-
-  const privateKey =
-    process.env.PAYOUT_PRIVATE_KEY;
-
-  if (!rpc || !privateKey) {
-    throw new Error(
-      "PAYOUT_CONFIGURATION_MISSING"
-    );
-  }
-
-  const provider =
-    new ethers.JsonRpcProvider(
-      rpc
-    );
-
-  const wallet =
-    new ethers.Wallet(
-      privateKey,
-      provider
-    );
-
-  const contractAddress =
-    process.env.USDT_BEP20_CONTRACT ||
-    "0x55d398326f99059fF775485246999027B3197955";
-
-  const abi = [
-    "function transfer(address to,uint256 value) returns (bool)",
-    "function decimals() view returns (uint8)"
-  ];
-
-  const token =
-    new ethers.Contract(
-      contractAddress,
-      abi,
-      wallet
-    );
-
-  const decimals =
-    Number(
-      await token.decimals()
-    );
-
-  const value =
-    ethers.parseUnits(
-      String(amount),
-      decimals
-    );
-
-  const tx =
-    await token.transfer(
-      ethers.getAddress(address),
-      value
-    );
-
-  const receipt =
-    await tx.wait();
-
-  return {
-    txHash:
-      receipt.hash
-  };
-}
-
-async function withdraw(
-  req,
-  res
-) {
+async function withdraw(req, res) {
   const { user } =
-    validateInitData(
-      getInitData(req)
-    );
+    validateInitData(getInitData(req));
 
-  const uid =
-    String(user.id);
+  const uid = String(user.id);
 
-  const address =
-    String(
-      req.body?.address || ""
-    ).trim();
+  const address = String(
+    req.body?.address || ""
+  ).trim();
 
-  if (
-    !ethers.isAddress(address)
-  ) {
-    throw new Error(
-      "INVALID_ADDRESS"
-    );
+  if (!ethers.isAddress(address)) {
+    throw new Error("INVALID_ADDRESS");
   }
 
   const destination =
     ethers.getAddress(address);
 
-  const points =
-    CONFIG.WITHDRAW_MIN_POINTS;
+  const userRef = db
+    .collection("users")
+    .doc(uid);
 
-  const amount =
-    Number(
-      (
-        points /
-        CONFIG.POINTS_PER_USDT
-      ).toFixed(8)
-    );
+  const withdrawalRef = db
+    .collection("withdrawals")
+    .doc();
 
-  const userRef =
-    db.collection("users")
-      .doc(uid);
+  const withdrawalPoints =
+    Number(CONFIG.WITHDRAW_MIN_POINTS);
 
-  const withdrawalRef =
-    db.collection("withdrawals")
-      .doc();
+  const withdrawalAmount =
+    withdrawalPoints /
+    Number(CONFIG.POINTS_PER_USDT);
 
-  await db.runTransaction(
-    async tx => {
-      const snap =
+  let withdrawalId = null;
+
+  try {
+    await db.runTransaction(async tx => {
+      const userSnap =
         await tx.get(userRef);
 
-      if (!snap.exists) {
-        throw new Error(
-          "USER_NOT_FOUND"
-        );
+      if (!userSnap.exists) {
+        throw new Error("USER_NOT_FOUND");
       }
 
-      const u =
-        snap.data();
+      const u = userSnap.data();
 
       if (!u.channelsVerified) {
-        throw new Error(
-          "CHANNELS_REQUIRED"
-        );
+        throw new Error("CHANNELS_REQUIRED");
       }
 
-      if (
-        Number(u.balance || 0) <
-        points
-      ) {
+      const balance =
+        Number(u.balance || 0);
+
+      if (balance < withdrawalPoints) {
         throw new Error(
           "MINIMUM_NOT_REACHED"
         );
       }
 
-      tx.update(
-        userRef,
-        {
-          balance:
-            FieldValue.increment(
-              -points
-            ),
+      withdrawalId =
+        withdrawalRef.id;
 
-          withdrawals:
-            FieldValue.increment(1),
+      tx.update(userRef, {
+        balance:
+          FieldValue.increment(
+            -withdrawalPoints
+          ),
 
-          lastWithdrawalId:
-            withdrawalRef.id,
+        withdrawals:
+          FieldValue.increment(1),
 
-          updatedAt:
-            FieldValue.serverTimestamp()
-        }
-      );
+        lastWithdrawalId:
+          withdrawalId,
 
-      tx.create(
-        withdrawalRef,
-        {
-          userId: uid,
+        updatedAt:
+          FieldValue.serverTimestamp()
+      });
 
-          address:
-            destination,
+      tx.create(withdrawalRef, {
+        userId: uid,
 
-          points,
+        address: destination,
 
-          amountUSDT:
-            amount,
+        points: withdrawalPoints,
 
-          status:
-            "processing",
+        amountUSDT:
+          Number(
+            withdrawalAmount.toFixed(8)
+          ),
 
-          createdAt:
-            FieldValue.serverTimestamp()
-        }
-      );
-    }
-  );
+        status: "processing",
 
-  try {
-    const payment =
-      await sendUSDT(
-        destination,
-        amount
-      );
+        createdAt:
+          FieldValue.serverTimestamp()
+      });
+    });
+
+    const payment = await sendUSDT(
+      destination,
+      Number(
+        withdrawalAmount.toFixed(8)
+      )
+    );
 
     await withdrawalRef.update({
-      status:
-        "paid",
-
-      txHash:
-        payment.txHash,
-
-      paidAt:
-        FieldValue.serverTimestamp()
+      status: "paid",
+      txHash: payment.txHash,
+      paidAt: FieldValue.serverTimestamp()
     });
+
+    try {
+      await sendMessage(
+        uid,
+        `✅ <b>Withdrawal successful!</b>\n\n💰 ${withdrawalAmount.toFixed(8)} USDT\n📍 ${destination}\n🔗 ${payment.txHash}`
+      );
+    } catch {}
 
     return res.json({
       success: true,
 
-      amount,
+      amount:
+        Number(
+          withdrawalAmount.toFixed(8)
+        ),
 
-      points,
+      points:
+        withdrawalPoints,
 
       txHash:
         payment.txHash
     });
 
   } catch (error) {
-    await db.runTransaction(
-      async tx => {
-        tx.update(
-          userRef,
-          {
-            balance:
-              FieldValue.increment(
-                points
-              ),
+    if (withdrawalId) {
+      try {
+        const snap =
+          await withdrawalRef.get();
 
-            updatedAt:
-              FieldValue.serverTimestamp()
-          }
-        );
+        if (
+          snap.exists &&
+          snap.data().status === "processing"
+        ) {
+          await db.runTransaction(async tx => {
+            tx.update(userRef, {
+              balance:
+                FieldValue.increment(
+                  withdrawalPoints
+                ),
 
-        tx.update(
-          withdrawalRef,
-          {
-            status:
-              "failed",
+              updatedAt:
+                FieldValue.serverTimestamp()
+            });
 
-            error:
-              error.message,
-
-            updatedAt:
-              FieldValue.serverTimestamp()
-          }
-        );
-      }
-    );
+            tx.update(withdrawalRef, {
+              status: "failed",
+              error: error.message,
+              updatedAt:
+                FieldValue.serverTimestamp()
+            });
+          });
+        }
+      } catch {}
+    }
 
     throw error;
   }
 }
 
-// ============================================================
-// LIVE AVIATOR DEMO
-// ============================================================
 
-async function games(
-  req,
-  res
-) {
+// =====================================================
+// ADMIN
+// =====================================================
+
+async function admin(req, res) {
   const { user } =
-    validateInitData(
-      getInitData(req)
-    );
-
-  const uid =
-    String(user.id);
-
-  const gameAction =
-    String(
-      req.body?.action || ""
-    );
-
-  const roundRef =
-    db
-      .collection("aviator")
-      .doc("live");
+    validateInitData(getInitData(req));
 
   if (
-    gameAction === "state"
+    String(user.id) !==
+    String(process.env.TELEGRAM_ADMIN_ID || "")
   ) {
-    let snap =
-      await roundRef.get();
-
-    if (!snap.exists) {
-      const round = {
-        status:
-          "running",
-
-        startedAt:
-          Date.now(),
-
-        crashAt:
-          Number(
-            (
-              1.5 +
-              Math.random() * 5
-            ).toFixed(2)
-          )
-      };
-
-      await roundRef.set(
-        round
-      );
-
-      snap =
-        await roundRef.get();
-    }
-
-    const round =
-      snap.data();
-
-    const elapsed =
-      Math.max(
-        0,
-        Date.now() -
-          Number(
-            round.startedAt
-          )
-      );
-
-    let multiplier =
-      Number(
-        Math.exp(
-          elapsed / 18000
-        ).toFixed(2)
-      );
-
-    if (
-      multiplier >=
-      Number(round.crashAt)
-    ) {
-      multiplier =
-        Number(
-          round.crashAt
-        );
-
-      await roundRef.set(
-        {
-          ...round,
-
-          status:
-            "crashed",
-
-          multiplier
-        }
-      );
-
-      return res.json({
-        success: true,
-
-        round: {
-          status:
-            "crashed",
-
-          multiplier
-        }
-      });
-    }
-
-    return res.json({
-      success: true,
-
-      round: {
-        status:
-          "running",
-
-        multiplier
-      }
-    });
-  }
-
-  if (
-    gameAction === "new"
-  ) {
-    const round = {
-      status:
-        "running",
-
-      startedAt:
-        Date.now(),
-
-      crashAt:
-        Number(
-          (
-            1.5 +
-            Math.random() * 5
-          ).toFixed(2)
-        )
-    };
-
-    await roundRef.set(
-      round
+    return jsonError(
+      res,
+      403,
+      "Admin only"
     );
-
-    return res.json({
-      success: true,
-
-      round
-    });
   }
 
-  if (
-    gameAction ===
-    "cashout"
-  ) {
-    const snap =
-      await roundRef.get();
-
-    if (!snap.exists) {
-      throw new Error(
-        "NO_ROUND"
-      );
-    }
-
-    const round =
-      snap.data();
-
-    const elapsed =
-      Math.max(
-        0,
-        Date.now() -
-          Number(
-            round.startedAt
-          )
-      );
-
-    const multiplier =
-      Number(
-        Math.min(
-          Number(
-            round.crashAt
-          ),
-          Math.exp(
-            elapsed / 18000
-          )
-        ).toFixed(2)
-      );
-
-    if (
-      multiplier >=
-      Number(round.crashAt)
-    ) {
-      throw new Error(
-        "ROUND_CRASHED"
-      );
-    }
-
-    return res.json({
-      success: true,
-
-      multiplier,
-
-      demoOnly:
-        true
-    });
-  }
-
-  throw new Error(
-    "UNKNOWN_GAME_ACTION"
+  const action = String(
+    req.body?.action || ""
   );
+
+  if (action === "withdrawals") {
+    const snap = await db
+      .collection("withdrawals")
+      .where(
+        "status",
+        "==",
+        "processing"
+      )
+      .limit(100)
+      .get();
+
+    return res.json({
+      success: true,
+
+      withdrawals:
+        snap.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        }))
+    });
+  }
+
+  if (action === "closeTask") {
+    const taskId = String(
+      req.body?.taskId || ""
+    );
+
+    if (!taskId) {
+      throw new Error(
+        "TASK_ID_REQUIRED"
+      );
+    }
+
+    await db
+      .collection("tasks")
+      .doc(taskId)
+      .update({
+        status: "closed",
+        updatedAt:
+          FieldValue.serverTimestamp()
+      });
+
+    return res.json({
+      success: true
+    });
+  }
+
+  if (action === "stats") {
+    const users = await db
+      .collection("users")
+      .count()
+      .get();
+
+    const tasks = await db
+      .collection("tasks")
+      .count()
+      .get();
+
+    return res.json({
+      success: true,
+
+      users:
+        users.data().count,
+
+      tasks:
+        tasks.data().count
+    });
+  }
+
+  throw new Error("UNKNOWN_ACTION");
 }
 
-// ============================================================
-// TELEGRAM WEBHOOK
-// ============================================================
 
-async function telegramWebhook(
-  req,
-  res
-) {
-  const message =
-    req.body?.message;
+// =====================================================
+// ADMIN PAYOUT
+// =====================================================
+
+async function payout(req, res) {
+  const adminId = String(
+    req.body?.telegramId || ""
+  );
 
   if (
-    message?.text?.startsWith(
-      "/start"
-    )
+    adminId !==
+    String(process.env.TELEGRAM_ADMIN_ID || "")
   ) {
-    const url =
-      process.env.WEBAPP_URL ||
-      "";
+    return jsonError(
+      res,
+      403,
+      "Forbidden"
+    );
+  }
+
+  const withdrawalId = String(
+    req.body?.withdrawalId || ""
+  );
+
+  if (!withdrawalId) {
+    throw new Error(
+      "WITHDRAWAL_ID_REQUIRED"
+    );
+  }
+
+  const withdrawalRef = db
+    .collection("withdrawals")
+    .doc(withdrawalId);
+
+  let alreadyPaid = null;
+
+  await db.runTransaction(async tx => {
+    const snap =
+      await tx.get(withdrawalRef);
+
+    if (!snap.exists) {
+      throw new Error(
+        "WITHDRAWAL_NOT_FOUND"
+      );
+    }
+
+    const data = snap.data();
+
+    if (data.status === "paid") {
+      alreadyPaid = {
+        txHash: data.txHash
+      };
+
+      return;
+    }
+
+    if (data.status !== "processing") {
+      throw new Error(
+        "WITHDRAWAL_NOT_PROCESSING"
+      );
+    }
+
+    tx.update(withdrawalRef, {
+      status: "paying",
+      updatedAt:
+        FieldValue.serverTimestamp()
+    });
+  });
+
+  if (alreadyPaid) {
+    return res.json({
+      success: true,
+      alreadyPaid: true,
+      txHash: alreadyPaid.txHash
+    });
+  }
+
+  const snap =
+    await withdrawalRef.get();
+
+  if (!snap.exists) {
+    throw new Error(
+      "WITHDRAWAL_NOT_FOUND"
+    );
+  }
+
+  const data = snap.data();
+
+  const payment = await sendUSDT(
+    data.address,
+    data.amountUSDT
+  );
+
+  await withdrawalRef.update({
+    status: "paid",
+    txHash: payment.txHash,
+    paidAt:
+      FieldValue.serverTimestamp()
+  });
+
+  return res.json({
+    success: true,
+    txHash: payment.txHash
+  });
+}
+
+
+// =====================================================
+// TELEGRAM WEBHOOK
+// =====================================================
+
+async function telegram(req, res) {
+  const update = req.body;
+
+  if (
+    update?.message?.text?.trim() ===
+    "/start"
+  ) {
+    const chatId =
+      update.message.chat.id;
+
+    const webAppUrl =
+      process.env.WEBAPP_URL;
+
+    if (!webAppUrl) {
+      throw new Error(
+        "WEBAPP_URL_MISSING"
+      );
+    }
 
     await sendMessage(
-      message.chat.id,
+      chatId,
 
-      "🔥 <b>Welcome to USDT Hub!</b>\n\nEarn rewards from ads, tasks and referrals.",
+      "🔥 <b>Welcome to USDT Hub!</b>\n\nEarn points from ads, tasks and referrals, then withdraw your rewards.",
 
       {
         reply_markup: {
           inline_keyboard: [
             [
               {
-                text:
-                  "🚀 OPEN USDT HUB",
+                text: "🚀 OPEN USDT HUB",
 
                 web_app: {
-                  url
+                  url: webAppUrl
                 }
               }
             ]
@@ -2125,129 +1676,174 @@ async function telegramWebhook(
   });
 }
 
-// ============================================================
-// MAIN HANDLER
-// ============================================================
 
-export default async function handler(
-  req,
-  res
-) {
+// =====================================================
+// MAIN VERCEL FUNCTION
+// =====================================================
+
+export default async function handler(req, res) {
   try {
-    const path =
-      getPath(req);
+    const path = getPath(req);
+    const action = getAction(req);
+
+    // -----------------------------------------------
+    // Health check
+    // -----------------------------------------------
 
     if (
-      path ===
-      "/api/telegram"
+      req.method === "GET" &&
+      (path === "/" ||
+       path === "/api" ||
+       path === "/api/index")
     ) {
-      return telegramWebhook(
-        req,
-        res
-      );
-    }
-
-    if (
-      req.method !==
-      "POST"
-    ) {
-      return res.status(405).json({
-        success: false,
-        error:
-          "METHOD_NOT_ALLOWED"
+      return res.json({
+        success: true,
+        service: "USDT Hub API",
+        status: "online"
       });
     }
 
+    // -----------------------------------------------
+    // Monetag callback
+    // -----------------------------------------------
+
     if (
-      path ===
-        "/api/user" ||
-      action(req) === "user"
+      path === "/api/ads" &&
+      isMonetagPostback(req)
     ) {
-      return userEndpoint(
+      return await monetagPostback(
         req,
         res
       );
     }
 
+    // -----------------------------------------------
+    // Telegram webhook
+    // -----------------------------------------------
+
     if (
-      path ===
-        "/api/verify-membership" ||
-      action(req) ===
-        "verify-membership"
+      path === "/api/telegram"
     ) {
-      return verifyMembership(
+      return await telegram(
         req,
         res
       );
     }
 
+    // -----------------------------------------------
+    // All app API endpoints are POST
+    // -----------------------------------------------
+
+    if (req.method !== "POST") {
+      return res.status(405).json({
+        success: false,
+        error: "Method not allowed"
+      });
+    }
+
+    // USER
+
     if (
-      path ===
-        "/api/claim-welcome" ||
-      action(req) ===
-        "claim-welcome"
+      path === "/api/user" ||
+      action === "user"
     ) {
-      return claimWelcome(
+      return await register(
         req,
         res
       );
     }
 
+    // MEMBERSHIP
+
     if (
-      path ===
-      "/api/ads"
+      path === "/api/verify-membership" ||
+      action === "verify-membership"
     ) {
-      return rewardAd(
+      return await verifyMembership(
         req,
         res
       );
     }
 
+    // WELCOME
+
     if (
-      path ===
-      "/api/promo"
+      path === "/api/claim-welcome" ||
+      action === "claim-welcome"
     ) {
-      return promo(
+      return await claimWelcome(
         req,
         res
       );
     }
 
-    if (
-      path ===
-      "/api/referral"
-    ) {
-      return referral(
+    // ADS
+
+    if (path === "/api/ads") {
+      return await rewardAd(
         req,
         res
       );
     }
 
-    if (
-      path ===
-      "/api/tasks"
-    ) {
-      return tasks(
+    // GAMES
+
+    if (path === "/api/games") {
+      return await games(
         req,
         res
       );
     }
 
-    if (
-      path ===
-      "/api/withdraw"
-    ) {
-      return withdraw(
+    // PROMO
+
+    if (path === "/api/promo") {
+      return await promo(
         req,
         res
       );
     }
 
-    if (
-      path ===
-      "/api/games"
-    ) {
-      return games(
+    // REFERRAL
+
+    if (path === "/api/referral") {
+      return await referral(
+        req,
+        res
+      );
+    }
+
+    // TASKS
+
+    if (path === "/api/tasks") {
+      return await tasks(
+        req,
+        res
+      );
+    }
+
+    // WITHDRAW
+
+    if (path === "/api/withdraw") {
+      return await withdraw(
+        req,
+        res
+      );
+    }
+
+    // ADMIN
+
+    if (path === "/api/admin") {
+      return await admin(
+        req,
+        res
+      );
+    }
+
+    // PAYOUT
+
+    if (path === "/api/payout") {
+      return await payout(
         req,
         res
       );
@@ -2255,14 +1851,20 @@ export default async function handler(
 
     return res.status(404).json({
       success: false,
-      error:
-        "API_ROUTE_NOT_FOUND"
+      error: "API route not found"
     });
 
   } catch (error) {
-    return errorResponse(
-      res,
+    console.error(
+      "USDT HUB API ERROR:",
       error
     );
+
+    return res.status(400).json({
+      success: false,
+      error:
+        error?.message ||
+        "Request failed"
+    });
   }
-    }.
+}
