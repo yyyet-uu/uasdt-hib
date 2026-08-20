@@ -1,2182 +1,1766 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-
-<meta name="theme-color" content="#07111f">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-
-<title>USDT Hub</title>
-
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<style>
-/* =========================================================
-   USDT HUB — PREMIUM MOBILE UI
-========================================================= */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
-:root{
-  --bg:#050914;
-  --bg2:#091221;
-  --card:rgba(14,25,43,.82);
-  --card2:#101d31;
-  --line:rgba(255,255,255,.08);
-  --text:#f7fbff;
-  --muted:#8493a8;
-  --green:#20e58a;
-  --green2:#0fcf78;
-  --cyan:#26d9ff;
-  --blue:#4d7cff;
-  --purple:#9b5cff;
-  --yellow:#ffd34d;
-  --red:#ff4f6d;
-  --orange:#ff9f43;
-  --shadow:0 18px 60px rgba(0,0,0,.38);
-  --radius:22px;
-}
-
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
-
-html{
-  scroll-behavior:smooth;
-}
-
-body{
-  margin:0;
-  min-height:100vh;
-  background:
-    radial-gradient(circle at 15% 0%,rgba(38,217,255,.09),transparent 30%),
-    radial-gradient(circle at 90% 15%,rgba(155,92,255,.08),transparent 28%),
-    linear-gradient(180deg,#050914,#07101d 45%,#050914);
-  color:var(--text);
-  font-family:Inter,Arial,sans-serif;
-  overflow-x:hidden;
-}
-
-button,
-input{
-  font:inherit;
-}
-
-button{
-  border:0;
-  cursor:pointer;
-}
-
-button:disabled{
-  opacity:.45;
-  cursor:not-allowed;
-}
-
-.hidden{
-  display:none!important;
-}
-
-/* =========================================================
-   LOADER
-========================================================= */
-
-#loader{
-  position:fixed;
-  inset:0;
-  z-index:9999;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  background:#050914;
-}
-
-.logo-loader{
-  width:78px;
-  height:78px;
-  border-radius:25px;
-  display:grid;
-  place-items:center;
-  font-size:34px;
-  font-weight:900;
-  background:linear-gradient(135deg,var(--green),var(--cyan));
-  color:#041018;
-  box-shadow:0 0 55px rgba(32,229,138,.25);
-  animation:pulse 1.4s infinite;
-}
-
-.loader-title{
-  margin-top:18px;
-  font-weight:900;
-  font-size:21px;
-}
-
-.loader-text{
-  color:var(--muted);
-  font-size:13px;
-  margin-top:7px;
-}
-
-.spinner{
-  width:28px;
-  height:28px;
-  border:3px solid rgba(255,255,255,.12);
-  border-top-color:var(--green);
-  border-radius:50%;
-  margin-top:20px;
-  animation:spin .8s linear infinite;
-}
-
-@keyframes spin{
-  to{transform:rotate(360deg)}
-}
-
-@keyframes pulse{
-  50%{transform:scale(1.06)}
-}
-
-/* =========================================================
-   APP
-========================================================= */
-
-#app{
-  max-width:620px;
-  margin:auto;
-  min-height:100vh;
-  padding-bottom:100px;
-}
-
-.page{
-  display:none;
-  padding:18px 15px 25px;
-  animation:pageIn .25s ease;
-}
-
-.page.active{
-  display:block;
-}
-
-@keyframes pageIn{
-  from{
-    opacity:0;
-    transform:translateY(8px);
-  }
-  to{
-    opacity:1;
-    transform:none;
-  }
-}
-
-/* =========================================================
-   TOP BAR
-========================================================= */
-
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px 2px 18px;
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:11px;
-}
-
-.brand-icon{
-  width:45px;
-  height:45px;
-  border-radius:15px;
-  display:grid;
-  place-items:center;
-  font-weight:900;
-  font-size:18px;
-  color:#041018;
-  background:linear-gradient(135deg,var(--green),var(--cyan));
-  box-shadow:0 8px 30px rgba(32,229,138,.2);
-}
-
-.brand-name{
-  font-size:17px;
-  font-weight:900;
-}
-
-.brand-sub{
-  font-size:10px;
-  color:var(--muted);
-  margin-top:2px;
-}
-
-.icon-btn{
-  width:42px;
-  height:42px;
-  border-radius:14px;
-  background:rgba(255,255,255,.055);
-  color:#fff;
-  border:1px solid var(--line);
-  font-size:18px;
-}
-
-/* =========================================================
-   HERO BALANCE
-========================================================= */
-
-.balance-card{
-  position:relative;
-  overflow:hidden;
-  padding:23px;
-  border:1px solid rgba(32,229,138,.17);
-  border-radius:28px;
-  background:
-    radial-gradient(circle at 90% 0%,rgba(38,217,255,.18),transparent 38%),
-    radial-gradient(circle at 0% 100%,rgba(32,229,138,.12),transparent 38%),
-    linear-gradient(135deg,#0e2030,#0a1524);
-  box-shadow:var(--shadow);
-}
-
-.balance-card:after{
-  content:"";
-  position:absolute;
-  width:150px;
-  height:150px;
-  right:-75px;
-  bottom:-75px;
-  border-radius:50%;
-  background:rgba(32,229,138,.1);
-  filter:blur(5px);
-}
-
-.balance-label{
-  color:#91a3b7;
-  font-size:12px;
-  font-weight:600;
-}
-
-.balance{
-  margin:7px 0 5px;
-  font-size:36px;
-  font-weight:900;
-  letter-spacing:-1.5px;
-}
-
-.balance small{
-  font-size:17px;
-  color:var(--green);
-}
-
-.balance-meta{
-  color:var(--muted);
-  font-size:11px;
-}
-
-.balance-actions{
-  display:flex;
-  gap:9px;
-  margin-top:18px;
-}
-
-.primary-btn,
-.secondary-btn,
-.danger-btn{
-  min-height:45px;
-  padding:0 17px;
-  border-radius:14px;
-  font-weight:800;
-  transition:.18s;
-}
-
-.primary-btn{
-  color:#041018;
-  background:linear-gradient(135deg,var(--green),var(--cyan));
-  box-shadow:0 8px 25px rgba(32,229,138,.15);
-}
-
-.secondary-btn{
-  color:#fff;
-  background:rgba(255,255,255,.07);
-  border:1px solid var(--line);
-}
-
-.danger-btn{
-  color:#fff;
-  background:rgba(255,79,109,.13);
-  border:1px solid rgba(255,79,109,.25);
-}
-
-.primary-btn:active,
-.secondary-btn:active,
-.danger-btn:active{
-  transform:scale(.97);
-}
-
-/* =========================================================
-   STATS
-========================================================= */
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:9px;
-  margin:12px 0;
-}
-
-.stat{
-  padding:15px 10px;
-  border:1px solid var(--line);
-  border-radius:18px;
-  background:rgba(255,255,255,.035);
-  text-align:center;
-}
-
-.stat-value{
-  font-size:18px;
-  font-weight:900;
-}
-
-.stat-label{
-  margin-top:5px;
-  color:var(--muted);
-  font-size:10px;
-}
-
-/* =========================================================
-   SECTION
-========================================================= */
-
-.section-title{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin:22px 2px 10px;
-}
-
-.section-title h2{
-  margin:0;
-  font-size:17px;
-  font-weight:900;
-}
-
-.section-title span{
-  color:var(--muted);
-  font-size:11px;
-}
-
-/* =========================================================
-   FEATURE GRID
-========================================================= */
-
-.feature-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:11px;
-}
-
-.feature{
-  position:relative;
-  min-height:122px;
-  padding:18px;
-  border:1px solid var(--line);
-  border-radius:22px;
-  background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
-  overflow:hidden;
-}
-
-.feature-icon{
-  width:39px;
-  height:39px;
-  border-radius:13px;
-  display:grid;
-  place-items:center;
-  font-size:19px;
-  background:rgba(32,229,138,.11);
-}
-
-.feature h3{
-  margin:11px 0 3px;
-  font-size:14px;
-}
-
-.feature p{
-  margin:0;
-  color:var(--muted);
-  font-size:10px;
-  line-height:1.4;
-}
-
-.feature-arrow{
-  position:absolute;
-  right:15px;
-  top:18px;
-  color:#63738a;
-}
-
-/* =========================================================
-   QUICK ACTION
-========================================================= */
-
-.quick{
-  display:flex;
-  align-items:center;
-  gap:13px;
-  padding:15px;
-  border-radius:20px;
-  background:rgba(255,255,255,.04);
-  border:1px solid var(--line);
-  margin-top:11px;
-}
-
-.quick-icon{
-  width:44px;
-  height:44px;
-  border-radius:15px;
-  display:grid;
-  place-items:center;
-  background:rgba(77,124,255,.13);
-  font-size:20px;
-}
-
-.quick-info{
-  flex:1;
-}
-
-.quick-info strong{
-  display:block;
-  font-size:13px;
-}
-
-.quick-info small{
-  color:var(--muted);
-  font-size:10px;
-}
-
-/* =========================================================
-   ADS
-========================================================= */
-
-.ad-card{
-  padding:20px;
-  border-radius:24px;
-  background:
-    radial-gradient(circle at 90% 10%,rgba(255,211,77,.11),transparent 35%),
-    linear-gradient(145deg,#101c2d,#0a1421);
-  border:1px solid var(--line);
-}
-
-.ad-icon{
-  font-size:30px;
-}
-
-.ad-card h2{
-  margin:10px 0 5px;
-}
-
-.ad-card p{
-  margin:0;
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.5;
-}
-
-.provider-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:15px;
-}
-
-.provider{
-  padding:17px;
-  border-radius:18px;
-  color:#fff;
-  background:rgba(255,255,255,.045);
-  border:1px solid var(--line);
-  text-align:left;
-}
-
-.provider strong{
-  display:block;
-  font-size:13px;
-}
-
-.provider span{
-  display:block;
-  margin-top:4px;
-  color:var(--green);
-  font-size:11px;
-  font-weight:800;
-}
-
-/* =========================================================
-   REFERRALS
-========================================================= */
-
-.ref-card{
-  padding:20px;
-  border-radius:24px;
-  background:
-    radial-gradient(circle at 0% 0%,rgba(155,92,255,.15),transparent 42%),
-    linear-gradient(145deg,#111a2b,#0a1320);
-  border:1px solid var(--line);
-}
-
-.ref-code{
-  display:flex;
-  gap:8px;
-  margin-top:15px;
-}
-
-.ref-code input{
-  flex:1;
-}
-
-.input{
-  width:100%;
-  min-height:47px;
-  border:1px solid var(--line);
-  border-radius:14px;
-  background:rgba(0,0,0,.2);
-  color:#fff;
-  outline:none;
-  padding:0 14px;
-}
-
-.input:focus{
-  border-color:rgba(32,229,138,.45);
-}
-
-.ref-link{
-  margin-top:10px;
-  padding:12px;
-  border-radius:14px;
-  background:rgba(255,255,255,.035);
-  color:#aab7c8;
-  font-size:10px;
-  word-break:break-all;
-}
-
-.ref-list{
-  margin-top:12px;
-}
-
-.ref-row,
-.task-row,
-.withdraw-row{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:14px;
-  margin-bottom:9px;
-  border-radius:18px;
-  background:rgba(255,255,255,.035);
-  border:1px solid var(--line);
-}
-
-.avatar{
-  width:40px;
-  height:40px;
-  border-radius:14px;
-  display:grid;
-  place-items:center;
-  background:linear-gradient(135deg,var(--purple),var(--blue));
-  font-weight:900;
-}
-
-.row-main{
-  flex:1;
-}
-
-.row-main strong{
-  display:block;
-  font-size:12px;
-}
-
-.row-main small{
-  display:block;
-  color:var(--muted);
-  margin-top:3px;
-  font-size:10px;
-}
-
-.row-reward{
-  color:var(--green);
-  font-size:11px;
-  font-weight:900;
-}
-
-/* =========================================================
-   TASKS
-========================================================= */
-
-.task-row{
-  align-items:flex-start;
-}
-
-.task-icon{
-  width:43px;
-  height:43px;
-  border-radius:14px;
-  display:grid;
-  place-items:center;
-  background:rgba(38,217,255,.1);
-  font-size:19px;
-}
-
-.task-content{
-  flex:1;
-}
-
-.task-content h3{
-  margin:0;
-  font-size:13px;
-}
-
-.task-content p{
-  margin:4px 0 8px;
-  color:var(--muted);
-  font-size:10px;
-}
-
-.task-progress{
-  height:5px;
-  border-radius:5px;
-  overflow:hidden;
-  background:rgba(255,255,255,.08);
-}
-
-.task-progress div{
-  height:100%;
-  background:linear-gradient(90deg,var(--green),var(--cyan));
-}
-
-.task-side{
-  text-align:right;
-}
-
-.task-reward{
-  color:var(--green);
-  font-size:11px;
-  font-weight:900;
-  margin-bottom:8px;
-}
-
-/* =========================================================
-   GAMES
-========================================================= */
-
-.game-tabs{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-  margin-bottom:12px;
-}
-
-.game-tab{
-  min-height:46px;
-  border-radius:15px;
-  color:#8392a7;
-  background:rgba(255,255,255,.04);
-  border:1px solid var(--line);
-  font-weight:800;
-}
-
-.game-tab.active{
-  color:#041018;
-  background:linear-gradient(135deg,var(--green),var(--cyan));
-}
-
-/* =========================================================
-   AVIATOR
-========================================================= */
-
-.aviator{
-  position:relative;
-  height:390px;
-  overflow:hidden;
-  border-radius:27px;
-  background:
-    radial-gradient(circle at 50% 45%,rgba(255,70,90,.08),transparent 30%),
-    linear-gradient(180deg,#0c1424,#060b14);
-  border:1px solid rgba(255,255,255,.08);
-  box-shadow:var(--shadow);
-}
-
-.aviator-grid{
-  position:absolute;
-  inset:0;
-  opacity:.22;
-  background-image:
-    linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);
-  background-size:45px 45px;
-  transform:perspective(400px) rotateX(60deg) scale(1.5);
-  transform-origin:center bottom;
-}
-
-.multiplier{
-  position:absolute;
-  top:48px;
-  left:0;
-  right:0;
-  text-align:center;
-  font-size:57px;
-  font-weight:900;
-  letter-spacing:-3px;
-  text-shadow:0 0 35px rgba(255,255,255,.18);
-}
-
-.multiplier.live{
-  color:#fff;
-}
-
-.multiplier.crashed{
-  color:var(--red);
-}
-
-.aviator-status{
-  position:absolute;
-  top:117px;
-  left:0;
-  right:0;
-  text-align:center;
-  color:var(--muted);
-  font-size:11px;
-  font-weight:700;
-}
-
-.flight{
-  position:absolute;
-  left:8%;
-  bottom:60px;
-  width:84%;
-  height:180px;
-}
-
-.flight svg{
-  width:100%;
-  height:100%;
-  overflow:visible;
-}
-
-.flight-path{
-  fill:none;
-  stroke:var(--green);
-  stroke-width:4;
-  filter:drop-shadow(0 0 8px rgba(32,229,138,.7));
-}
-
-.plane{
-  position:absolute;
-  width:54px;
-  height:54px;
-  display:grid;
-  place-items:center;
-  font-size:35px;
-  transform:rotate(-15deg);
-  filter:drop-shadow(0 0 12px rgba(38,217,255,.55));
-}
-
-.aviator-controls{
-  position:absolute;
-  left:14px;
-  right:14px;
-  bottom:14px;
-  display:flex;
-  gap:8px;
-}
-
-.bet-input{
-  flex:1;
-  min-width:0;
-}
-
-.bet-input input{
-  width:100%;
-  height:50px;
-  padding:0 13px;
-  color:#fff;
-  background:rgba(0,0,0,.38);
-  border:1px solid var(--line);
-  border-radius:15px;
-  outline:none;
-}
-
-.game-action{
-  min-width:105px;
-  height:50px;
-  border-radius:15px;
-  color:#041018;
-  background:linear-gradient(135deg,var(--green),var(--cyan));
-  font-weight:900;
-}
-
-.game-action.cash{
-  background:linear-gradient(135deg,var(--yellow),var(--orange));
-}
-
-.game-history{
-  display:flex;
-  gap:7px;
-  overflow-x:auto;
-  margin-top:10px;
-  scrollbar-width:none;
-}
-
-.history-pill{
-  flex:none;
-  padding:8px 11px;
-  border-radius:10px;
-  background:rgba(255,255,255,.05);
-  border:1px solid var(--line);
-  color:#9aabc0;
-  font-size:10px;
-  font-weight:800;
-}
-
-/* =========================================================
-   XO
-========================================================= */
-
-.xo-board{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:9px;
-  max-width:330px;
-  margin:18px auto;
-}
-
-.xo-cell{
-  aspect-ratio:1;
-  border-radius:20px;
-  color:#fff;
-  background:rgba(255,255,255,.045);
-  border:1px solid var(--line);
-  font-size:38px;
-  font-weight:900;
-}
-
-.xo-cell.x{
-  color:var(--cyan);
-}
-
-.xo-cell.o{
-  color:var(--green);
-}
-
-.game-info{
-  text-align:center;
-  color:var(--muted);
-  font-size:11px;
-}
-
-/* =========================================================
-   PROMO
-========================================================= */
-
-.promo-card{
-  padding:21px;
-  border-radius:24px;
-  border:1px solid var(--line);
-  background:linear-gradient(145deg,#121c2d,#09131f);
-}
-
-.promo-card h2{
-  margin:0 0 6px;
-}
-
-.promo-card p{
-  margin:0 0 16px;
-  color:var(--muted);
-  font-size:11px;
-}
-
-/* =========================================================
-   WITHDRAW
-========================================================= */
-
-.withdraw-card{
-  padding:21px;
-  border-radius:24px;
-  border:1px solid rgba(32,229,138,.15);
-  background:linear-gradient(145deg,#0d1d2a,#09131f);
-}
-
-.warning{
-  padding:12px;
-  border-radius:14px;
-  background:rgba(255,211,77,.07);
-  border:1px solid rgba(255,211,77,.14);
-  color:#d7c88c;
-  font-size:10px;
-  line-height:1.5;
-  margin:12px 0;
-}
-
-.withdraw-history{
-  margin-top:13px;
-}
-
-/* =========================================================
-   PROFILE
-========================================================= */
-
-.profile{
-  padding:24px;
-  text-align:center;
-  border-radius:26px;
-  background:linear-gradient(145deg,#101d2d,#09131f);
-  border:1px solid var(--line);
-}
-
-.profile-avatar{
-  width:75px;
-  height:75px;
-  margin:auto;
-  display:grid;
-  place-items:center;
-  border-radius:25px;
-  font-size:28px;
-  font-weight:900;
-  color:#041018;
-  background:linear-gradient(135deg,var(--green),var(--cyan));
-}
-
-.profile h2{
-  margin:12px 0 3px;
-}
-
-.profile p{
-  margin:0;
-  color:var(--muted);
-  font-size:11px;
-}
-
-.info-list{
-  margin-top:13px;
-}
-
-.info-item{
-  display:flex;
-  justify-content:space-between;
-  padding:14px 2px;
-  border-bottom:1px solid var(--line);
-  font-size:11px;
-}
-
-.info-item span:first-child{
-  color:var(--muted);
-}
-
-/* =========================================================
-   BOTTOM NAV
-========================================================= */
-
-.bottom-nav{
-  position:fixed;
-  z-index:100;
-  left:50%;
-  bottom:9px;
-  transform:translateX(-50%);
-  width:min(590px,calc(100% - 20px));
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  padding:8px;
-  border-radius:23px;
-  background:rgba(7,14,25,.9);
-  border:1px solid rgba(255,255,255,.1);
-  box-shadow:0 15px 45px rgba(0,0,0,.45);
-  backdrop-filter:blur(20px);
-}
-
-.nav-btn{
-  min-height:55px;
-  color:#6f7f94;
-  background:transparent;
-  border-radius:17px;
-  font-size:10px;
-  font-weight:800;
-}
-
-.nav-btn span{
-  display:block;
-  font-size:20px;
-  margin-bottom:3px;
-}
-
-.nav-btn.active{
-  color:var(--green);
-  background:rgba(32,229,138,.08);
-}
-
-/* =========================================================
-   MODALS
-========================================================= */
-
-.modal{
-  position:fixed;
-  z-index:500;
-  inset:0;
-  display:none;
-  align-items:flex-end;
-  justify-content:center;
-  background:rgba(0,0,0,.7);
-  backdrop-filter:blur(7px);
-}
-
-.modal.show{
-  display:flex;
-}
-
-.modal-box{
-  width:min(620px,100%);
-  max-height:90vh;
-  overflow:auto;
-  padding:22px 17px 30px;
-  border-radius:28px 28px 0 0;
-  background:#0b1524;
-  border:1px solid var(--line);
-  animation:modalUp .25s ease;
-}
-
-@keyframes modalUp{
-  from{
-    transform:translateY(100%);
-    opacity:.4;
-  }
-  to{
-    transform:none;
-    opacity:1;
-  }
-}
-
-.modal-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:15px;
-}
-
-.modal-head h2{
-  margin:0;
-  font-size:18px;
-}
-
-.close{
-  width:38px;
-  height:38px;
-  border-radius:13px;
-  background:rgba(255,255,255,.06);
-  color:#fff;
-}
-
-/* =========================================================
-   CHANNEL LOCK
-========================================================= */
-
-#lockScreen{
-  position:fixed;
-  z-index:8000;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  background:#050914;
-}
-
-.lock-box{
-  width:min(470px,100%);
-  padding:26px 20px;
-  border-radius:30px;
-  text-align:center;
-  background:
-    radial-gradient(circle at 50% 0%,rgba(32,229,138,.13),transparent 42%),
-    #0b1524;
-  border:1px solid var(--line);
-  box-shadow:var(--shadow);
-}
-
-.lock-logo{
-  width:72px;
-  height:72px;
-  margin:auto;
-  display:grid;
-  place-items:center;
-  border-radius:24px;
-  font-size:28px;
-  font-weight:900;
-  color:#041018;
-  background:linear-gradient(135deg,var(--green),var(--cyan));
-}
-
-.lock-box h1{
-  margin:17px 0 7px;
-}
-
-.lock-box p{
-  color:var(--muted);
-  font-size:11px;
-  line-height:1.5;
-}
-
-.channel-btn{
-  width:100%;
-  min-height:51px;
-  margin-top:9px;
-  border-radius:16px;
-  color:#fff;
-  background:rgba(255,255,255,.055);
-  border:1px solid var(--line);
-  font-weight:800;
-}
-
-.verify-btn{
-  width:100%;
-  min-height:52px;
-  margin-top:15px;
-  border-radius:16px;
-  color:#041018;
-  background:linear-gradient(135deg,var(--green),var(--cyan));
-  font-weight:900;
-}
-
-/* =========================================================
-   TOAST
-========================================================= */
-
-#toast{
-  position:fixed;
-  z-index:10000;
-  left:50%;
-  bottom:92px;
-  transform:translateX(-50%) translateY(20px);
-  width:max-content;
-  max-width:calc(100% - 35px);
-  padding:12px 15px;
-  border-radius:14px;
-  color:#fff;
-  background:#142236;
-  border:1px solid var(--line);
-  box-shadow:var(--shadow);
-  font-size:11px;
-  font-weight:700;
-  opacity:0;
-  pointer-events:none;
-  transition:.25s;
-}
-
-#toast.show{
-  opacity:1;
-  transform:translateX(-50%) translateY(0);
-}
-
-#toast.success{
-  border-color:rgba(32,229,138,.3);
-}
-
-#toast.error{
-  border-color:rgba(255,79,109,.3);
-}
-
-/* =========================================================
-   EMPTY
-========================================================= */
-
-.empty{
-  padding:35px 15px;
-  text-align:center;
-  color:var(--muted);
-  font-size:11px;
-}
-
-.empty-icon{
-  font-size:32px;
-  margin-bottom:9px;
-}
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media(max-width:380px){
-  .balance{
-    font-size:31px;
-  }
-
-  .feature{
-    padding:15px;
-  }
-
-  .multiplier{
-    font-size:48px;
-  }
-
-  .bottom-nav{
-    width:calc(100% - 12px);
-  }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+
+  <meta name="theme-color" content="#07111f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <title>USDT Hub</title>
+
+  <!-- Telegram Mini App SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
+
+  <style>
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    :root{
+      --bg:#050b15;
+      --bg2:#091426;
+      --card:rgba(14,27,48,.88);
+      --card2:rgba(18,34,58,.92);
+      --line:rgba(255,255,255,.08);
+      --text:#f5f8ff;
+      --muted:#8fa1bd;
+      --blue:#3b82f6;
+      --cyan:#22d3ee;
+      --green:#22c55e;
+      --red:#ef4444;
+      --yellow:#facc15;
+      --purple:#8b5cf6;
+      --shadow:0 20px 60px rgba(0,0,0,.38);
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      width:100%;
+      min-height:100%;
+      background:
+        radial-gradient(circle at 20% 0%,rgba(59,130,246,.18),transparent 30%),
+        radial-gradient(circle at 100% 20%,rgba(139,92,246,.13),transparent 30%),
+        var(--bg);
+      color:var(--text);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      overflow-x:hidden;
+    }
+
+    body{
+      min-height:100vh;
+      padding-bottom:90px;
+    }
+
+    button,input{
+      font:inherit;
+    }
+
+    button{
+      border:0;
+      cursor:pointer;
+      color:white;
+    }
+
+    .hidden{
+      display:none!important;
+    }
+
+    .loading-screen{
+      position:fixed;
+      inset:0;
+      z-index:9999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#050b15;
+    }
+
+    .loader-box{
+      text-align:center;
+    }
+
+    .logo-orb{
+      width:78px;
+      height:78px;
+      margin:auto;
+      border-radius:25px;
+      display:grid;
+      place-items:center;
+      font-size:34px;
+      font-weight:900;
+      background:linear-gradient(145deg,#2563eb,#06b6d4);
+      box-shadow:0 0 50px rgba(37,99,235,.45);
+      animation:pulse 1.5s infinite;
+    }
+
+    .loader-box h2{
+      margin:18px 0 5px;
+    }
+
+    .loader-box p{
+      color:var(--muted);
+      margin:0;
+    }
+
+    @keyframes pulse{
+      50%{transform:scale(1.08);box-shadow:0 0 70px rgba(34,211,238,.5)}
+    }
+
+    /* LOCK SCREEN */
+
+    .lock-screen{
+      position:fixed;
+      inset:0;
+      z-index:9000;
+      overflow:auto;
+      padding:28px 18px;
+      background:
+        radial-gradient(circle at 50% 0%,rgba(37,99,235,.24),transparent 40%),
+        #050b15;
+    }
+
+    .lock-wrap{
+      max-width:470px;
+      margin:40px auto;
+    }
+
+    .lock-logo{
+      width:86px;
+      height:86px;
+      border-radius:28px;
+      display:grid;
+      place-items:center;
+      margin:0 auto 22px;
+      font-size:38px;
+      background:linear-gradient(145deg,#2563eb,#06b6d4);
+      box-shadow:0 25px 70px rgba(37,99,235,.35);
+    }
+
+    .lock-title{
+      text-align:center;
+      font-size:29px;
+      font-weight:900;
+      margin-bottom:8px;
+    }
+
+    .lock-sub{
+      text-align:center;
+      color:var(--muted);
+      line-height:1.55;
+      margin-bottom:25px;
+    }
+
+    .join-card{
+      padding:17px;
+      border:1px solid var(--line);
+      background:linear-gradient(145deg,rgba(17,34,59,.95),rgba(8,19,35,.95));
+      border-radius:22px;
+      margin-bottom:12px;
+      box-shadow:var(--shadow);
+    }
+
+    .join-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .join-info{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .channel-icon{
+      width:48px;
+      height:48px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      background:rgba(59,130,246,.15);
+      font-size:23px;
+    }
+
+    .join-name{
+      font-weight:800;
+    }
+
+    .join-handle{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:3px;
+    }
+
+    .join-btn{
+      padding:11px 14px;
+      border-radius:13px;
+      background:#1689e8;
+      font-weight:800;
+    }
+
+    .verify-btn{
+      width:100%;
+      padding:17px;
+      margin-top:10px;
+      border-radius:17px;
+      font-size:16px;
+      font-weight:900;
+      background:linear-gradient(135deg,#2563eb,#06b6d4);
+      box-shadow:0 12px 35px rgba(37,99,235,.28);
+    }
+
+    .verify-btn:disabled{
+      opacity:.55;
+    }
+
+    .verify-status{
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      margin-top:14px;
+      min-height:20px;
+    }
+
+    /* WELCOME */
+
+    .welcome-screen{
+      position:fixed;
+      inset:0;
+      z-index:8500;
+      overflow:auto;
+      padding:25px 18px;
+      background:
+        radial-gradient(circle at 50% 0%,rgba(34,197,94,.15),transparent 35%),
+        #050b15;
+    }
+
+    .welcome-wrap{
+      max-width:470px;
+      margin:35px auto;
+    }
+
+    .welcome-icon{
+      width:92px;
+      height:92px;
+      border-radius:30px;
+      display:grid;
+      place-items:center;
+      margin:0 auto 20px;
+      font-size:44px;
+      background:linear-gradient(145deg,#16a34a,#22c55e);
+      box-shadow:0 25px 70px rgba(34,197,94,.25);
+    }
+
+    .welcome-screen h1{
+      text-align:center;
+      font-size:30px;
+      margin:0 0 9px;
+    }
+
+    .welcome-screen .desc{
+      text-align:center;
+      color:var(--muted);
+      line-height:1.5;
+      margin-bottom:25px;
+    }
+
+    .address-card{
+      padding:20px;
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:var(--card);
+      box-shadow:var(--shadow);
+    }
+
+    .address-card label{
+      display:block;
+      color:#c8d4e7;
+      font-size:13px;
+      font-weight:700;
+      margin-bottom:9px;
+    }
+
+    .address-input{
+      width:100%;
+      padding:16px;
+      border-radius:15px;
+      border:1px solid var(--line);
+      outline:none;
+      color:white;
+      background:#071221;
+    }
+
+    .address-input:focus{
+      border-color:#3b82f6;
+      box-shadow:0 0 0 3px rgba(59,130,246,.12);
+    }
+
+    .claim-btn{
+      width:100%;
+      padding:17px;
+      border-radius:16px;
+      margin-top:13px;
+      background:linear-gradient(135deg,#16a34a,#22c55e);
+      font-weight:900;
+      box-shadow:0 12px 35px rgba(34,197,94,.2);
+    }
+
+    .small-note{
+      margin-top:13px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+      text-align:center;
+    }
+
+    /* APP */
+
+    .app{
+      width:100%;
+      max-width:700px;
+      margin:auto;
+      padding:18px 15px 30px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:18px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:11px;
+    }
+
+    .brand-logo{
+      width:46px;
+      height:46px;
+      border-radius:15px;
+      display:grid;
+      place-items:center;
+      font-size:21px;
+      font-weight:900;
+      background:linear-gradient(145deg,#2563eb,#06b6d4);
+      box-shadow:0 10px 30px rgba(37,99,235,.25);
+    }
+
+    .brand-name{
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .brand-sub{
+      font-size:11px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+
+    .profile{
+      width:43px;
+      height:43px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:#12223a;
+      border:1px solid var(--line);
+      font-weight:900;
+    }
+
+    .page{
+      display:none;
+      animation:pageIn .25s ease;
+    }
+
+    .page.active{
+      display:block;
+    }
+
+    @keyframes pageIn{
+      from{opacity:0;transform:translateY(8px)}
+      to{opacity:1;transform:none}
+    }
+
+    .balance-card{
+      position:relative;
+      overflow:hidden;
+      padding:24px;
+      border-radius:27px;
+      background:
+        radial-gradient(circle at 90% 0%,rgba(34,211,238,.25),transparent 38%),
+        linear-gradient(135deg,#102a56,#0b1730);
+      border:1px solid rgba(96,165,250,.15);
+      box-shadow:var(--shadow);
+    }
+
+    .balance-card:after{
+      content:"";
+      position:absolute;
+      width:150px;
+      height:150px;
+      right:-70px;
+      bottom:-70px;
+      border-radius:50%;
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .balance-label{
+      color:#a8b9d3;
+      font-size:13px;
+    }
+
+    .balance{
+      font-size:38px;
+      line-height:1;
+      font-weight:950;
+      margin:9px 0;
+      letter-spacing:-1.5px;
+    }
+
+    .balance small{
+      font-size:16px;
+      color:#9bb7df;
+      letter-spacing:0;
+    }
+
+    .welcome-user{
+      color:#c8d6eb;
+      font-size:13px;
+    }
+
+    .quick-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:11px;
+      margin-top:13px;
+    }
+
+    .quick{
+      padding:17px;
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:19px;
+    }
+
+    .quick-icon{
+      font-size:21px;
+    }
+
+    .quick-value{
+      font-size:20px;
+      font-weight:900;
+      margin-top:7px;
+    }
+
+    .quick-label{
+      color:var(--muted);
+      font-size:11px;
+      margin-top:2px;
+    }
+
+    .section-title{
+      margin:25px 2px 11px;
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .feature-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+
+    .feature{
+      padding:19px;
+      border-radius:21px;
+      border:1px solid var(--line);
+      background:linear-gradient(145deg,rgba(16,32,55,.96),rgba(9,20,36,.96));
+      text-align:left;
+      min-height:125px;
+    }
+
+    .feature-icon{
+      font-size:28px;
+      margin-bottom:13px;
+    }
+
+    .feature-title{
+      font-weight:900;
+    }
+
+    .feature-desc{
+      color:var(--muted);
+      font-size:11px;
+      margin-top:5px;
+      line-height:1.4;
+    }
+
+    .card{
+      padding:18px;
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:var(--card);
+      box-shadow:0 15px 40px rgba(0,0,0,.18);
+      margin-bottom:13px;
+    }
+
+    .action-btn{
+      width:100%;
+      padding:15px;
+      border-radius:15px;
+      font-weight:900;
+      background:linear-gradient(135deg,#2563eb,#3b82f6);
+    }
+
+    .action-btn.green{
+      background:linear-gradient(135deg,#16a34a,#22c55e);
+    }
+
+    .action-btn.red{
+      background:linear-gradient(135deg,#dc2626,#ef4444);
+    }
+
+    .action-btn.purple{
+      background:linear-gradient(135deg,#7c3aed,#8b5cf6);
+    }
+
+    .action-btn:disabled{
+      opacity:.45;
+    }
+
+    .input{
+      width:100%;
+      padding:14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#071221;
+      color:white;
+      outline:none;
+      margin-bottom:10px;
+    }
+
+    .input:focus{
+      border-color:#3b82f6;
+    }
+
+    .task{
+      padding:16px;
+      border-radius:18px;
+      background:#0a172a;
+      border:1px solid var(--line);
+      margin-bottom:10px;
+    }
+
+    .task-top{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .task-title{
+      font-weight:800;
+    }
+
+    .task-reward{
+      color:#4ade80;
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    .task-meta{
+      color:var(--muted);
+      font-size:11px;
+      margin:7px 0 12px;
+    }
+
+    .task-btn{
+      width:100%;
+      padding:12px;
+      border-radius:13px;
+      background:#1d4ed8;
+      font-weight:800;
+    }
+
+    /* ADS */
+
+    .ad-provider{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:16px;
+      border-radius:18px;
+      background:#09182b;
+      border:1px solid var(--line);
+      margin-bottom:11px;
+    }
+
+    .ad-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .ad-icon{
+      width:45px;
+      height:45px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:rgba(59,130,246,.14);
+      font-size:22px;
+    }
+
+    .ad-name{
+      font-weight:900;
+    }
+
+    .ad-count{
+      color:var(--muted);
+      font-size:11px;
+      margin-top:3px;
+    }
+
+    .watch-btn{
+      padding:11px 13px;
+      border-radius:13px;
+      background:#2563eb;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    /* REFERRAL */
+
+    .ref-box{
+      padding:20px;
+      text-align:center;
+      border-radius:22px;
+      background:
+        radial-gradient(circle at 50% 0%,rgba(139,92,246,.22),transparent 55%),
+        var(--card);
+      border:1px solid var(--line);
+    }
+
+    .ref-code{
+      margin:13px 0;
+      padding:13px;
+      border-radius:14px;
+      background:#071221;
+      border:1px dashed rgba(139,92,246,.4);
+      font-weight:900;
+      word-break:break-all;
+    }
+
+    .ref-buttons{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:9px;
+    }
+
+    .ref-list{
+      margin-top:13px;
+    }
+
+    .ref-item{
+      display:flex;
+      justify-content:space-between;
+      padding:13px 0;
+      border-bottom:1px solid var(--line);
+      font-size:13px;
+    }
+
+    /* PROMO */
+
+    .promo-card{
+      text-align:center;
+    }
+
+    .promo-title{
+      font-size:22px;
+      font-weight:950;
+      margin-bottom:5px;
+    }
+
+    .promo-sub{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:16px;
+    }
+
+    /* WITHDRAW */
+
+    .withdraw-amount{
+      text-align:center;
+      font-size:31px;
+      font-weight:950;
+      margin:7px 0 3px;
+    }
+
+    .withdraw-note{
+      text-align:center;
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:17px;
+    }
+
+    /* AVIATOR */
+
+    .aviator{
+      position:relative;
+      overflow:hidden;
+      min-height:430px;
+      border-radius:27px;
+      background:
+        radial-gradient(circle at 50% 45%,rgba(239,68,68,.13),transparent 30%),
+        linear-gradient(180deg,#071323,#030914);
+      border:1px solid rgba(255,255,255,.07);
+      box-shadow:var(--shadow);
+    }
+
+    .aviator-head{
+      position:absolute;
+      top:16px;
+      left:17px;
+      right:17px;
+      z-index:3;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .aviator-logo{
+      font-weight:950;
+      font-size:18px;
+      letter-spacing:.5px;
+    }
+
+    .live-dot{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      color:#4ade80;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .live-dot:before{
+      content:"";
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:#22c55e;
+      box-shadow:0 0 12px #22c55e;
+      animation:blink 1s infinite;
+    }
+
+    @keyframes blink{
+      50%{opacity:.25}
+    }
+
+    .aviator-screen{
+      position:absolute;
+      inset:65px 15px 88px;
+      overflow:hidden;
+      border-radius:20px;
+      background:
+        linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+      background-size:35px 35px;
+    }
+
+    .multiplier{
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      z-index:2;
+      font-size:59px;
+      font-weight:950;
+      letter-spacing:-3px;
+      text-shadow:0 0 35px rgba(255,255,255,.15);
+    }
+
+    .multiplier.crashed{
+      color:#ef4444;
+      text-shadow:0 0 30px rgba(239,68,68,.45);
+    }
+
+    .multiplier.flying{
+      color:#fff;
+    }
+
+    .flight-line{
+      position:absolute;
+      width:150%;
+      height:3px;
+      left:-20%;
+      bottom:15%;
+      background:linear-gradient(90deg,transparent,#ef4444,#f97316,transparent);
+      transform:rotate(-13deg);
+      transform-origin:center;
+      opacity:.15;
+    }
+
+    .plane{
+      position:absolute;
+      left:10%;
+      bottom:14%;
+      z-index:3;
+      font-size:35px;
+      filter:drop-shadow(0 0 12px rgba(249,115,22,.55));
+      transform:rotate(-12deg);
+      transition:all .12s linear;
+    }
+
+    .plane.fly{
+      animation:planeFloat .6s infinite alternate ease-in-out;
+    }
+
+    @keyframes planeFloat{
+      from{transform:rotate(-12deg) translateY(0)}
+      to{transform:rotate(-12deg) translateY(-5px)}
+    }
+
+    .aviator-status{
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:53px;
+      text-align:center;
+      color:var(--muted);
+      font-size:12px;
+      z-index:4;
+    }
+
+    .aviator-controls{
+      position:absolute;
+      bottom:13px;
+      left:13px;
+      right:13px;
+      display:grid;
+      grid-template-columns:1fr 1.2fr;
+      gap:9px;
+      z-index:5;
+    }
+
+    .bet-input{
+      width:100%;
+      padding:14px;
+      border-radius:14px;
+      background:#081425;
+      color:white;
+      border:1px solid var(--line);
+      outline:none;
+    }
+
+    .aviator-play{
+      border-radius:14px;
+      font-weight:950;
+      background:linear-gradient(135deg,#dc2626,#f97316);
+    }
+
+    .aviator-play:disabled{
+      opacity:.45;
+    }
+
+    /* XO */
+
+    .xo-board{
+      width:250px;
+      max-width:90vw;
+      margin:20px auto;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:7px;
+    }
+
+    .xo-cell{
+      aspect-ratio:1;
+      border-radius:15px;
+      background:#09182b;
+      border:1px solid var(--line);
+      font-size:30px;
+      font-weight:950;
+    }
+
+    .xo-cell:active{
+      transform:scale(.96);
+    }
+
+    /* BOTTOM NAV */
+
+    .bottom-nav{
+      position:fixed;
+      z-index:1000;
+      bottom:0;
+      left:0;
+      right:0;
+      padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+      background:rgba(4,10,20,.94);
+      backdrop-filter:blur(20px);
+      border-top:1px solid var(--line);
+      display:flex;
+      justify-content:center;
+    }
+
+    .nav-inner{
+      width:100%;
+      max-width:700px;
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:4px;
+    }
+
+    .nav-btn{
+      padding:8px 3px;
+      border-radius:13px;
+      background:transparent;
+      color:#72849f;
+      font-size:10px;
+      font-weight:800;
+    }
+
+    .nav-icon{
+      font-size:19px;
+      display:block;
+      margin-bottom:2px;
+    }
+
+    .nav-btn.active{
+      color:#60a5fa;
+      background:rgba(59,130,246,.10);
+    }
+
+    /* TOAST */
+
+    .toast{
+      position:fixed;
+      z-index:11000;
+      left:50%;
+      bottom:95px;
+      transform:translate(-50%,20px);
+      width:calc(100% - 32px);
+      max-width:450px;
+      padding:14px 16px;
+      border-radius:15px;
+      background:#102139;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      opacity:0;
+      pointer-events:none;
+      transition:.25s;
+      font-size:13px;
+      text-align:center;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translate(-50%,0);
+    }
+
+    .toast.error{
+      border-color:rgba(239,68,68,.35);
+    }
+
+    .toast.success{
+      border-color:rgba(34,197,94,.35);
+    }
+
+    /* MODAL */
+
+    .modal{
+      position:fixed;
+      inset:0;
+      z-index:10500;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      padding:15px;
+      background:rgba(0,0,0,.65);
+      backdrop-filter:blur(8px);
+    }
+
+    .modal-box{
+      width:100%;
+      max-width:520px;
+      max-height:88vh;
+      overflow:auto;
+      padding:21px;
+      border-radius:25px;
+      background:#0b182b;
+      border:1px solid var(--line);
+      box-shadow:0 30px 90px rgba(0,0,0,.55);
+    }
+
+    .modal-title{
+      font-size:21px;
+      font-weight:950;
+      margin-bottom:7px;
+    }
+
+    .modal-sub{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+      margin-bottom:16px;
+    }
+
+    .close-btn{
+      width:100%;
+      margin-top:9px;
+      padding:13px;
+      border-radius:14px;
+      background:#17263c;
+      font-weight:800;
+    }
+
+    @media(max-width:380px){
+      .balance{font-size:33px}
+      .multiplier{font-size:48px}
+      .feature{padding:15px}
+    }
+  </style>
 </head>
 
 <body>
 
-<!-- =======================================================
-     LOADER
-======================================================= -->
-
-<div id="loader">
-  <div class="logo-loader">$</div>
-  <div class="loader-title">USDT Hub</div>
-  <div class="loader-text">Loading your account...</div>
-  <div class="spinner"></div>
-</div>
-
-<!-- =======================================================
-     CHANNEL LOCK
-======================================================= -->
-
-<div id="lockScreen">
-
-  <div class="lock-box">
-
-    <div class="lock-logo">$</div>
-
-    <h1>Unlock USDT Hub 🔐</h1>
-
-    <p>
-      Join both official channels below.
-      After joining, tap verify to unlock your account.
-    </p>
-
-    <button class="channel-btn"
-            onclick="openChannel('https://t.me/birr_gram')">
-      📢 Join Birr Gram
-    </button>
-
-    <button class="channel-btn"
-            onclick="openChannel('https://t.me/usdt_g_ram')">
-      📢 Join USDT Gram
-    </button>
-
-    <button class="verify-btn"
-            id="verifyBtn"
-            onclick="verifyChannels()">
-      ✅ Verify Membership
-    </button>
-
+  <!-- LOADING -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loader-box">
+      <div class="logo-orb">₮</div>
+      <h2>USDT Hub</h2>
+      <p>Loading your account...</p>
+    </div>
   </div>
 
-</div>
+  <!-- CHANNEL LOCK -->
+  <section id="lockScreen" class="lock-screen hidden">
+    <div class="lock-wrap">
 
-<!-- =======================================================
-     APP
-======================================================= -->
+      <div class="lock-logo">🔒</div>
 
-<div id="app">
-
-<!-- ================= HOME ================= -->
-
-<section id="page-home" class="page active">
-
-  <div class="topbar">
-
-    <div class="brand">
-      <div class="brand-icon">$</div>
-      <div>
-        <div class="brand-name">USDT Hub</div>
-        <div class="brand-sub">Earn • Play • Withdraw</div>
+      <div class="lock-title">
+        Join to Continue
       </div>
-    </div>
 
-    <button class="icon-btn"
-            onclick="openModal('profileModal')">
-      👤
-    </button>
+      <div class="lock-sub">
+        You must join both official USDT Hub channels before you can access the app.
+      </div>
 
-  </div>
+      <div class="join-card">
+        <div class="join-row">
+          <div class="join-info">
+            <div class="channel-icon">📢</div>
+            <div>
+              <div class="join-name">Birr Gram</div>
+              <div class="join-handle">@birr_gram</div>
+            </div>
+          </div>
 
-  <div class="balance-card">
+          <button class="join-btn"
+                  onclick="openTelegram('https://t.me/birr_gram')">
+            JOIN
+          </button>
+        </div>
+      </div>
 
-    <div class="balance-label">
-      Available Balance
-    </div>
+      <div class="join-card">
+        <div class="join-row">
+          <div class="join-info">
+            <div class="channel-icon">💎</div>
+            <div>
+              <div class="join-name">USDT Gram</div>
+              <div class="join-handle">@usdt_g_ram</div>
+            </div>
+          </div>
 
-    <div class="balance">
-      <span id="balance">0.0000</span>
-      <small> USDT</small>
-    </div>
+          <button class="join-btn"
+                  onclick="openTelegram('https://t.me/usdt_g_ram')">
+            JOIN
+          </button>
+        </div>
+      </div>
 
-    <div class="balance-meta">
-      Points: <b id="pointsBalance">0</b>
-    </div>
-
-    <div class="balance-actions">
-
-      <button class="primary-btn"
-              onclick="showPage('withdraw')">
-        💸 Withdraw
+      <button id="verifyBtn"
+              class="verify-btn"
+              onclick="verifyChannels()">
+        ✅ VERIFY MEMBERSHIP
       </button>
 
-      <button class="secondary-btn"
-              onclick="showPage('tasks')">
-        🚀 Earn More
-      </button>
-
-    </div>
-
-  </div>
-
-  <div class="stats">
-
-    <div class="stat">
-      <div class="stat-value" id="adsStat">0</div>
-      <div class="stat-label">Ads Watched</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-value" id="refStat">0</div>
-      <div class="stat-label">Referrals</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-value" id="taskStat">0</div>
-      <div class="stat-label">Tasks</div>
-    </div>
-
-  </div>
-
-  <div class="section-title">
-    <h2>Quick Earn</h2>
-    <span>Choose your method</span>
-  </div>
-
-  <div class="feature-grid">
-
-    <button class="feature"
-            onclick="showPage('ads')">
-
-      <div class="feature-icon">📺</div>
-      <span class="feature-arrow">›</span>
-
-      <h3>Watch Ads</h3>
-      <p>Watch available ads and earn rewards.</p>
-
-    </button>
-
-    <button class="feature"
-            onclick="showPage('referrals')">
-
-      <div class="feature-icon">👥</div>
-      <span class="feature-arrow">›</span>
-
-      <h3>Refer Friends</h3>
-      <p>Invite people and earn referral rewards.</p>
-
-    </button>
-
-    <button class="feature"
-            onclick="showPage('tasks')">
-
-      <div class="feature-icon">🎯</div>
-      <span class="feature-arrow">›</span>
-
-      <h3>Tasks</h3>
-      <p>Complete Telegram tasks for points.</p>
-
-    </button>
-
-    <button class="feature"
-            onclick="showPage('games')">
-
-      <div class="feature-icon">🎮</div>
-      <span class="feature-arrow">›</span>
-
-      <h3>Games</h3>
-      <p>Play the available games.</p>
-
-    </button>
-
-  </div>
-
-  <div class="section-title">
-    <h2>More Ways</h2>
-  </div>
-
-  <button class="quick"
-          onclick="showPage('promo')">
-
-    <div class="quick-icon">🎁</div>
-
-    <div class="quick-info">
-      <strong>Promo Codes</strong>
-      <small>Have a code? Claim your reward.</small>
-    </div>
-
-    <span>›</span>
-
-  </button>
-
-  <button class="quick"
-          onclick="showPage('withdraw')">
-
-    <div class="quick-icon">💎</div>
-
-    <div class="quick-info">
-      <strong>USDT Withdraw</strong>
-      <small>Withdraw your available balance.</small>
-    </div>
-
-    <span>›</span>
-
-  </button>
-
-</section>
-
-
-<!-- ================= ADS ================= -->
-
-<section id="page-ads" class="page">
-
-  <div class="topbar">
-    <div class="brand">
-      <div class="brand-icon">📺</div>
-      <div>
-        <div class="brand-name">Watch Ads</div>
-        <div class="brand-sub">Earn from available providers</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="ad-card">
-
-    <div class="ad-icon">🎬</div>
-
-    <h2>Watch & Earn</h2>
-
-    <p>
-      Choose an available ad provider.
-      Your reward is credited after the ad flow completes.
-    </p>
-
-    <div class="provider-grid">
-
-      <button class="provider"
-              onclick="watchAd('monetag')">
-
-        <strong>🚀 Monetag</strong>
-        <span id="monetagReward">Earn reward</span>
-
-      </button>
-
-      <button class="provider"
-              onclick="watchAd('adsgram')">
-
-        <strong>⚡ Adsgram</strong>
-        <span id="adsgramReward">Earn reward</span>
-
-      </button>
-
-    </div>
-
-  </div>
-
-  <div class="section-title">
-    <h2>Today's Ads</h2>
-    <span id="adLimits">0 / 0</span>
-  </div>
-
-  <div class="stats">
-
-    <div class="stat">
-      <div class="stat-value" id="monetagToday">0</div>
-      <div class="stat-label">Monetag</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-value" id="adsgramToday">0</div>
-      <div class="stat-label">Adsgram</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-value" id="totalAds">0</div>
-      <div class="stat-label">Total</div>
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- ================= REFERRALS ================= -->
-
-<section id="page-referrals" class="page">
-
-  <div class="topbar">
-    <div class="brand">
-      <div class="brand-icon">👥</div>
-      <div>
-        <div class="brand-name">Referrals</div>
-        <div class="brand-sub">Invite friends and earn</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="ref-card">
-
-    <h2>Invite & Earn 🔥</h2>
-
-    <p style="color:var(--muted);font-size:11px;line-height:1.5">
-      Share your personal referral link.
-      Referral rewards are handled by the server.
-    </p>
-
-    <div class="ref-code">
-
-      <input class="input"
-             id="refInput"
-             readonly>
-
-      <button class="primary-btn"
-              onclick="copyReferral()">
-        Copy
-      </button>
-
-    </div>
-
-    <div class="ref-link"
-         id="refLink">
-      Loading referral link...
-    </div>
-
-  </div>
-
-  <div class="stats">
-
-    <div class="stat">
-      <div class="stat-value" id="referralsCount">0</div>
-      <div class="stat-label">Invited</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-value" id="referralPoints">0</div>
-      <div class="stat-label">Referral Points</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-value">∞</div>
-      <div class="stat-label">Share</div>
-    </div>
-
-  </div>
-
-  <div class="section-title">
-    <h2>Your Referrals</h2>
-  </div>
-
-  <div id="referralList">
-    <div class="empty">
-      <div class="empty-icon">👥</div>
-      Loading referrals...
-    </div>
-  </div>
-
-</section>
-
-
-<!-- ================= TASKS ================= -->
-
-<section id="page-tasks" class="page">
-
-  <div class="topbar">
-
-    <div class="brand">
-      <div class="brand-icon">🎯</div>
-      <div>
-        <div class="brand-name">Tasks</div>
-        <div class="brand-sub">Complete tasks and earn</div>
-      </div>
-    </div>
-
-    <button class="icon-btn"
-            onclick="openModal('createTaskModal')">
-      ＋
-    </button>
-
-  </div>
-
-  <div id="taskList">
-
-    <div class="empty">
-      <div class="empty-icon">🎯</div>
-      Loading tasks...
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- ================= GAMES ================= -->
-
-<section id="page-games" class="page">
-
-  <div class="topbar">
-
-    <div class="brand">
-      <div class="brand-icon">🎮</div>
-      <div>
-        <div class="brand-name">Games</div>
-        <div class="brand-sub">Play responsibly</div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="game-tabs">
-
-    <button class="game-tab active"
-            id="aviatorTab"
-            onclick="switchGame('aviator')">
-      ✈️ Aviator
-    </button>
-
-    <button class="game-tab"
-            id="xoTab"
-            onclick="switchGame('xo')">
-      ❌ XO
-    </button>
-
-  </div>
-
-  <!-- AVIATOR -->
-
-  <div id="aviatorGame">
-
-    <div class="aviator">
-
-      <div class="aviator-grid"></div>
-
-      <div class="multiplier"
-           id="aviatorMultiplier">
-        1.00x
+      <div id="verifyStatus" class="verify-status">
+        Join both channels, then verify.
       </div>
 
-      <div class="aviator-status"
-           id="aviatorStatus">
-        Waiting for next round...
+    </div>
+  </section>
+
+  <!-- WELCOME BONUS -->
+  <section id="welcomeScreen" class="welcome-screen hidden">
+    <div class="welcome-wrap">
+
+      <div class="welcome-icon">🎁</div>
+
+      <h1>Welcome Bonus</h1>
+
+      <div class="desc">
+        Enter your BEP20 wallet address to receive your welcome bonus.
       </div>
 
-      <div class="flight">
+      <div class="address-card">
 
-        <svg viewBox="0 0 500 180"
-             preserveAspectRatio="none">
+        <label>BEP20 / BNB Smart Chain Address</label>
 
-          <path id="flightPath"
-                class="flight-path"
-                d="M0 170 C90 165,130 145,190 120 C270 85,330 50,500 10"/>
+        <input
+          id="welcomeAddress"
+          class="address-input"
+          type="text"
+          inputmode="text"
+          autocomplete="off"
+          placeholder="0x..."
+        >
 
-        </svg>
+        <button
+          id="claimBtn"
+          class="claim-btn"
+          onclick="claimWelcome()">
+          🎁 CLAIM WELCOME BONUS
+        </button>
 
-        <div class="plane"
-             id="plane">
-          ✈️
+        <div class="small-note">
+          Your address can only claim the welcome bonus once.
+          Make sure the address belongs to a wallet you control.
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN APP -->
+  <main id="app" class="app hidden">
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">₮</div>
+        <div>
+          <div class="brand-name">USDT Hub</div>
+          <div class="brand-sub">Earn • Play • Withdraw</div>
+        </div>
+      </div>
+
+      <div id="profile" class="profile">U</div>
+    </header>
+
+    <!-- HOME -->
+    <section id="page-home" class="page active">
+
+      <div class="balance-card">
+        <div class="balance-label">Available Balance</div>
+
+        <div class="balance">
+          <span id="balance">0.00</span>
+          <small>PTS</small>
+        </div>
+
+        <div class="welcome-user">
+          Welcome, <b id="userName">User</b> 👋
+        </div>
+      </div>
+
+      <div class="quick-grid">
+
+        <div class="quick">
+          <div class="quick-icon">👥</div>
+          <div id="refCount" class="quick-value">0</div>
+          <div class="quick-label">Referrals</div>
+        </div>
+
+        <div class="quick">
+          <div class="quick-icon">📺</div>
+          <div id="adsCount" class="quick-value">0</div>
+          <div class="quick-label">Ads watched</div>
+        </div>
+
+        <div class="quick">
+          <div class="quick-icon">🎯</div>
+          <div id="taskCount" class="quick-value">0</div>
+          <div class="quick-label">Tasks completed</div>
+        </div>
+
+        <div class="quick">
+          <div class="quick-icon">🏆</div>
+          <div id="winCount" class="quick-value">0</div>
+          <div class="quick-label">Game wins</div>
         </div>
 
       </div>
 
-      <div class="aviator-controls">
+      <div class="section-title">Quick Actions</div>
 
-        <div class="bet-input">
-          <input id="aviatorBet"
-                 type="number"
-                 min="1"
-                 step="1"
-                 value="10"
-                 placeholder="Bet">
-        </div>
+      <div class="feature-grid">
 
-        <button class="game-action"
-                id="aviatorButton"
-                onclick="aviatorAction()">
-          START
+        <button class="feature"
+                onclick="showPage('ads')">
+          <div class="feature-icon">📺</div>
+          <div class="feature-title">Watch Ads</div>
+          <div class="feature-desc">
+            Watch available ads and earn points.
+          </div>
+        </button>
+
+        <button class="feature"
+                onclick="showPage('tasks')">
+          <div class="feature-icon">🎯</div>
+          <div class="feature-title">Tasks</div>
+          <div class="feature-desc">
+            Complete Telegram tasks for rewards.
+          </div>
+        </button>
+
+        <button class="feature"
+                onclick="showPage('games')">
+          <div class="feature-icon">✈️</div>
+          <div class="feature-title">Aviator</div>
+          <div class="feature-desc">
+            Play the live-style multiplier game.
+          </div>
+        </button>
+
+        <button class="feature"
+                onclick="showPage('referrals')">
+          <div class="feature-icon">👥</div>
+          <div class="feature-title">Refer Friends</div>
+          <div class="feature-desc">
+            Invite friends and earn referral rewards.
+          </div>
         </button>
 
       </div>
 
-    </div>
+      <div class="section-title">USDT Hub</div>
 
-    <div class="game-history"
-         id="aviatorHistory">
-    </div>
+      <div class="card">
+        <div style="font-weight:900;margin-bottom:7px">
+          💎 Earn more, withdraw smarter
+        </div>
 
-    <div class="warning">
-      ⚠️ The live flight animation is visual only on the frontend.
-      The secure result must be validated by the backend before real
-      balance changes are made.
-    </div>
+        <div style="color:var(--muted);font-size:12px;line-height:1.55">
+          Earn through ads, verified Telegram tasks and referrals.
+          Your balance can be used for supported games or withdrawals.
+        </div>
+      </div>
 
-  </div>
+    </section>
 
-  <!-- XO -->
+    <!-- ADS -->
+    <section id="page-ads" class="page">
 
-  <div id="xoGame"
-       class="hidden">
+      <div class="section-title">📺 Watch & Earn</div>
 
-    <div class="game-info">
-      Choose X or O and play a round.
-    </div>
+      <div class="card">
+        <div style="font-weight:900">
+          Earn points by watching ads
+        </div>
 
-    <div class="xo-board"
-         id="xoBoard">
+        <div style="color:var(--muted);font-size:12px;margin-top:5px;line-height:1.5">
+          Each provider has its own daily limit.
+        </div>
+      </div>
 
-      <button class="xo-cell"
-              data-index="0"></button>
+      <div class="ad-provider">
 
-      <button class="xo-cell"
-              data-index="1"></button>
+        <div class="ad-left">
+          <div class="ad-icon">📺</div>
 
-      <button class="xo-cell"
-              data-index="2"></button>
+          <div>
+            <div class="ad-name">Monetag</div>
+            <div id="monetagCount" class="ad-count">
+              0 / 0 today
+            </div>
+          </div>
+        </div>
 
-      <button class="xo-cell"
-              data-index="3"></button>
+        <button
+          id="monetagBtn"
+          class="watch-btn"
+          onclick="watchAd('monetag')">
+          WATCH
+        </button>
 
-      <button class="xo-cell"
-              data-index="4"></button>
+      </div>
 
-      <button class="xo-cell"
-              data-index="5"></button>
+      <div class="ad-provider">
 
-      <button class="xo-cell"
-              data-index="6"></button>
+        <div class="ad-left">
+          <div class="ad-icon">🎬</div>
 
-      <button class="xo-cell"
-              data-index="7"></button>
+          <div>
+            <div class="ad-name">Adsgram</div>
+            <div id="adsgramCount" class="ad-count">
+              0 / 0 today
+            </div>
+          </div>
+        </div>
 
-      <button class="xo-cell"
-              data-index="8"></button>
+        <button
+          id="adsgramBtn"
+          class="watch-btn"
+          onclick="watchAd('adsgram')">
+          WATCH
+        </button>
 
-    </div>
+      </div>
 
-    <div style="display:flex;gap:9px">
+    </section>
 
-      <button class="primary-btn"
-              style="flex:1"
-              onclick="playXO('x')">
-        Play X
+    <!-- TASKS -->
+    <section id="page-tasks" class="page">
+
+      <div class="section-title">🎯 Telegram Tasks</div>
+
+      <div class="card">
+        <button class="action-btn"
+                onclick="openCreateTask()">
+          ➕ CREATE A TASK
+        </button>
+      </div>
+
+      <div id="tasksList">
+        <div class="card" style="text-align:center;color:var(--muted)">
+          Loading tasks...
+        </div>
+      </div>
+
+    </section>
+
+    <!-- REFERRALS -->
+    <section id="page-referrals" class="page">
+
+      <div class="section-title">👥 Referrals</div>
+
+      <div class="ref-box">
+
+        <div style="font-size:14px;color:var(--muted)">
+          Your referral link
+        </div>
+
+        <div id="refLink" class="ref-code">
+          Loading...
+        </div>
+
+        <div class="ref-buttons">
+
+          <button class="action-btn purple"
+                  onclick="copyReferral()">
+            📋 COPY
+          </button>
+
+          <button class="action-btn"
+                  onclick="shareReferral()">
+            🚀 SHARE
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="card" style="margin-top:13px">
+
+        <div style="font-weight:900">
+          Referral statistics
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+
+          <div class="quick">
+            <div class="quick-label">People invited</div>
+            <div id="refTotal" class="quick-value">0</div>
+          </div>
+
+          <div class="quick">
+            <div class="quick-label">Referral earnings</div>
+            <div id="refEarnings" class="quick-value">0</div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="section-title">Your referrals</div>
+
+      <div id="referralList" class="ref-list">
+        <div class="card" style="text-align:center;color:var(--muted)">
+          No referrals yet.
+        </div>
+      </div>
+
+    </section>
+
+    <!-- GAMES -->
+    <section id="page-games" class="page">
+
+      <div class="section-title">🎮 Games</div>
+
+      <!-- AVIATOR -->
+      <div class="aviator">
+
+        <div class="aviator-head">
+
+          <div class="aviator-logo">
+            ✈️ AVIATOR
+          </div>
+
+          <div class="live-dot">
+            LIVE
+          </div>
+
+        </div>
+
+        <div class="aviator-screen">
+
+          <div id="aviatorMultiplier"
+               class="multiplier">
+            1.00x
+          </div>
+
+          <div class="flight-line"></div>
+
+          <div id="aviatorPlane"
+               class="plane">
+            ✈️
+          </div>
+
+        </div>
+
+        <div id="aviatorStatus"
+             class="aviator-status">
+          Ready for takeoff
+        </div>
+
+        <div class="aviator-controls">
+
+          <input
+            id="aviatorBet"
+            class="bet-input"
+            type="number"
+            min="1"
+            step="1"
+            placeholder="Bet points"
+          >
+
+          <button
+            id="aviatorBtn"
+            class="aviator-play"
+            onclick="playAviator()">
+            PLACE BET
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="card" style="margin-top:13px">
+        <div style="font-weight:900">
+          How Aviator works
+        </div>
+
+        <div style="color:var(--muted);font-size:12px;line-height:1.55;margin-top:7px">
+          Choose your bet and start a round. The multiplier rises during
+          the flight. The final result is decided by the server. Your
+          browser animation only visualizes the round.
+        </div>
+      </div>
+
+      <!-- XO -->
+
+      <div class="section-title">❌⭕ XO</div>
+
+      <div class="card">
+
+        <div style="text-align:center;color:var(--muted);font-size:12px">
+          Choose X or O. Each play uses the configured entry cost.
+        </div>
+
+        <div class="xo-board">
+
+          <button class="xo-cell" onclick="playXO('x')">X</button>
+          <button class="xo-cell" onclick="playXO('o')">O</button>
+          <button class="xo-cell" onclick="playXO('x')">X</button>
+
+          <button class="xo-cell" onclick="playXO('o')">O</button>
+          <button class="xo-cell" onclick="playXO('x')">X</button>
+          <button class="xo-cell" onclick="playXO('o')">O</button>
+
+          <button class="xo-cell" onclick="playXO('x')">X</button>
+          <button class="xo-cell" onclick="playXO('o')">O</button>
+          <button class="xo-cell" onclick="playXO('x')">X</button>
+
+        </div>
+
+        <div id="xoResult"
+             style="text-align:center;font-weight:900;min-height:25px">
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- PROMO -->
+    <section id="page-promo" class="page">
+
+      <div class="section-title">🎁 Promo</div>
+
+      <div class="card promo-card">
+
+        <div class="promo-title">
+          Enter a promo code
+        </div>
+
+        <div class="promo-sub">
+          Each valid code can only be claimed once per account.
+        </div>
+
+        <input
+          id="promoCode"
+          class="input"
+          placeholder="PROMO CODE"
+          autocomplete="off"
+        >
+
+        <button class="action-btn green"
+                onclick="claimPromo()">
+          🎁 CLAIM CODE
+        </button>
+
+      </div>
+
+      <div class="card">
+
+        <div style="font-weight:900;margin-bottom:10px">
+          Available codes
+        </div>
+
+        <div style="color:var(--muted);font-size:12px;line-height:1.8">
+          USDTHUB • MONEYTIME • CRYPTOBONUS • FASTUSDT
+          • DAILYCLAIM • LUCKYWIN • REWARD777
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- WITHDRAW -->
+    <section id="page-withdraw" class="page">
+
+      <div class="section-title">💸 Withdraw</div>
+
+      <div class="card">
+
+        <div style="text-align:center;color:var(--muted);font-size:12px">
+          Available balance
+        </div>
+
+        <div id="withdrawBalance"
+             class="withdraw-amount">
+          0
+        </div>
+
+        <div class="withdraw-note">
+          Minimum withdrawal is configured by the backend.
+        </div>
+
+        <input
+          id="withdrawAddress"
+          class="input"
+          placeholder="BEP20 address 0x..."
+          autocomplete="off"
+        >
+
+        <button
+          id="withdrawBtn"
+          class="action-btn green"
+          onclick="withdraw()">
+          💸 WITHDRAW
+        </button>
+
+      </div>
+
+      <div class="card">
+
+        <div style="font-weight:900">
+          ⚠️ Before withdrawing
+        </div>
+
+        <div style="color:var(--muted);font-size:12px;line-height:1.55;margin-top:8px">
+          Double-check your BEP20 address. Blockchain transactions cannot
+          normally be reversed after they are sent.
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- NAV -->
+  <nav id="bottomNav" class="bottom-nav hidden">
+
+    <div class="nav-inner">
+
+      <button class="nav-btn active"
+              data-page="home"
+              onclick="showPage('home')">
+        <span class="nav-icon">🏠</span>
+        Home
       </button>
 
-      <button class="secondary-btn"
-              style="flex:1"
-              onclick="playXO('o')">
-        Play O
+      <button class="nav-btn"
+              data-page="ads"
+              onclick="showPage('ads')">
+        <span class="nav-icon">📺</span>
+        Ads
+      </button>
+
+      <button class="nav-btn"
+              data-page="tasks"
+              onclick="showPage('tasks')">
+        <span class="nav-icon">🎯</span>
+        Tasks
+      </button>
+
+      <button class="nav-btn"
+              data-page="games"
+              onclick="showPage('games')">
+        <span class="nav-icon">🎮</span>
+        Games
+      </button>
+
+      <button class="nav-btn"
+              data-page="referrals"
+              onclick="showPage('referrals')">
+        <span class="nav-icon">👥</span>
+        Refer
       </button>
 
     </div>
 
-    <div class="warning">
-      Game results and balance changes are validated server-side.
-    </div>
+  </nav>
 
-  </div>
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
 
-</section>
+  <!-- CREATE TASK MODAL -->
+  <div id="taskModal" class="modal hidden">
 
+    <div class="modal-box">
 
-<!-- ================= PROMO ================= -->
-
-<section id="page-promo" class="page">
-
-  <div class="topbar">
-
-    <div class="brand">
-      <div class="brand-icon">🎁</div>
-      <div>
-        <div class="brand-name">Promo</div>
-        <div class="brand-sub">Claim available codes</div>
+      <div class="modal-title">
+        ➕ Create Telegram Task
       </div>
-    </div>
 
-  </div>
-
-  <div class="promo-card">
-
-    <h2>Promo Code 🎁</h2>
-
-    <p>
-      Enter a valid promotional code to claim its reward.
-      Each code can only be claimed once per account.
-    </p>
-
-    <input class="input"
-           id="promoCode"
-           placeholder="Enter promo code"
-           autocomplete="off"
-           style="margin-bottom:10px">
-
-    <button class="primary-btn"
-            style="width:100%"
-            onclick="claimPromo()">
-      Claim Reward
-    </button>
-
-  </div>
-
-</section>
-
-
-<!-- ================= WITHDRAW ================= -->
-
-<section id="page-withdraw" class="page">
-
-  <div class="topbar">
-
-    <div class="brand">
-      <div class="brand-icon">💸</div>
-      <div>
-        <div class="brand-name">Withdraw</div>
-        <div class="brand-sub">USDT BEP20</div>
+      <div class="modal-sub">
+        Creating a task costs the configured amount of points.
+        Users will receive the configured reward after completing it.
       </div>
-    </div>
 
-  </div>
+      <input
+        id="taskTitle"
+        class="input"
+        placeholder="Task title"
+      >
 
-  <div class="withdraw-card">
+      <input
+        id="taskLink"
+        class="input"
+        placeholder="Telegram link e.g. https://t.me/example"
+      >
 
-    <h2>Withdraw USDT</h2>
+      <input
+        id="taskChatId"
+        class="input"
+        placeholder="Chat ID or @username"
+      >
 
-    <p style="color:var(--muted);font-size:11px">
-      Send your BEP20-compatible wallet address below.
-    </p>
+      <select id="taskType"
+              class="input">
+        <option value="channel">Channel</option>
+        <option value="bot">Bot</option>
+      </select>
 
-    <div class="warning">
-      ⚠️ Double-check the network and address before submitting.
-      Blockchain transfers cannot normally be reversed.
-    </div>
-
-    <input class="input"
-           id="withdrawAddress"
-           placeholder="0x... BEP20 address"
-           autocomplete="off">
-
-    <button class="primary-btn"
-            style="width:100%;margin-top:10px"
-            onclick="withdraw()">
-      💸 Request Withdrawal
-    </button>
-
-  </div>
-
-  <div class="section-title">
-    <h2>Withdrawal Info</h2>
-  </div>
-
-  <div class="stats">
-
-    <div class="stat">
-      <div class="stat-value"
-           id="withdrawCount">
-        0
-      </div>
-      <div class="stat-label">Withdrawals</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-value"
-           id="withdrawMin">
-        —
-      </div>
-      <div class="stat-label">Minimum</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-value">BEP20</div>
-      <div class="stat-label">Network</div>
-    </div>
-
-  </div>
-
-</section>
-
-<!-- =======================================================
-     BOTTOM NAV
-======================================================= -->
-
-<nav class="bottom-nav">
-
-  <button class="nav-btn active"
-          data-page="home"
-          onclick="showPage('home')">
-    <span>⌂</span>
-    Home
-  </button>
-
-  <button class="nav-btn"
-          data-page="ads"
-          onclick="showPage('ads')">
-    <span>▶</span>
-    Ads
-  </button>
-
-  <button class="nav-btn"
-          data-page="tasks"
-          onclick="showPage('tasks')">
-    <span>🎯</span>
-    Tasks
-  </button>
-
-  <button class="nav-btn"
-          data-page="games"
-          onclick="showPage('games')">
-    <span>🎮</span>
-    Games
-  </button>
-
-  <button class="nav-btn"
-          data-page="referrals"
-          onclick="showPage('referrals')">
-    <span>👥</span>
-    Refer
-  </button>
-
-</nav>
-
-</div>
-
-
-<!-- =======================================================
-     PROFILE MODAL
-======================================================= -->
-
-<div class="modal"
-     id="profileModal"
-     onclick="modalOutside(event,'profileModal')">
-
-  <div class="modal-box">
-
-    <div class="modal-head">
-      <h2>My Profile</h2>
-
-      <button class="close"
-              onclick="closeModal('profileModal')">
-        ✕
+      <button class="action-btn"
+              onclick="createTask()">
+        🚀 CREATE TASK
       </button>
-    </div>
 
-    <div class="profile">
-
-      <div class="profile-avatar"
-           id="profileAvatar">
-        U
-      </div>
-
-      <h2 id="profileName">
-        User
-      </h2>
-
-      <p id="profileUsername">
-        @username
-      </p>
-
-    </div>
-
-    <div class="info-list">
-
-      <div class="info-item">
-        <span>Telegram ID</span>
-        <span id="profileTelegramId">—</span>
-      </div>
-
-      <div class="info-item">
-        <span>Balance</span>
-        <span id="profileBalance">0</span>
-      </div>
-
-      <div class="info-item">
-        <span>Referrals</span>
-        <span id="profileReferrals">0</span>
-      </div>
-
-      <div class="info-item">
-        <span>Tasks Completed</span>
-        <span id="profileTasks">0</span>
-      </div>
-
-      <div class="info-item">
-        <span>Ads Watched</span>
-        <span id="profileAds">0</span>
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- =======================================================
-     WELCOME MODAL
-======================================================= -->
-
-<div class="modal show"
-     id="welcomeModal">
-
-  <div class="modal-box">
-
-    <div class="modal-head">
-      <h2>🎁 Welcome Bonus</h2>
-    </div>
-
-    <p style="color:var(--muted);font-size:11px;line-height:1.5">
-      Enter your BEP20 wallet address to claim your welcome bonus.
-      Your address can only be used once.
-    </p>
-
-    <input class="input"
-           id="welcomeAddress"
-           placeholder="0x... BEP20 address"
-           autocomplete="off">
-
-    <div class="warning">
-      Make sure this is your correct BEP20 address before submitting.
-    </div>
-
-    <button class="primary-btn"
-            style="width:100%"
-            onclick="claimWelcome()">
-      🎁 Claim Welcome Bonus
-    </button>
-
-  </div>
-
-</div>
-
-
-<!-- =======================================================
-     CREATE TASK MODAL
-======================================================= -->
-
-<div class="modal"
-     id="createTaskModal"
-     onclick="modalOutside(event,'createTaskModal')">
-
-  <div class="modal-box">
-
-    <div class="modal-head">
-
-      <h2>Create Task</h2>
-
-      <button class="close"
-              onclick="closeModal('createTaskModal')">
-        ✕
+      <button class="close-btn"
+              onclick="closeCreateTask()">
+        CANCEL
       </button>
 
     </div>
 
-    <input class="input"
-           id="taskTitle"
-           placeholder="Task title"
-           maxlength="120"
-           style="margin-bottom:9px">
-
-    <input class="input"
-           id="taskLink"
-           placeholder="Telegram link"
-           maxlength="500"
-           style="margin-bottom:9px">
-
-    <input class="input"
-           id="taskChatId"
-           placeholder="Telegram chat ID / @channel"
-           maxlength="150"
-           style="margin-bottom:9px">
-
-    <select class="input"
-            id="taskType"
-            style="margin-bottom:10px">
-
-      <option value="channel">
-        Channel
-      </option>
-
-      <option value="bot">
-        Bot
-      </option>
-
-    </select>
-
-    <button class="primary-btn"
-            style="width:100%"
-            onclick="createTask()">
-      🚀 Publish Task
-    </button>
-
   </div>
-
-</div>
-
-
-<!-- =======================================================
-     TOAST
-======================================================= -->
-
-<div id="toast"></div>
-
 
 <script>
-/* =========================================================
-   USDT HUB FRONTEND ENGINE
-========================================================= */
-
 "use strict";
 
-/* ---------------------------------------------------------
+/* =====================================================
    TELEGRAM
---------------------------------------------------------- */
+===================================================== */
 
-const tg = window.Telegram?.WebApp || null;
+const tg = window.Telegram?.WebApp;
 
-if(tg){
-  try{
-    tg.ready();
-    tg.expand();
-    tg.setHeaderColor("#07111f");
-    tg.setBackgroundColor("#050914");
-  }catch(e){}
+if (tg) {
+  tg.ready();
+  tg.expand();
+
+  try {
+    tg.setHeaderColor("#050b15");
+    tg.setBackgroundColor("#050b15");
+  } catch {}
 }
 
-/* ---------------------------------------------------------
-   API
---------------------------------------------------------- */
+const INIT_DATA = tg?.initData || "";
+
+let currentUser = null;
+let appReady = false;
+let aviatorTimer = null;
+let aviatorRunning = false;
+
+/* =====================================================
+   CONFIG
+===================================================== */
 
 const API = {
-  user:"/api/user",
-  verify:"/api/verify-membership",
-  welcome:"/api/claim-welcome",
-  ads:"/api/ads",
-  games:"/api/games",
-  promo:"/api/promo",
-  referral:"/api/referral",
-  tasks:"/api/tasks",
-  withdraw:"/api/withdraw"
+  user: "/api/user",
+  verify: "/api/verify-membership",
+  welcome: "/api/claim-welcome",
+  ads: "/api/ads",
+  games: "/api/games",
+  promo: "/api/promo",
+  referral: "/api/referral",
+  tasks: "/api/tasks",
+  withdraw: "/api/withdraw"
 };
 
-let USER = null;
-let initialized = false;
+const CHANNELS = {
+  first: "https://t.me/birr_gram",
+  second: "https://t.me/usdt_g_ram"
+};
 
-/* ---------------------------------------------------------
+/* =====================================================
    HELPERS
---------------------------------------------------------- */
+===================================================== */
 
 function $(id){
   return document.getElementById(id);
 }
 
-function esc(value){
+function escapeHTML(value){
   return String(value ?? "")
     .replaceAll("&","&amp;")
     .replaceAll("<","&lt;")
@@ -2185,684 +1769,734 @@ function esc(value){
     .replaceAll("'","&#039;");
 }
 
-function money(value){
+function formatNumber(value){
   const n = Number(value || 0);
-  return n.toFixed(4);
+
+  return n.toLocaleString(undefined,{
+    maximumFractionDigits:8
+  });
 }
 
-function points(value){
-  const n = Number(value || 0);
-  return Math.floor(n).toLocaleString();
+function showToast(message,type=""){
+  const toast = $("toast");
+
+  toast.textContent = message;
+  toast.className = "toast show " + type;
+
+  clearTimeout(showToast.timer);
+
+  showToast.timer = setTimeout(()=>{
+    toast.className = "toast";
+  },3200);
 }
 
-function toast(message,type="success"){
-  const el = $("toast");
-
-  el.textContent = message;
-  el.className = "";
-
-  void el.offsetWidth;
-
-  el.classList.add("show",type);
-
-  clearTimeout(window.__toastTimer);
-
-  window.__toastTimer =
-    setTimeout(()=>{
-      el.classList.remove("show");
-    },3000);
-}
-
-function haptic(type="light"){
+function openTelegram(url){
   try{
-    if(tg?.HapticFeedback){
-      tg.HapticFeedback.impactOccurred(type);
-    }
-  }catch(e){}
-}
-
-function openChannel(url){
-  haptic();
-  try{
-    if(tg){
+    if(tg?.openTelegramLink){
       tg.openTelegramLink(url);
     }else{
       window.open(url,"_blank");
     }
-  }catch(e){
+  }catch{
     window.open(url,"_blank");
   }
 }
 
-function openModal(id){
-  $(id)?.classList.add("show");
+function setLoading(show){
+  $("loadingScreen").classList.toggle("hidden",!show);
 }
 
-function closeModal(id){
-  $(id)?.classList.remove("show");
-}
-
-function modalOutside(e,id){
-  if(e.target.id === id){
-    closeModal(id);
-  }
-}
-
-/* ---------------------------------------------------------
+/* =====================================================
    API REQUEST
---------------------------------------------------------- */
+===================================================== */
 
-async function api(url,options={}){
-  const config = {
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    ...options
+async function apiRequest(url,options={}){
+  const headers = {
+    "Content-Type":"application/json",
+    ...(options.headers || {})
   };
 
-  if(!config.body){
-    config.body = JSON.stringify({});
-  }
+  /*
+    Telegram recommends sending the raw initData to
+    your backend for validation.
+  */
 
-  const response =
-    await fetch(url,config);
+  headers["X-Telegram-Init-Data"] = INIT_DATA;
 
-  let data = {};
+  const response = await fetch(url,{
+    method:options.method || "POST",
+    headers,
+    body:options.body
+      ? JSON.stringify(options.body)
+      : undefined
+  });
+
+  let data = null;
 
   try{
     data = await response.json();
-  }catch(e){
-    throw new Error("SERVER_RESPONSE_INVALID");
+  }catch{
+    throw new Error("SERVER_INVALID_RESPONSE");
   }
 
-  if(!response.ok || data.success === false){
+  if(!response.ok || data?.success === false){
     throw new Error(
-      data.error ||
-      `REQUEST_FAILED_${response.status}`
+      data?.error ||
+      `HTTP_${response.status}`
     );
   }
 
   return data;
 }
 
-/* ---------------------------------------------------------
-   REGISTER
---------------------------------------------------------- */
+/* =====================================================
+   INITIALIZATION
+===================================================== */
 
-async function register(){
+async function initialize(){
 
-  const data =
-    await api(API.user,{
-      body:JSON.stringify({
-        action:"user"
-      })
-    });
-
-  USER = data.user;
-
-  updateUserUI();
-
-  if(data.newUser){
-    toast("🎉 Welcome to USDT Hub!");
-  }
-
-  return data;
-}
-
-/* ---------------------------------------------------------
-   USER UI
---------------------------------------------------------- */
-
-function updateUserUI(){
-
-  if(!USER) return;
-
-  const balance =
-    Number(USER.balance || 0);
-
-  $("balance").textContent =
-    money(balance);
-
-  $("pointsBalance").textContent =
-    points(balance);
-
-  $("adsStat").textContent =
-    points(USER.adsWatched);
-
-  $("refStat").textContent =
-    points(USER.referrals);
-
-  $("taskStat").textContent =
-    points(USER.tasksCompleted);
-
-  $("monetagToday").textContent =
-    points(USER.monetagToday);
-
-  $("adsgramToday").textContent =
-    points(USER.adsgramToday);
-
-  $("totalAds").textContent =
-    points(USER.adsWatched);
-
-  $("referralsCount").textContent =
-    points(USER.referrals);
-
-  $("referralPoints").textContent =
-    points(USER.referralPoints);
-
-  $("withdrawCount").textContent =
-    points(USER.withdrawals);
-
-  $("profileName").textContent =
-    `${USER.firstName || ""} ${USER.lastName || ""}`.trim()
-    || "USDT User";
-
-  $("profileUsername").textContent =
-    USER.username
-      ? `@${USER.username}`
-      : "Telegram user";
-
-  $("profileTelegramId").textContent =
-    USER.telegramId || "—";
-
-  $("profileBalance").textContent =
-    money(balance) + " USDT";
-
-  $("profileReferrals").textContent =
-    points(USER.referrals);
-
-  $("profileTasks").textContent =
-    points(USER.tasksCompleted);
-
-  $("profileAds").textContent =
-    points(USER.adsWatched);
-
-  const initial =
-    (USER.firstName || "U")
-      .charAt(0)
-      .toUpperCase();
-
-  $("profileAvatar").textContent =
-    initial;
-
-  const link =
-    `https://t.me/${tg?.initDataUnsafe?.bot_username || "YOUR_BOT"}?start=ref_${USER.telegramId}`;
-
-  $("refInput").value =
-    `ref_${USER.telegramId}`;
-
-  $("refLink").textContent =
-    link;
-}
-
-/* ---------------------------------------------------------
-   MEMBERSHIP
---------------------------------------------------------- */
-
-async function verifyChannels(){
-
-  const btn =
-    $("verifyBtn");
-
-  btn.disabled = true;
-  btn.textContent = "⏳ Checking...";
+  setLoading(true);
 
   try{
 
-    const data =
-      await api(API.verify,{
-        body:JSON.stringify({
-          action:"verify-membership"
-        })
-      });
+    if(!INIT_DATA){
 
-    if(!data.joined){
+      setLoading(false);
 
-      toast(
-        "❌ Please join both channels first.",
+      showToast(
+        "Open USDT Hub from Telegram.",
         "error"
       );
 
-      btn.disabled = false;
-      btn.textContent = "✅ Verify Membership";
-
-      return false;
+      return;
     }
 
-    USER.channelsVerified = true;
+    const data =
+      await apiRequest(API.user);
 
-    $("lockScreen").style.display =
-      "none";
+    if(!data?.user){
+      throw new Error("USER_DATA_MISSING");
+    }
 
-    toast("✅ Channels verified!");
+    currentUser = data.user;
 
-    return true;
+    updateUserUI();
+
+    /*
+      Always verify membership from the server.
+      Do not trust localStorage for this.
+    */
+
+    if(!currentUser.channelsVerified){
+
+      setLoading(false);
+      showLock();
+
+      return;
+    }
+
+    /*
+      If backend says the welcome bonus has not
+      been claimed, show the welcome screen.
+    */
+
+    if(!currentUser.welcomeBonusClaimed){
+
+      setLoading(false);
+      showWelcome();
+
+      return;
+    }
+
+    unlockApp();
 
   }catch(error){
 
-    toast(
-      error.message,
+    console.error(error);
+
+    setLoading(false);
+
+    showToast(
+      readableError(error.message),
       "error"
     );
-
-    btn.disabled = false;
-    btn.textContent = "✅ Verify Membership";
-
-    return false;
   }
 }
 
-/* ---------------------------------------------------------
-   WELCOME BONUS
---------------------------------------------------------- */
+/* =====================================================
+   SCREEN STATE
+===================================================== */
 
-async function claimWelcome(){
+function hideAllScreens(){
 
-  const address =
-    $("welcomeAddress")
-      .value
-      .trim();
+  $("lockScreen")
+    .classList.add("hidden");
 
-  if(!address){
-    toast(
-      "Enter your BEP20 address.",
-      "error"
-    );
-    return;
+  $("welcomeScreen")
+    .classList.add("hidden");
+
+  $("app")
+    .classList.add("hidden");
+
+  $("bottomNav")
+    .classList.add("hidden");
+}
+
+function showLock(){
+
+  hideAllScreens();
+
+  $("lockScreen")
+    .classList.remove("hidden");
+
+  $("verifyStatus").textContent =
+    "Join both channels, then verify.";
+}
+
+function showWelcome(){
+
+  hideAllScreens();
+
+  $("welcomeScreen")
+    .classList.remove("hidden");
+
+  $("welcomeAddress").value =
+    currentUser?.welcomeAddress || "";
+}
+
+function unlockApp(){
+
+  hideAllScreens();
+
+  $("app").classList.remove("hidden");
+  $("bottomNav").classList.remove("hidden");
+
+  appReady = true;
+
+  updateUserUI();
+
+  loadTasks();
+  loadReferrals();
+}
+
+/* =====================================================
+   USER UI
+===================================================== */
+
+function updateUserUI(){
+
+  if(!currentUser) return;
+
+  const name =
+    currentUser.firstName ||
+    currentUser.username ||
+    "User";
+
+  $("userName").textContent = name;
+
+  const balance =
+    Number(currentUser.balance || 0);
+
+  $("balance").textContent =
+    formatNumber(balance);
+
+  $("withdrawBalance").textContent =
+    formatNumber(balance);
+
+  $("refCount").textContent =
+    formatNumber(currentUser.referrals || 0);
+
+  $("adsCount").textContent =
+    formatNumber(currentUser.adsWatched || 0);
+
+  $("taskCount").textContent =
+    formatNumber(currentUser.tasksCompleted || 0);
+
+  const wins =
+    Number(currentUser.xoWins || 0) +
+    Number(currentUser.aviatorWins || 0);
+
+  $("winCount").textContent =
+    formatNumber(wins);
+
+  $("profile").textContent =
+    String(name).charAt(0).toUpperCase();
+
+  const uid =
+    currentUser.telegramId;
+
+  const botUsername =
+    currentUser.botUsername ||
+    "";
+
+  /*
+    If bot username isn't supplied by backend,
+    use the current Telegram start URL format.
+    The backend can later provide botUsername.
+  */
+
+  if(botUsername){
+    $("refLink").textContent =
+      `https://t.me/${botUsername}?start=ref_${uid}`;
+  }else{
+    $("refLink").textContent =
+      `ref_${uid}`;
   }
 
-  const button =
-    document.querySelector(
-      "#welcomeModal .primary-btn"
-    );
+  updateAdCounters();
+}
+
+/* =====================================================
+   CHANNEL VERIFICATION
+===================================================== */
+
+async function verifyChannels(){
+
+  const button = $("verifyBtn");
+  const status = $("verifyStatus");
 
   button.disabled = true;
-  button.textContent = "⏳ Processing...";
+  button.textContent = "⏳ CHECKING...";
+
+  status.textContent =
+    "Checking both Telegram channels...";
 
   try{
 
     const data =
-      await api(API.welcome,{
-        body:JSON.stringify({
-          action:"claim-welcome",
-          address
-        })
-      });
+      await apiRequest(API.verify);
 
-    USER.welcomeBonusClaimed = true;
-    USER.welcomeBonusStatus = "paid";
-    USER.welcomeAddress = address;
-    USER.appUnlocked = true;
+    if(data.joined){
 
-    updateUserUI();
+      status.textContent =
+        "✅ Both channels verified!";
 
-    closeModal("welcomeModal");
+      currentUser.channelsVerified = true;
 
-    toast(
-      `🎁 ${data.amount || "Welcome"} USDT sent!`
-    );
+      setTimeout(()=>{
+
+        if(!currentUser.welcomeBonusClaimed){
+          showWelcome();
+        }else{
+          unlockApp();
+        }
+
+      },500);
+
+    }else{
+
+      status.textContent =
+        "❌ You must join both channels first.";
+
+      showToast(
+        "Please join both channels.",
+        "error"
+      );
+
+      button.disabled = false;
+      button.textContent =
+        "✅ VERIFY MEMBERSHIP";
+    }
 
   }catch(error){
 
-    toast(
-      friendlyError(error.message),
+    console.error(error);
+
+    status.textContent =
+      readableError(error.message);
+
+    showToast(
+      readableError(error.message),
       "error"
     );
 
     button.disabled = false;
     button.textContent =
-      "🎁 Claim Welcome Bonus";
+      "✅ VERIFY MEMBERSHIP";
   }
 }
 
-/* ---------------------------------------------------------
-   ADS
---------------------------------------------------------- */
+/* =====================================================
+   WELCOME BONUS
+===================================================== */
 
-async function watchAd(provider){
+async function claimWelcome(){
 
-  if(!USER?.channelsVerified){
-    toast(
-      "Verify the channels first.",
+  const input = $("welcomeAddress");
+  const button = $("claimBtn");
+
+  const address =
+    input.value.trim();
+
+  if(!/^0x[a-fA-F0-9]{40}$/.test(address)){
+
+    showToast(
+      "Enter a valid BEP20 address.",
       "error"
     );
+
+    input.focus();
     return;
   }
 
-  haptic("medium");
+  button.disabled = true;
+  button.textContent =
+    "⏳ PROCESSING...";
 
-  toast(
-    `⏳ Opening ${provider}...`
-  );
+  try{
+
+    const data =
+      await apiRequest(
+        API.welcome,
+        {
+          body:{ address }
+        }
+      );
+
+    if(data.success){
+
+      currentUser.welcomeBonusClaimed = true;
+      currentUser.welcomeBonusStatus = "paid";
+      currentUser.welcomeAddress = address;
+
+      showToast(
+        `🎁 ${data.amount || ""} USDT welcome bonus sent!`,
+        "success"
+      );
+
+      setTimeout(()=>{
+        unlockApp();
+      },900);
+
+    }else{
+      throw new Error(
+        data.error || "CLAIM_FAILED"
+      );
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+    showToast(
+      readableError(error.message),
+      "error"
+    );
+
+    button.disabled = false;
+    button.textContent =
+      "🎁 CLAIM WELCOME BONUS";
+  }
+}
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
+function showPage(page){
+
+  if(!appReady) return;
+
+  document
+    .querySelectorAll(".page")
+    .forEach(el=>{
+      el.classList.remove("active");
+    });
+
+  const target =
+    $("page-" + page);
+
+  if(!target) return;
+
+  target.classList.add("active");
+
+  document
+    .querySelectorAll(".nav-btn")
+    .forEach(btn=>{
+      btn.classList.toggle(
+        "active",
+        btn.dataset.page === page
+      );
+    });
+
+  if(page === "tasks"){
+    loadTasks();
+  }
+
+  if(page === "referrals"){
+    loadReferrals();
+  }
+
+  if(page === "ads"){
+    updateAdCounters();
+  }
+}
+
+/* =====================================================
+   ADS
+===================================================== */
+
+function updateAdCounters(){
+
+  if(!currentUser) return;
+
+  const ml =
+    Number(currentUser.monetagToday || 0);
+
+  const al =
+    Number(currentUser.adsgramToday || 0);
 
   /*
-    IMPORTANT:
-    The ad provider itself must be initialized
-    by the backend/frontend SDK later.
-
-    This endpoint records the reward only after
-    the provider flow is legitimately completed.
+    These limits are also enforced by backend.
+    The values can be exposed by backend later.
+    Default values match the configured frontend.
   */
+
+  const monetagLimit =
+    Number(currentUser.monetagLimit || 50);
+
+  const adsgramLimit =
+    Number(currentUser.adsgramLimit || 50);
+
+  $("monetagCount").textContent =
+    `${ml} / ${monetagLimit} today`;
+
+  $("adsgramCount").textContent =
+    `${al} / ${adsgramLimit} today`;
+
+  $("monetagBtn").disabled =
+    ml >= monetagLimit;
+
+  $("adsgramBtn").disabled =
+    al >= adsgramLimit;
+}
+
+async function watchAd(provider){
+
+  if(
+    provider !== "monetag" &&
+    provider !== "adsgram"
+  ){
+    return;
+  }
+
+  const button =
+    provider === "monetag"
+      ? $("monetagBtn")
+      : $("adsgramBtn");
+
+  button.disabled = true;
+  button.textContent = "LOADING...";
 
   try{
 
     /*
-      If the real Monetag/Adsgram SDK is installed,
-      this is where its callback should resolve.
+      Your actual Monetag/Adsgram SDK should be
+      integrated here when the backend/provider
+      callback setup is finalized.
 
-      For now we do NOT fake a successful ad view.
+      The reward endpoint remains the backend
+      authority.
     */
 
-    const completed =
-      await runAdProvider(provider);
-
-    if(!completed){
-      toast(
-        "Ad was not completed.",
-        "error"
-      );
-      return;
+    if(provider === "monetag"){
+      await showMonetagAd();
+    }else{
+      await showAdsgramAd();
     }
 
     const data =
-      await api(API.ads,{
-        body:JSON.stringify({
-          provider
-        })
-      });
+      await apiRequest(
+        API.ads,
+        {
+          body:{ provider }
+        }
+      );
 
-    USER.balance =
-      Number(USER.balance || 0)
-      + Number(data.reward || 0);
+    currentUser.balance =
+      Number(currentUser.balance || 0) +
+      Number(data.reward || 0);
 
-    USER.adsWatched =
-      Number(USER.adsWatched || 0) + 1;
+    currentUser.adsWatched =
+      Number(currentUser.adsWatched || 0) + 1;
 
     if(provider === "monetag"){
-      USER.monetagAds =
-        Number(USER.monetagAds || 0) + 1;
-
-      USER.monetagToday =
-        Number(USER.monetagToday || 0) + 1;
+      currentUser.monetagToday =
+        Number(data.monetagToday || 0);
     }else{
-      USER.adsgramAds =
-        Number(USER.adsgramAds || 0) + 1;
-
-      USER.adsgramToday =
-        Number(USER.adsgramToday || 0) + 1;
+      currentUser.adsgramToday =
+        Number(data.adsgramToday || 0);
     }
 
     updateUserUI();
 
-    toast(
-      `🔥 +${data.reward || 0} points`
+    showToast(
+      `+${data.reward} points earned!`,
+      "success"
     );
 
   }catch(error){
 
-    toast(
-      friendlyError(error.message),
+    showToast(
+      readableError(error.message),
       "error"
     );
+
+  }finally{
+
+    button.disabled = false;
+    button.textContent = "WATCH";
+
+    updateAdCounters();
   }
 }
 
-async function runAdProvider(provider){
+/*
+  Provider placeholders.
+
+  IMPORTANT:
+  These do NOT falsely claim that an ad was watched.
+  Replace the provider implementation with the official
+  SDK callback once its exact SDK is installed.
+*/
+
+async function showMonetagAd(){
 
   /*
-    Real provider SDK hook.
+    If Monetag SDK exists, use it.
 
-    Monetag/Adsgram SDK callbacks should be connected
-    here when the SDK files are added.
-
-    We intentionally return false instead of pretending
-    an ad was watched.
+    This supports common Monetag SDK exposure without
+    crashing when the SDK isn't loaded.
   */
 
-  if(provider === "monetag"){
+  if(typeof window.show_11526625 === "function"){
 
-    if(typeof window.show_11526625 === "function"){
+    await new Promise((resolve,reject)=>{
 
       try{
 
-        await new Promise((resolve,reject)=>{
+        const result =
+          window.show_11526625();
 
-          const timer =
-            setTimeout(
-              ()=>reject(
-                new Error("AD_TIMEOUT")
-              ),
-              90000
-            );
+        if(result?.then){
+          result.then(resolve).catch(reject);
+        }else{
+          resolve();
+        }
 
-          Promise.resolve(
-            window.show_11526625()
-          )
-          .then(()=>{
-            clearTimeout(timer);
-            resolve();
-          })
-          .catch(reject);
-
-        });
-
-        return true;
-
-      }catch(e){
-        return false;
+      }catch(error){
+        reject(error);
       }
-    }
 
+    });
+
+    return;
   }
 
-  if(provider === "adsgram"){
+  /*
+    Do not automatically award a real reward when
+    no provider exists.
+  */
 
-    /*
-      Adsgram SDK integration will be attached
-      here once its official SDK configuration
-      is supplied.
-    */
-
-    return false;
-  }
-
-  return false;
+  throw new Error(
+    "MONETAG_NOT_READY"
+  );
 }
 
-/* ---------------------------------------------------------
-   REFERRALS
---------------------------------------------------------- */
+async function showAdsgramAd(){
 
-async function loadReferrals(){
+  if(window.Adsgram){
 
-  try{
-
-    const data =
-      await api(API.referral,{
-        body:JSON.stringify({
-          action:"list"
-        })
+    const controller =
+      window.Adsgram.init({
+        blockId:
+          window.ADSGRAM_BLOCK_ID || ""
       });
 
-    const list =
-      $("referralList");
-
-    if(!data.referrals?.length){
-
-      list.innerHTML = `
-        <div class="empty">
-          <div class="empty-icon">👥</div>
-          No referrals yet.
-          Share your link to get started.
-        </div>
-      `;
-
+    if(controller?.show){
+      await controller.show();
       return;
     }
-
-    list.innerHTML =
-      data.referrals.map(ref=>{
-
-        const name =
-          ref.referredUserId
-          ? `User ${String(ref.referredUserId).slice(-5)}`
-          : "Referral";
-
-        const channel =
-          ref.channelRewarded
-            ? "Channel ✓"
-            : "Channel pending";
-
-        const ads =
-          ref.adsRewarded
-            ? "Ads ✓"
-            : "2 ads pending";
-
-        return `
-          <div class="ref-row">
-
-            <div class="avatar">
-              👤
-            </div>
-
-            <div class="row-main">
-              <strong>${esc(name)}</strong>
-              <small>${channel} • ${ads}</small>
-            </div>
-
-            <div class="row-reward">
-              ${ref.channelRewarded && ref.adsRewarded ? "✓" : "…"}
-            </div>
-
-          </div>
-        `;
-
-      }).join("");
-
-  }catch(error){
-
-    toast(
-      friendlyError(error.message),
-      "error"
-    );
   }
+
+  throw new Error(
+    "ADSGRAM_NOT_READY"
+  );
 }
 
-async function checkReferral(){
-
-  try{
-
-    await api(API.referral,{
-      body:JSON.stringify({
-        action:"check"
-      })
-    });
-
-    await register();
-
-  }catch(e){}
-}
-
-function copyReferral(){
-
-  const text =
-    $("refLink").textContent;
-
-  navigator.clipboard
-    ?.writeText(text)
-    .then(()=>{
-      toast("📋 Referral link copied!");
-    })
-    .catch(()=>{
-      toast(
-        "Copy failed.",
-        "error"
-      );
-    });
-}
-
-/* ---------------------------------------------------------
+/* =====================================================
    TASKS
---------------------------------------------------------- */
+===================================================== */
 
 async function loadTasks(){
 
+  const container =
+    $("tasksList");
+
+  container.innerHTML =
+    `<div class="card" style="text-align:center;color:var(--muted)">
+      Loading tasks...
+    </div>`;
+
   try{
 
     const data =
-      await api(API.tasks,{
-        body:JSON.stringify({
-          action:"list"
-        })
-      });
+      await apiRequest(
+        API.tasks,
+        {
+          body:{ action:"list" }
+        }
+      );
 
-    const container =
-      $("taskList");
+    const tasks =
+      Array.isArray(data.tasks)
+        ? data.tasks
+        : [];
 
-    if(!data.tasks?.length){
+    if(!tasks.length){
 
-      container.innerHTML = `
-        <div class="empty">
-          <div class="empty-icon">🎯</div>
+      container.innerHTML =
+        `<div class="card" style="text-align:center;color:var(--muted)">
           No active tasks right now.
-        </div>
-      `;
+        </div>`;
 
       return;
     }
 
     container.innerHTML =
-      data.tasks.map(task=>{
+      tasks.map(task=>{
 
-        const max =
-          Number(task.maxCompletions || 1);
-
-        const done =
+        const completed =
           Number(task.completions || 0);
 
-        const percent =
-          Math.min(
-            100,
-            (done / max) * 100
-          );
+        const limit =
+          Number(task.maxCompletions || 0);
 
         return `
-          <div class="task-row">
+          <div class="task">
 
-            <div class="task-icon">
-              ${task.type === "bot" ? "🤖" : "📢"}
-            </div>
+            <div class="task-top">
 
-            <div class="task-content">
-
-              <h3>
-                ${esc(task.title)}
-              </h3>
-
-              <p>
-                ${done}/${max} completed
-              </p>
-
-              <div class="task-progress">
-                <div style="width:${percent}%"></div>
+              <div class="task-title">
+                ${escapeHTML(task.title)}
               </div>
-
-            </div>
-
-            <div class="task-side">
 
               <div class="task-reward">
-                +${esc(task.reward)}
+                +${escapeHTML(task.reward)}
               </div>
 
-              <button class="primary-btn"
-                      style="padding:0 11px;min-height:36px;font-size:10px"
-                      onclick="completeTask('${esc(task.id)}')">
-                Do
-              </button>
-
             </div>
+
+            <div class="task-meta">
+              ${completed}/${limit} completed
+              • ${escapeHTML(task.type || "task")}
+            </div>
+
+            <button
+              class="task-btn"
+              onclick="completeTask('${escapeHTML(task.id)}','${escapeHTML(task.link)}')">
+              🚀 COMPLETE TASK
+            </button>
 
           </div>
         `;
@@ -2871,71 +2505,72 @@ async function loadTasks(){
 
   }catch(error){
 
-    $("taskList").innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">⚠️</div>
-        Failed to load tasks.
-      </div>
-    `;
+    container.innerHTML =
+      `<div class="card" style="text-align:center;color:#f87171">
+        ${escapeHTML(readableError(error.message))}
+      </div>`;
+  }
+}
 
-    toast(
-      friendlyError(error.message),
+async function completeTask(taskId,link){
+
+  try{
+
+    if(link){
+      openTelegram(link);
+    }
+
+    showToast(
+      "Join the task first, then press complete again.",
+      ""
+    );
+
+    const data =
+      await apiRequest(
+        API.tasks,
+        {
+          body:{
+            action:"complete",
+            taskId
+          }
+        }
+      );
+
+    currentUser.balance =
+      Number(currentUser.balance || 0) +
+      Number(data.reward || 0);
+
+    currentUser.tasksCompleted =
+      Number(currentUser.tasksCompleted || 0) + 1;
+
+    updateUserUI();
+
+    showToast(
+      `🎯 +${data.reward} points earned!`,
+      "success"
+    );
+
+    loadTasks();
+
+  }catch(error){
+
+    showToast(
+      readableError(error.message),
       "error"
     );
   }
 }
 
-async function completeTask(taskId){
+/* =====================================================
+   CREATE TASK
+===================================================== */
 
-  const task =
-    USER?.channelsVerified;
+function openCreateTask(){
+  $("taskModal").classList.remove("hidden");
+}
 
-  if(!task){
-    toast(
-      "Verify channels first.",
-      "error"
-    );
-    return;
-  }
-
-  try{
-
-    /*
-      The backend verifies actual Telegram
-      membership before rewarding.
-    */
-
-    const data =
-      await api(API.tasks,{
-        body:JSON.stringify({
-          action:"complete",
-          taskId
-        })
-      });
-
-    USER.balance =
-      Number(USER.balance || 0)
-      + Number(data.reward || 0);
-
-    USER.tasksCompleted =
-      Number(USER.tasksCompleted || 0)
-      + 1;
-
-    updateUserUI();
-
-    toast(
-      `🎯 Task complete! +${data.reward}`
-    );
-
-    await loadTasks();
-
-  }catch(error){
-
-    toast(
-      friendlyError(error.message),
-      "error"
-    );
-  }
+function closeCreateTask(){
+  $("taskModal").classList.add("hidden");
 }
 
 async function createTask(){
@@ -2954,98 +2589,236 @@ async function createTask(){
 
   if(!title || !link || !chatId){
 
-    toast(
-      "Fill in all task fields.",
+    showToast(
+      "Fill all task fields.",
       "error"
     );
 
-    return;
-  }
-
-  try{
-
-    await api(API.tasks,{
-      body:JSON.stringify({
-        action:"create",
-        title,
-        link,
-        chatId,
-        type
-      })
-    });
-
-    closeModal("createTaskModal");
-
-    $("taskTitle").value = "";
-    $("taskLink").value = "";
-    $("taskChatId").value = "";
-
-    toast("🚀 Task published!");
-
-    await loadTasks();
-
-  }catch(error){
-
-    toast(
-      friendlyError(error.message),
-      "error"
-    );
-  }
-}
-
-/* ---------------------------------------------------------
-   PROMO
---------------------------------------------------------- */
-
-async function claimPromo(){
-
-  const code =
-    $("promoCode")
-      .value
-      .trim()
-      .toUpperCase();
-
-  if(!code){
-    toast(
-      "Enter a promo code.",
-      "error"
-    );
     return;
   }
 
   try{
 
     const data =
-      await api(API.promo,{
-        body:JSON.stringify({
-          code
-        })
-      });
+      await apiRequest(
+        API.tasks,
+        {
+          body:{
+            action:"create",
+            title,
+            link,
+            chatId,
+            type
+          }
+        }
+      );
 
-    USER.balance =
-      Number(USER.balance || 0)
-      + Number(data.reward || 0);
+    closeCreateTask();
 
-    updateUserUI();
+    $("taskTitle").value = "";
+    $("taskLink").value = "";
+    $("taskChatId").value = "";
 
-    $("promoCode").value = "";
-
-    toast(
-      `🎁 Promo claimed! +${data.reward}`
+    showToast(
+      "✅ Task created successfully!",
+      "success"
     );
+
+    loadTasks();
+
+    /*
+      Refresh user because creating a task can
+      deduct balance.
+    */
+
+    await refreshUser();
 
   }catch(error){
 
-    toast(
-      friendlyError(error.message),
+    showToast(
+      readableError(error.message),
       "error"
     );
   }
 }
 
-/* ---------------------------------------------------------
+/* =====================================================
+   REFERRALS
+===================================================== */
+
+async function loadReferrals(){
+
+  try{
+
+    const data =
+      await apiRequest(
+        API.referral,
+        {
+          body:{ action:"list" }
+        }
+      );
+
+    const refs =
+      Array.isArray(data.referrals)
+        ? data.referrals
+        : [];
+
+    $("refTotal").textContent =
+      refs.length;
+
+    $("refCount").textContent =
+      refs.length;
+
+    $("refEarnings").textContent =
+      formatNumber(
+        currentUser.referralPoints || 0
+      );
+
+    if(!refs.length){
+
+      $("referralList").innerHTML =
+        `<div class="card" style="text-align:center;color:var(--muted)">
+          No referrals yet.
+        </div>`;
+
+    }else{
+
+      $("referralList").innerHTML =
+        refs.map((ref,index)=>`
+
+          <div class="ref-item">
+
+            <span>
+              👤 Referral #${index + 1}
+            </span>
+
+            <span style="color:#4ade80">
+              ${
+                ref.channelRewarded &&
+                ref.adsRewarded
+                  ? "Rewarded"
+                  : "Pending"
+              }
+            </span>
+
+          </div>
+
+        `).join("");
+    }
+
+  }catch(error){
+
+    console.error(error);
+  }
+}
+
+function getReferralLink(){
+
+  const botUsername =
+    currentUser?.botUsername;
+
+  if(botUsername){
+
+    return `https://t.me/${botUsername}?start=ref_${currentUser.telegramId}`;
+  }
+
+  return `ref_${currentUser.telegramId}`;
+}
+
+async function copyReferral(){
+
+  const link =
+    getReferralLink();
+
+  try{
+
+    await navigator.clipboard.writeText(link);
+
+    showToast(
+      "📋 Referral link copied!",
+      "success"
+    );
+
+  }catch{
+
+    showToast(
+      link,
+      ""
+    );
+  }
+}
+
+function shareReferral(){
+
+  const link =
+    getReferralLink();
+
+  const text =
+    "🔥 Join me on USDT Hub and earn rewards!";
+
+  const url =
+    `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
+
+  openTelegram(url);
+}
+
+/* =====================================================
+   PROMO
+===================================================== */
+
+async function claimPromo(){
+
+  const input =
+    $("promoCode");
+
+  const code =
+    input.value.trim().toUpperCase();
+
+  if(!code){
+
+    showToast(
+      "Enter a promo code.",
+      "error"
+    );
+
+    return;
+  }
+
+  try{
+
+    const data =
+      await apiRequest(
+        API.promo,
+        {
+          body:{ code }
+        }
+      );
+
+    currentUser.balance =
+      Number(currentUser.balance || 0) +
+      Number(data.reward || 0);
+
+    updateUserUI();
+
+    input.value = "";
+
+    showToast(
+      `🎁 +${data.reward} points claimed!`,
+      "success"
+    );
+
+  }catch(error){
+
+    showToast(
+      readableError(error.message),
+      "error"
+    );
+  }
+}
+
+/* =====================================================
    WITHDRAW
---------------------------------------------------------- */
+===================================================== */
 
 async function withdraw(){
 
@@ -3054,675 +2827,484 @@ async function withdraw(){
       .value
       .trim();
 
-  if(!address){
-    toast(
-      "Enter your BEP20 address.",
-      "error"
-    );
-    return;
-  }
-
   if(!/^0x[a-fA-F0-9]{40}$/.test(address)){
 
-    toast(
-      "Invalid BEP20 address.",
+    showToast(
+      "Enter a valid BEP20 address.",
       "error"
     );
 
     return;
   }
 
-  if(!confirm(
-    "Confirm that this is the correct BEP20 address?"
-  )){
-    return;
-  }
+  const button =
+    $("withdrawBtn");
+
+  button.disabled = true;
+  button.textContent =
+    "⏳ PROCESSING...";
 
   try{
 
     const data =
-      await api(API.withdraw,{
-        body:JSON.stringify({
-          address
-        })
-      });
+      await apiRequest(
+        API.withdraw,
+        {
+          body:{ address }
+        }
+      );
 
-    toast(
-      `✅ Withdrawal submitted: ${data.amount} USDT`
-    );
+    /*
+      Backend has already deducted the points.
+    */
 
-    USER.balance =
-      Number(USER.balance || 0)
-      - Number(data.points || 0);
-
-    USER.withdrawals =
-      Number(USER.withdrawals || 0) + 1;
+    currentUser.balance =
+      Number(currentUser.balance || 0) -
+      Number(data.points || 0);
 
     updateUserUI();
 
     $("withdrawAddress").value = "";
 
+    showToast(
+      `✅ Withdrawal submitted: ${data.amount} USDT`,
+      "success"
+    );
+
   }catch(error){
 
-    toast(
-      friendlyError(error.message),
-      "error"
-    );
-  }
-}
-
-/* ---------------------------------------------------------
-   GAMES
---------------------------------------------------------- */
-
-let currentGame = "aviator";
-
-function switchGame(game){
-
-  currentGame = game;
-
-  const aviator =
-    game === "aviator";
-
-  $("aviatorGame")
-    .classList.toggle(
-      "hidden",
-      !aviator
-    );
-
-  $("xoGame")
-    .classList.toggle(
-      "hidden",
-      aviator
-    );
-
-  $("aviatorTab")
-    .classList.toggle(
-      "active",
-      aviator
-    );
-
-  $("xoTab")
-    .classList.toggle(
-      "active",
-      !aviator
-    );
-}
-
-/* ---------------------------------------------------------
-   LIVE AVIATOR VISUAL ENGINE
---------------------------------------------------------- */
-
-let aviatorState = {
-  running:false,
-  multiplier:1,
-  startTime:0,
-  crashAt:0,
-  timer:null
-};
-
-function randomCrash(){
-
-  /*
-    Frontend visual flight only.
-    Backend must determine secure real-money result.
-  */
-
-  const r = Math.random();
-
-  if(r < .30) return 1.15 + Math.random() * .55;
-  if(r < .55) return 1.7 + Math.random() * 1.0;
-  if(r < .75) return 2.7 + Math.random() * 2;
-  if(r < .90) return 4.7 + Math.random() * 4;
-  if(r < .98) return 8 + Math.random() * 12;
-
-  return 20 + Math.random() * 40;
-}
-
-function aviatorAction(){
-
-  if(aviatorState.running){
-
-    toast(
-      "Cashout requires secure backend validation.",
+    showToast(
+      readableError(error.message),
       "error"
     );
 
-    return;
-  }
+  }finally{
 
-  const bet =
-    Number(
-      $("aviatorBet").value
-    );
-
-  if(!Number.isInteger(bet) || bet <= 0){
-
-    toast(
-      "Enter a valid bet.",
-      "error"
-    );
-
-    return;
-  }
-
-  startAviatorVisual(bet);
-}
-
-function startAviatorVisual(bet){
-
-  aviatorState.running = true;
-  aviatorState.multiplier = 1;
-  aviatorState.startTime = performance.now();
-  aviatorState.crashAt = randomCrash();
-
-  $("aviatorButton").textContent =
-    "CASH OUT";
-
-  $("aviatorButton")
-    .classList.add("cash");
-
-  $("aviatorMultiplier")
-    .classList.remove("crashed");
-
-  $("aviatorStatus").textContent =
-    "🚀 Flight is live";
-
-  const plane =
-    $("plane");
-
-  const path =
-    $("flightPath");
-
-  const history =
-    $("aviatorHistory");
-
-  cancelAnimationFrame(
-    aviatorState.timer
-  );
-
-  function frame(now){
-
-    if(!aviatorState.running)
-      return;
-
-    const elapsed =
-      (now - aviatorState.startTime)
-      / 1000;
-
-    const multiplier =
-      Math.exp(elapsed * .19);
-
-    aviatorState.multiplier =
-      multiplier;
-
-    $("aviatorMultiplier").textContent =
-      multiplier.toFixed(2) + "x";
-
-    const progress =
-      Math.min(
-        .97,
-        elapsed / 18
-      );
-
-    const x =
-      5 + progress * 90;
-
-    const y =
-      85 - Math.pow(progress,1.7) * 78;
-
-    plane.style.left =
-      `${x}%`;
-
-    plane.style.bottom =
-      `${Math.max(15,y)}%`;
-
-    path.style.strokeDasharray =
-      "1000";
-
-    path.style.strokeDashoffset =
-      String(
-        1000 - progress * 800
-      );
-
-    if(multiplier >= aviatorState.crashAt){
-
-      crashAviator();
-
-      return;
-    }
-
-    aviatorState.timer =
-      requestAnimationFrame(frame);
-  }
-
-  aviatorState.timer =
-    requestAnimationFrame(frame);
-}
-
-function crashAviator(){
-
-  aviatorState.running = false;
-
-  const value =
-    aviatorState.multiplier;
-
-  $("aviatorMultiplier")
-    .textContent =
-      value.toFixed(2) + "x";
-
-  $("aviatorMultiplier")
-    .classList.add("crashed");
-
-  $("aviatorStatus").textContent =
-    "💥 Flight crashed";
-
-  $("aviatorButton").textContent =
-    "START";
-
-  $("aviatorButton")
-    .classList.remove("cash");
-
-  addAviatorHistory(value);
-
-  haptic("heavy");
-}
-
-function addAviatorHistory(value){
-
-  const el =
-    $("aviatorHistory");
-
-  const pill =
-    document.createElement("div");
-
-  pill.className =
-    "history-pill";
-
-  pill.textContent =
-    value.toFixed(2) + "x";
-
-  el.prepend(pill);
-
-  while(el.children.length > 12){
-    el.lastElementChild.remove();
+    button.disabled = false;
+    button.textContent =
+      "💸 WITHDRAW";
   }
 }
 
-/* ---------------------------------------------------------
+/* =====================================================
    XO
---------------------------------------------------------- */
-
-let xoBoard =
-  Array(9).fill("");
-
-let xoLocked = false;
-
-document
-  .querySelectorAll(".xo-cell")
-  .forEach(cell=>{
-
-    cell.addEventListener(
-      "click",
-      ()=>{
-
-        const i =
-          Number(
-            cell.dataset.index
-          );
-
-        if(
-          xoLocked ||
-          xoBoard[i]
-        ){
-          return;
-        }
-
-        xoBoard[i] = "X";
-
-        renderXO();
-
-        if(checkWinner(xoBoard,"X")){
-
-          toast("🔥 You won!");
-          xoLocked = true;
-          return;
-        }
-
-        if(xoBoard.every(Boolean)){
-
-          toast("🤝 Draw!");
-          xoLocked = true;
-          return;
-        }
-
-        xoLocked = true;
-
-        setTimeout(
-          computerXO,
-          400
-        );
-      }
-    );
-
-  });
-
-function renderXO(){
-
-  document
-    .querySelectorAll(".xo-cell")
-    .forEach((cell,i)=>{
-
-      cell.textContent =
-        xoBoard[i];
-
-      cell.className =
-        "xo-cell";
-
-      if(xoBoard[i]){
-        cell.classList.add(
-          xoBoard[i].toLowerCase()
-        );
-      }
-
-    });
-}
-
-function computerXO(){
-
-  const empty =
-    xoBoard
-      .map((v,i)=>v ? null : i)
-      .filter(v=>v !== null);
-
-  if(!empty.length){
-    xoLocked = false;
-    return;
-  }
-
-  const move =
-    empty[
-      Math.floor(
-        Math.random()*empty.length
-      )
-    ];
-
-  xoBoard[move] = "O";
-
-  renderXO();
-
-  if(checkWinner(xoBoard,"O")){
-
-    toast("😈 Computer won!");
-    xoLocked = true;
-    return;
-  }
-
-  if(xoBoard.every(Boolean)){
-
-    toast("🤝 Draw!");
-    xoLocked = true;
-    return;
-  }
-
-  xoLocked = false;
-}
-
-function checkWinner(board,p){
-
-  const combos = [
-    [0,1,2],
-    [3,4,5],
-    [6,7,8],
-    [0,3,6],
-    [1,4,7],
-    [2,5,8],
-    [0,4,8],
-    [2,4,6]
-  ];
-
-  return combos.some(
-    ([a,b,c]) =>
-      board[a] === p &&
-      board[b] === p &&
-      board[c] === p
-  );
-}
+===================================================== */
 
 async function playXO(choice){
 
   try{
 
     const data =
-      await api(API.games,{
-        body:JSON.stringify({
-          action:"xo",
-          choice
-        })
-      });
+      await apiRequest(
+        API.games,
+        {
+          body:{
+            action:"xo",
+            choice
+          }
+        }
+      );
 
-    if(typeof data.balance !== "undefined"){
+    currentUser.balance =
+      Number(data.balance || 0);
 
-      USER.balance =
-        Number(data.balance);
+    if(data.win){
+
+      currentUser.xoWins =
+        Number(currentUser.xoWins || 0) + 1;
+
+      $("xoResult").innerHTML =
+        `🔥 YOU WON +${escapeHTML(data.payout)} POINTS!`;
+
+    }else{
+
+      $("xoResult").textContent =
+        "🥀 You lost this round.";
+    }
+
+    updateUserUI();
+
+  }catch(error){
+
+    $("xoResult").textContent =
+      readableError(error.message);
+
+    showToast(
+      readableError(error.message),
+      "error"
+    );
+  }
+}
+
+/* =====================================================
+   AVIATOR
+===================================================== */
+
+function animateAviator(){
+
+  const multiplier =
+    $("aviatorMultiplier");
+
+  const plane =
+    $("aviatorPlane");
+
+  const status =
+    $("aviatorStatus");
+
+  const start =
+    performance.now();
+
+  function frame(now){
+
+    if(!aviatorRunning) return;
+
+    const seconds =
+      (now - start) / 1000;
+
+    /*
+      Visual-only multiplier.
+      The backend result remains authoritative.
+    */
+
+    const visual =
+      1 + Math.pow(seconds,1.25) * 0.22;
+
+    multiplier.textContent =
+      visual.toFixed(2) + "x";
+
+    multiplier.classList.add("flying");
+
+    const x =
+      Math.min(82,10 + seconds * 8);
+
+    const y =
+      Math.min(72,14 + seconds * 6);
+
+    plane.style.left = x + "%";
+    plane.style.bottom = y + "%";
+
+    status.textContent =
+      "✈️ Flying...";
+
+    aviatorTimer =
+      requestAnimationFrame(frame);
+  }
+
+  aviatorTimer =
+    requestAnimationFrame(frame);
+}
+
+function resetAviator(){
+
+  cancelAnimationFrame(aviatorTimer);
+
+  aviatorRunning = false;
+
+  const multiplier =
+    $("aviatorMultiplier");
+
+  const plane =
+    $("aviatorPlane");
+
+  const status =
+    $("aviatorStatus");
+
+  multiplier.textContent =
+    "1.00x";
+
+  multiplier.className =
+    "multiplier";
+
+  plane.style.left = "10%";
+  plane.style.bottom = "14%";
+
+  status.textContent =
+    "Ready for takeoff";
+}
+
+async function playAviator(){
+
+  if(aviatorRunning){
+    return;
+  }
+
+  const bet =
+    Number($("aviatorBet").value);
+
+  if(
+    !Number.isInteger(bet) ||
+    bet <= 0
+  ){
+
+    showToast(
+      "Enter a valid whole-number bet.",
+      "error"
+    );
+
+    return;
+  }
+
+  const button =
+    $("aviatorBtn");
+
+  button.disabled = true;
+  button.textContent =
+    "FLYING...";
+
+  aviatorRunning = true;
+
+  animateAviator();
+
+  try{
+
+    /*
+      The server determines the actual multiplier
+      and payout. We wait for that result while
+      showing the flight animation.
+    */
+
+    const dataPromise =
+      apiRequest(
+        API.games,
+        {
+          body:{
+            action:"aviator",
+            bet
+          }
+        }
+      );
+
+    const data =
+      await dataPromise;
+
+    /*
+      Keep the flight on screen for a short moment
+      so the server result feels like an actual round.
+    */
+
+    await wait(700);
+
+    aviatorRunning = false;
+
+    cancelAnimationFrame(aviatorTimer);
+
+    const multiplier =
+      Number(data.multiplier || 0);
+
+    const finalMultiplier =
+      $("aviatorMultiplier");
+
+    finalMultiplier.textContent =
+      multiplier.toFixed(2) + "x";
+
+    if(multiplier > 1){
+
+      finalMultiplier.classList.add("flying");
+
+      $("aviatorStatus").textContent =
+        `🚀 CASHED OUT • +${data.payout} points`;
+
+    }else{
+
+      finalMultiplier.classList.remove("flying");
+      finalMultiplier.classList.add("crashed");
+
+      $("aviatorStatus").textContent =
+        "💥 CRASHED";
+
+    }
+
+    currentUser.balance =
+      Number(data.balance || 0);
+
+    if(multiplier > 1){
+
+      currentUser.aviatorWins =
+        Number(currentUser.aviatorWins || 0) + 1;
+    }
+
+    currentUser.aviatorGames =
+      Number(currentUser.aviatorGames || 0) + 1;
+
+    updateUserUI();
+
+    if(multiplier > 1){
+
+      showToast(
+        `🚀 ${multiplier.toFixed(2)}x • +${data.payout} points`,
+        "success"
+      );
+
+    }else{
+
+      showToast(
+        "💥 Aviator crashed.",
+        "error"
+      );
+    }
+
+    setTimeout(resetAviator,2500);
+
+  }catch(error){
+
+    resetAviator();
+
+    showToast(
+      readableError(error.message),
+      "error"
+    );
+
+  }finally{
+
+    setTimeout(()=>{
+
+      button.disabled = false;
+      button.textContent =
+        "PLACE BET";
+
+    },1000);
+  }
+}
+
+function wait(ms){
+  return new Promise(resolve=>{
+    setTimeout(resolve,ms);
+  });
+}
+
+/* =====================================================
+   REFRESH USER
+===================================================== */
+
+async function refreshUser(){
+
+  try{
+
+    const data =
+      await apiRequest(API.user);
+
+    if(data?.user){
+
+      currentUser =
+        data.user;
 
       updateUserUI();
     }
 
-    toast(
-      data.win
-        ? `🔥 You won ${data.payout}!`
-        : "🥀 Better luck next round."
-    );
-
   }catch(error){
 
-    toast(
-      friendlyError(error.message),
-      "error"
+    console.error(
+      "refreshUser:",
+      error
     );
   }
 }
 
-/* ---------------------------------------------------------
-   NAVIGATION
---------------------------------------------------------- */
+/* =====================================================
+   ERROR TRANSLATION
+===================================================== */
 
-function showPage(page){
+function readableError(error){
 
-  document
-    .querySelectorAll(".page")
-    .forEach(el=>{
-      el.classList.remove("active");
-    });
-
-  const target =
-    $(`page-${page}`);
-
-  if(target){
-    target.classList.add("active");
-  }
-
-  document
-    .querySelectorAll(".nav-btn")
-    .forEach(btn=>{
-      btn.classList.toggle(
-        "active",
-        btn.dataset.page === page
-      );
-    });
-
-  window.scrollTo({
-    top:0,
-    behavior:"smooth"
-  });
-
-  haptic();
-
-  if(page === "referrals"){
-    loadReferrals();
-  }
-
-  if(page === "tasks"){
-    loadTasks();
-  }
-}
-
-/* ---------------------------------------------------------
-   FRIENDLY ERRORS
---------------------------------------------------------- */
-
-function friendlyError(error){
-
-  const map = {
-
-    CHANNELS_REQUIRED:
-      "🔐 Join both channels first.",
-
-    WELCOME_ALREADY_CLAIMED:
-      "🎁 Your welcome bonus was already claimed.",
-
-    ADDRESS_ALREADY_USED:
-      "⚠️ This wallet address has already been used.",
+  const errors = {
 
     INVALID_ADDRESS:
-      "❌ Invalid wallet address.",
+      "That wallet address is invalid.",
 
-    MINIMUM_NOT_REACHED:
-      "💰 You haven't reached the withdrawal minimum.",
+    CHANNELS_REQUIRED:
+      "You must join both channels first.",
 
-    INSUFFICIENT_POINTS:
-      "💰 Not enough balance.",
+    WELCOME_ALREADY_CLAIMED:
+      "You already claimed the welcome bonus.",
 
-    ALREADY_COMPLETED:
-      "✅ You already completed this task.",
-
-    TASK_FULL:
-      "🎯 This task is already full.",
-
-    TASK_CLOSED:
-      "🔒 This task is closed.",
-
-    TELEGRAM_MEMBERSHIP_REQUIRED:
-      "📢 Join the required Telegram channel first.",
-
-    INVALID_CODE:
-      "❌ Invalid promo code.",
-
-    ALREADY_CLAIMED:
-      "🎁 You already claimed this code.",
-
-    MONETAG_LIMIT:
-      "⏰ Monetag daily limit reached.",
-
-    ADSGRAM_LIMIT:
-      "⏰ Adsgram daily limit reached.",
+    ADDRESS_ALREADY_USED:
+      "That wallet address has already claimed the bonus.",
 
     USER_NOT_FOUND:
-      "Account not found. Reopen the app.",
+      "Your account was not found. Reopen the app.",
 
-    AD_TIMEOUT:
-      "Ad timed out. Please try again.",
+    MONETAG_LIMIT:
+      "You reached today's Monetag limit.",
 
-    SERVER_RESPONSE_INVALID:
-      "Server returned an invalid response."
+    ADSGRAM_LIMIT:
+      "You reached today's Adsgram limit.",
+
+    MONETAG_NOT_READY:
+      "Monetag is not ready yet.",
+
+    ADSGRAM_NOT_READY:
+      "Adsgram is not ready yet.",
+
+    INVALID_PROVIDER:
+      "Invalid ad provider.",
+
+    INVALID_CODE:
+      "That promo code is invalid.",
+
+    ALREADY_CLAIMED:
+      "You already claimed this promo code.",
+
+    MINIMUM_NOT_REACHED:
+      "You have not reached the withdrawal minimum.",
+
+    INSUFFICIENT_POINTS:
+      "You don't have enough points.",
+
+    TASK_NOT_FOUND:
+      "Task not found.",
+
+    TASK_CLOSED:
+      "This task is closed.",
+
+    TASK_FULL:
+      "This task is already full.",
+
+    ALREADY_COMPLETED:
+      "You already completed this task.",
+
+    TELEGRAM_MEMBERSHIP_REQUIRED:
+      "Join the Telegram task first.",
+
+    XO_LIMIT:
+      "You reached today's XO limit.",
+
+    INVALID_BET:
+      "Enter a valid bet.",
+
+    UNKNOWN_GAME:
+      "Unknown game.",
+
+    SERVER_INVALID_RESPONSE:
+      "Server returned an invalid response.",
+
+    "Method not allowed":
+      "Invalid request method."
 
   };
 
-  return map[error] || error || "Something went wrong.";
+  return errors[error] ||
+    String(error || "Request failed");
 }
 
-/* ---------------------------------------------------------
-   INITIALIZATION
---------------------------------------------------------- */
-
-async function init(){
-
-  try{
-
-    if(!tg?.initData){
-
-      /*
-        The app is designed for Telegram WebApp use.
-      */
-
-      $("loader").style.display =
-        "none";
-
-      toast(
-        "Open USDT Hub from Telegram.",
-        "error"
-      );
-
-      return;
-    }
-
-    await register();
-
-    /*
-      Check whether channels are already verified.
-    */
-
-    if(!USER.channelsVerified){
-
-      $("lockScreen").style.display =
-        "flex";
-
-    }else{
-
-      $("lockScreen").style.display =
-        "none";
-    }
-
-    /*
-      Welcome modal is only shown after channels
-      are verified and before the user claims it.
-    */
-
-    if(
-      USER.channelsVerified &&
-      !USER.welcomeBonusClaimed
-    ){
-
-      openModal("welcomeModal");
-
-    }else{
-
-      closeModal("welcomeModal");
-
-    }
-
-    await loadTasks();
-    await loadReferrals();
-
-    initialized = true;
-
-    $("loader").style.display =
-      "none";
-
-  }catch(error){
-
-    console.error(error);
-
-    $("loader").style.display =
-      "none";
-
-    toast(
-      friendlyError(error.message),
-      "error"
-    );
-  }
-}
-
-/* ---------------------------------------------------------
+/* =====================================================
    START
---------------------------------------------------------- */
+===================================================== */
 
 document.addEventListener(
   "DOMContentLoaded",
-  init
+  initialize
 );
+
+window.addEventListener(
+  "load",
+  ()=>{
+    try{
+      tg?.ready();
+    }catch{}
+  }
+);
+
 </script>
 
 </body>
-  </html>
+            </html>
