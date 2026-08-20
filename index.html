@@ -1,929 +1,2113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 
-<title>USDT Hub</title>
+  <title>USDT Hub</title>
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<style>
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-body{
-  margin:0;
-  background:#07111f;
-  color:#fff;
-  font-family:Arial,sans-serif;
-}
+    :root {
+      --bg: #070b14;
+      --card: #101827;
+      --card2: #151f31;
+      --text: #ffffff;
+      --muted: #8d99ad;
+      --green: #00e887;
+      --green2: #00b96b;
+      --blue: #2f80ff;
+      --red: #ff4d67;
+      --yellow: #ffc83d;
+      --border: rgba(255,255,255,.08);
+    }
 
-.app{
-  max-width:560px;
-  margin:auto;
-  padding:16px 14px 90px;
-}
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+    }
 
-.card{
-  background:#101d2d;
-  border:1px solid #20364d;
-  border-radius:20px;
-  padding:18px;
-  margin-bottom:14px;
-}
+    body {
+      overflow-x: hidden;
+    }
 
-.logo{
-  font-size:13px;
-  color:#8ea4bb;
-  font-weight:bold;
-}
+    button,
+    input {
+      font: inherit;
+    }
 
-.balance{
-  font-size:38px;
-  font-weight:900;
-  margin-top:5px;
-}
+    button {
+      border: 0;
+      cursor: pointer;
+    }
 
-.muted{
-  color:#8fa3b8;
-  font-size:13px;
-}
+    .app {
+      width: 100%;
+      max-width: 600px;
+      min-height: 100vh;
+      margin: auto;
+      padding-bottom: 95px;
+    }
 
-.page{
-  display:none;
-}
+    .top {
+      padding: 22px 18px 10px;
+    }
 
-.page.active{
-  display:block;
-}
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-button{
-  border:0;
-  cursor:pointer;
-}
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg,#00e887,#00a86b);
+      color: #001b10;
+      font-size: 25px;
+      font-weight: 900;
+      box-shadow: 0 10px 35px rgba(0,232,135,.25);
+    }
 
-.btn{
-  width:100%;
-  padding:14px;
-  margin-top:10px;
-  border-radius:14px;
-  background:#1687ff;
-  color:#fff;
-  font-size:15px;
-  font-weight:800;
-}
+    .brand h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 900;
+    }
 
-.btn.secondary{
-  background:#1b2d42;
-}
+    .brand p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
 
-input{
-  width:100%;
-  padding:14px;
-  border-radius:13px;
-  border:1px solid #29445e;
-  background:#091522;
-  color:#fff;
-  outline:none;
-  margin-top:8px;
-}
+    .page {
+      display: none;
+      padding: 12px 16px;
+      animation: fade .2s ease;
+    }
 
-.task{
-  border:1px solid #263e57;
-  padding:14px;
-  border-radius:15px;
-  margin-top:10px;
-}
+    .page.active {
+      display: block;
+    }
 
-.nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  height:70px;
-  background:#081524;
-  border-top:1px solid #1c3046;
-  display:flex;
-  justify-content:center;
-  gap:8px;
-  z-index:10;
-}
+    @keyframes fade {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-.nav button{
-  background:transparent;
-  color:#8498ad;
-  min-width:70px;
-  font-size:11px;
-}
+    .balance-card {
+      position: relative;
+      overflow: hidden;
+      margin-top: 16px;
+      padding: 24px;
+      border-radius: 25px;
+      background:
+        linear-gradient(
+          135deg,
+          #12291f,
+          #0e1c1b 55%,
+          #102b22
+        );
+      border: 1px solid rgba(0,232,135,.18);
+      box-shadow: 0 15px 45px rgba(0,0,0,.25);
+    }
 
-.nav button.active{
-  color:#fff;
-}
+    .balance-card::after {
+      content: "";
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      right: -60px;
+      top: -60px;
+      border-radius: 50%;
+      background: rgba(0,232,135,.08);
+    }
 
-.lock{
-  position:fixed;
-  inset:0;
-  background:#030a12ee;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:18px;
-  z-index:100;
-}
+    .balance-label {
+      color: #9bb2a8;
+      font-size: 13px;
+    }
 
-.lock.hidden{
-  display:none;
-}
+    .balance {
+      margin-top: 6px;
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
 
-.lock .card{
-  width:100%;
-  max-width:430px;
-  text-align:center;
-}
+    .balance span {
+      font-size: 18px;
+      color: var(--green);
+    }
 
-.aviator{
-  font-size:56px;
-  text-align:center;
-  font-weight:900;
-  padding:40px 0;
-}
+    .withdraw-main {
+      width: 100%;
+      margin-top: 18px;
+      padding: 15px;
+      border-radius: 15px;
+      color: #00150d;
+      background: var(--green);
+      font-weight: 900;
+      box-shadow: 0 8px 25px rgba(0,232,135,.2);
+    }
 
-.status{
-  text-align:center;
-  color:#8da5bb;
-}
-</style>
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .stat {
+      padding: 15px 8px;
+      text-align: center;
+      border-radius: 18px;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 17px;
+    }
+
+    .stat small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .section-title {
+      margin: 25px 2px 11px;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .card {
+      margin-bottom: 12px;
+      padding: 17px;
+      border-radius: 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .card-desc {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2,1fr);
+      gap: 11px;
+    }
+
+    .action {
+      min-height: 105px;
+      padding: 16px;
+      text-align: left;
+      color: white;
+      border-radius: 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+
+    .action:active,
+    .nav-btn:active,
+    button:active {
+      transform: scale(.97);
+    }
+
+    .action-icon {
+      font-size: 28px;
+    }
+
+    .action strong {
+      display: block;
+      margin-top: 10px;
+      font-size: 15px;
+    }
+
+    .action small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .green {
+      color: var(--green);
+    }
+
+    .blue {
+      color: #6ba8ff;
+    }
+
+    .yellow {
+      color: var(--yellow);
+    }
+
+    .red {
+      color: var(--red);
+    }
+
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 15px;
+      color: white;
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--green);
+    }
+
+    .primary {
+      width: 100%;
+      padding: 15px;
+      border-radius: 14px;
+      background: var(--green);
+      color: #00150d;
+      font-weight: 900;
+    }
+
+    .secondary {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      background: #202c40;
+      color: white;
+      font-weight: 800;
+    }
+
+    .danger {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255,77,103,.12);
+      color: #ff7185;
+      font-weight: 800;
+    }
+
+    .task {
+      padding: 16px;
+      margin-bottom: 11px;
+      border-radius: 19px;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+
+    .task-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .task-title {
+      font-weight: 800;
+    }
+
+    .reward {
+      white-space: nowrap;
+      color: var(--green);
+      font-weight: 900;
+    }
+
+    .task-link {
+      display: block;
+      margin: 10px 0;
+      color: #75aaff;
+      font-size: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .task button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 13px;
+      background: var(--green);
+      color: #00150d;
+      font-weight: 900;
+    }
+
+    .ref-link {
+      padding: 13px;
+      margin: 10px 0;
+      border-radius: 13px;
+      background: #0a111e;
+      color: #a8b7cb;
+      word-break: break-all;
+      font-size: 12px;
+    }
+
+    .ref-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ref-item:last-child {
+      border-bottom: 0;
+    }
+
+    .empty {
+      padding: 25px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .game {
+      position: relative;
+      overflow: hidden;
+      padding: 22px;
+      margin-bottom: 14px;
+      border-radius: 23px;
+      background:
+        radial-gradient(
+          circle at top right,
+          rgba(47,128,255,.18),
+          transparent 35%
+        ),
+        var(--card);
+      border: 1px solid var(--border);
+    }
+
+    .game h2 {
+      margin: 0;
+    }
+
+    .game p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .xo-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .xo-buttons button {
+      padding: 18px;
+      border-radius: 16px;
+      background: #182338;
+      color: white;
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .aviator-screen {
+      height: 190px;
+      margin-top: 15px;
+      display: grid;
+      place-items: center;
+      border-radius: 20px;
+      background:
+        radial-gradient(
+          circle,
+          rgba(255,76,103,.16),
+          transparent 50%
+        ),
+        #080d18;
+      border: 1px solid var(--border);
+    }
+
+    .multiplier {
+      font-size: 52px;
+      font-weight: 1000;
+    }
+
+    .plane {
+      font-size: 35px;
+      animation: fly 1s infinite alternate ease-in-out;
+    }
+
+    @keyframes fly {
+      from {
+        transform: translate(0,5px) rotate(-4deg);
+      }
+      to {
+        transform: translate(20px,-12px) rotate(4deg);
+      }
+    }
+
+    .bottom-nav {
+      position: fixed;
+      z-index: 50;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(600px,100%);
+      display: grid;
+      grid-template-columns: repeat(5,1fr);
+      padding: 9px 7px calc(9px + env(safe-area-inset-bottom));
+      background: rgba(7,11,20,.94);
+      backdrop-filter: blur(18px);
+      border-top: 1px solid var(--border);
+    }
+
+    .nav-btn {
+      padding: 8px 3px;
+      color: #748198;
+      background: transparent;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .nav-btn span {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 21px;
+    }
+
+    .nav-btn.active {
+      color: var(--green);
+    }
+
+    .modal {
+      position: fixed;
+      z-index: 100;
+      inset: 0;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(0,0,0,.72);
+      backdrop-filter: blur(7px);
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-box {
+      width: min(600px,100%);
+      padding: 23px 18px 30px;
+      border-radius: 27px 27px 0 0;
+      background: #101827;
+      border-top: 1px solid var(--border);
+      animation: up .22s ease;
+    }
+
+    @keyframes up {
+      from {
+        transform: translateY(100%);
+      }
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    .modal h2 {
+      margin-top: 0;
+    }
+
+    .channel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px;
+      margin: 9px 0;
+      border-radius: 15px;
+      background: #0b1220;
+    }
+
+    .channel button {
+      padding: 10px 13px;
+      border-radius: 11px;
+      background: #24334a;
+      color: white;
+      font-weight: 800;
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 200;
+      left: 50%;
+      bottom: 85px;
+      transform: translateX(-50%) translateY(20px);
+      width: calc(100% - 30px);
+      max-width: 450px;
+      padding: 13px 15px;
+      border-radius: 14px;
+      background: #192438;
+      color: white;
+      text-align: center;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .loading {
+      position: fixed;
+      z-index: 300;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: var(--bg);
+    }
+
+    .loader {
+      width: 45px;
+      height: 45px;
+      border: 4px solid #1d2a3d;
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media(max-width:360px) {
+      .balance {
+        font-size: 32px;
+      }
+
+      .stats {
+        gap: 6px;
+      }
+
+      .stat {
+        padding: 12px 4px;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
+<div id="loading" class="loading">
+  <div class="loader"></div>
+</div>
+
 <div class="app">
 
-  <div class="card">
-    <div class="logo">USDT HUB</div>
-
-    <div
-      id="balance"
-      class="balance"
-    >
-      0.00
+  <header class="top">
+    <div class="brand">
+      <div class="logo">₮</div>
+      <div>
+        <h1>USDT Hub</h1>
+        <p id="welcomeName">Welcome 👋</p>
+      </div>
     </div>
-
-    <div class="muted">
-      Current balance
-    </div>
-  </div>
+  </header>
 
   <!-- HOME -->
 
-  <section
-    id="home"
-    class="page active"
-  >
+  <main id="homePage" class="page active">
 
-    <div class="card">
+    <div class="balance-card">
 
-      <h2>🔥 Earn</h2>
+      <div class="balance-label">
+        Available balance
+      </div>
 
-      <p class="muted">
-        Earn through ads, tasks and referrals.
-      </p>
+      <div class="balance">
+        <span>$</span>
+        <span id="balance">0.000000</span>
+      </div>
 
       <button
-        class="btn"
+        class="withdraw-main"
+        onclick="openWithdraw()"
+      >
+        💸 Withdraw USDT
+      </button>
+
+    </div>
+
+    <div class="stats">
+
+      <div class="stat">
+        <strong id="adsCount">0</strong>
+        <small>ADS WATCHED</small>
+      </div>
+
+      <div class="stat">
+        <strong id="taskCount">0</strong>
+        <small>TASKS</small>
+      </div>
+
+      <div class="stat">
+        <strong id="refCount">0</strong>
+        <small>REFERRALS</small>
+      </div>
+
+    </div>
+
+    <div class="section-title">
+      Earn
+    </div>
+
+    <div class="grid">
+
+      <button
+        class="action"
         onclick="watchAd('monetag')"
       >
-        ▶ Watch Monetag
+        <div class="action-icon">📺</div>
+        <strong>Watch Ad</strong>
+        <small>Monetag</small>
       </button>
 
       <button
-        class="btn secondary"
+        class="action"
         onclick="watchAd('adsgram')"
       >
-        ▶ Watch AdsGram
+        <div class="action-icon">🎬</div>
+        <strong>Watch Ad</strong>
+        <small>Adsgram</small>
       </button>
-
-    </div>
-
-    <div class="card">
-
-      <h2>👥 Referral</h2>
-
-      <p
-        id="referralLink"
-        class="muted"
-      >
-        Loading...
-      </p>
 
       <button
-        class="btn secondary"
-        onclick="copyReferral()"
+        class="action"
+        onclick="showPage('tasksPage','tasksNav')"
       >
-        Copy Referral
+        <div class="action-icon">📋</div>
+        <strong>Tasks</strong>
+        <small>Complete & earn</small>
+      </button>
+
+      <button
+        class="action"
+        onclick="showPage('refPage','refNav')"
+      >
+        <div class="action-icon">👥</div>
+        <strong>Referral</strong>
+        <small>Invite friends</small>
       </button>
 
     </div>
 
-  </section>
+    <div class="section-title">
+      Games
+    </div>
+
+    <div class="grid">
+
+      <button
+        class="action"
+        onclick="showPage('gamesPage','gamesNav')"
+      >
+        <div class="action-icon">🎮</div>
+        <strong>Games</strong>
+        <small>Play & win</small>
+      </button>
+
+      <button
+        class="action"
+        onclick="openPromo()"
+      >
+        <div class="action-icon">🎁</div>
+        <strong>Promo Code</strong>
+        <small>Claim rewards</small>
+      </button>
+
+    </div>
+
+  </main>
+
 
   <!-- TASKS -->
 
-  <section
-    id="tasks"
-    class="page"
-  >
+  <main id="tasksPage" class="page">
+
+    <div class="section-title">
+      📋 Available Tasks
+    </div>
+
+    <div id="tasksList">
+      <div class="empty">
+        Loading tasks...
+      </div>
+    </div>
+
+  </main>
+
+
+  <!-- GAMES -->
+
+  <main id="gamesPage" class="page">
+
+    <div class="section-title">
+      🎮 Games
+    </div>
+
+    <div class="game">
+
+      <h2>⭕ Tic Tac Toe</h2>
+
+      <p>
+        Choose X or O and try your luck.
+      </p>
+
+      <div class="xo-buttons">
+
+        <button onclick="playXO('x')">
+          ❌ X
+        </button>
+
+        <button onclick="playXO('o')">
+          ⭕ O
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="game">
+
+      <h2>✈️ Aviator</h2>
+
+      <p>
+        Place your bet and try to catch the multiplier.
+      </p>
+
+      <div class="aviator-screen">
+
+        <div>
+          <div
+            id="aviatorMultiplier"
+            class="multiplier"
+          >
+            1.00x
+          </div>
+
+          <div
+            id="aviatorPlane"
+            class="plane"
+          >
+            ✈️
+          </div>
+        </div>
+
+      </div>
+
+      <div class="form" style="margin-top:14px">
+
+        <input
+          id="aviatorBet"
+          type="number"
+          min="1"
+          step="1"
+          placeholder="Enter points"
+        >
+
+        <button
+          class="primary"
+          onclick="playAviator()"
+        >
+          🚀 Fly
+        </button>
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <!-- REFERRALS -->
+
+  <main id="refPage" class="page">
+
+    <div class="section-title">
+      👥 Referral Program
+    </div>
 
     <div class="card">
 
-      <h2>📋 Tasks</h2>
+      <div class="card-title">
+        Invite friends
+      </div>
 
-      <div id="taskList">
+      <div class="card-desc">
+        Share your referral link and earn rewards when your friends join and complete the required activity.
+      </div>
+
+      <div
+        id="refLink"
+        class="ref-link"
+      >
+        Loading...
+      </div>
+
+      <button
+        class="primary"
+        onclick="copyReferral()"
+      >
+        📋 Copy Referral Link
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <div class="card-title">
+        Your referrals
+      </div>
+
+      <div
+        id="referralsList"
+        class="card-desc"
+      >
         Loading...
       </div>
 
     </div>
 
-  </section>
+  </main>
 
-  <!-- GAMES -->
 
-  <section
-    id="games"
-    class="page"
-  >
+  <!-- PROFILE -->
+
+  <main id="profilePage" class="page">
+
+    <div class="section-title">
+      👤 Account
+    </div>
 
     <div class="card">
 
-      <h2>✈️ Aviator Live</h2>
-
-      <p class="muted">
-        Live multiplier demo.
-        It does not affect your withdrawable balance.
-      </p>
-
-      <div
-        id="multiplier"
-        class="aviator"
-      >
-        1.00x
+      <div class="card-title">
+        <span id="profileName">
+          User
+        </span>
       </div>
 
       <div
-        id="aviatorStatus"
-        class="status"
+        class="card-desc"
+        id="profileUsername"
       >
-        Connecting...
+        @username
       </div>
 
-      <button
-        class="btn"
-        onclick="cashOutDemo()"
-      >
-        Cash Out Demo
-      </button>
-
-      <button
-        class="btn secondary"
-        onclick="startNewRound()"
-      >
-        New Round
-      </button>
-
     </div>
-
-  </section>
-
-  <!-- WALLET -->
-
-  <section
-    id="wallet"
-    class="page"
-  >
 
     <div class="card">
 
-      <h2>💳 Withdraw</h2>
+      <div class="card-title">
+        💰 Balance
+      </div>
 
-      <p class="muted">
-        Minimum withdrawal: 10 points.
-      </p>
-
-      <input
-        id="withdrawAddress"
-        placeholder="BEP20 address"
-      >
-
-      <button
-        class="btn"
-        onclick="withdraw()"
-      >
-        Withdraw
-      </button>
+      <div class="card-desc">
+        <span id="profileBalance">
+          0.000000
+        </span>
+        USDT
+      </div>
 
     </div>
 
     <div class="card">
 
-      <h2>🎁 Promo</h2>
+      <div class="card-title">
+        📊 Statistics
+      </div>
 
-      <input
-        id="promoCode"
-        placeholder="Enter promo code"
-      >
+      <div class="card-desc">
 
-      <button
-        class="btn secondary"
-        onclick="claimPromo()"
-      >
-        Claim Promo
-      </button>
+        Ads:
+        <b id="profileAds">0</b>
+        <br>
+
+        Tasks:
+        <b id="profileTasks">0</b>
+        <br>
+
+        Referrals:
+        <b id="profileRefs">0</b>
+        <br>
+
+        Games:
+        <b id="profileGames">0</b>
+
+      </div>
 
     </div>
 
-  </section>
+    <button
+      class="danger"
+      onclick="openWithdraw()"
+    >
+      💸 Withdraw
+    </button>
+
+  </main>
 
 </div>
 
-<!-- CHANNEL LOCK -->
 
-<div
-  id="channelLock"
-  class="lock hidden"
->
+<!-- NAVIGATION -->
 
-  <div class="card">
-
-    <h2>🔒 Join Required</h2>
-
-    <p class="muted">
-      You must join both Telegram channels before using USDT Hub.
-    </p>
-
-    <button
-      class="btn"
-      onclick="openTelegram('https://t.me/birr_gram')"
-    >
-      Join Channel 1
-    </button>
-
-    <button
-      class="btn secondary"
-      onclick="openTelegram('https://t.me/usdt_g_ram')"
-    >
-      Join Channel 2
-    </button>
-
-    <button
-      class="btn"
-      onclick="verifyMembership()"
-    >
-      I've Joined — Verify
-    </button>
-
-  </div>
-
-</div>
-
-<!-- NAV -->
-
-<nav class="nav">
+<nav class="bottom-nav">
 
   <button
-    onclick="showPage('home')"
+    id="homeNav"
+    class="nav-btn active"
+    onclick="showPage('homePage','homeNav')"
   >
-    🏠<br>
+    <span>🏠</span>
     Home
   </button>
 
   <button
-    onclick="showPage('tasks')"
+    id="tasksNav"
+    class="nav-btn"
+    onclick="showPage('tasksPage','tasksNav');loadTasks()"
   >
-    📋<br>
+    <span>📋</span>
     Tasks
   </button>
 
   <button
-    onclick="showPage('games')"
+    id="gamesNav"
+    class="nav-btn"
+    onclick="showPage('gamesPage','gamesNav')"
   >
-    ✈️<br>
+    <span>🎮</span>
     Games
   </button>
 
   <button
-    onclick="showPage('wallet')"
+    id="refNav"
+    class="nav-btn"
+    onclick="showPage('refPage','refNav');loadReferrals()"
   >
-    💳<br>
-    Wallet
+    <span>👥</span>
+    Refer
+  </button>
+
+  <button
+    id="profileNav"
+    class="nav-btn"
+    onclick="showPage('profilePage','profileNav')"
+  >
+    <span>👤</span>
+    Profile
   </button>
 
 </nav>
 
+
+<!-- CHANNEL MODAL -->
+
+<div
+  id="channelModal"
+  class="modal"
+>
+
+  <div class="modal-box">
+
+    <h2>
+      🔒 Join required channels
+    </h2>
+
+    <p class="card-desc">
+      Join both channels below before you can use USDT Hub.
+    </p>
+
+    <div class="channel">
+
+      <span>
+        📢 Birr Gram
+      </span>
+
+      <button
+        onclick="openTelegram('https://t.me/birr_gram')"
+      >
+        Join
+      </button>
+
+    </div>
+
+    <div class="channel">
+
+      <span>
+        📢 USDT Gram
+      </span>
+
+      <button
+        onclick="openTelegram('https://t.me/usdt_g_ram')"
+      >
+        Join
+      </button>
+
+    </div>
+
+    <button
+      class="primary"
+      onclick="verifyMembership()"
+    >
+      ✅ I've Joined
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- WELCOME MODAL -->
+
+<div
+  id="welcomeModal"
+  class="modal"
+>
+
+  <div class="modal-box">
+
+    <h2>
+      🎁 Welcome Bonus
+    </h2>
+
+    <p class="card-desc">
+      Enter your BEP20 USDT wallet address to receive your welcome bonus.
+    </p>
+
+    <div class="form">
+
+      <input
+        id="welcomeAddress"
+        type="text"
+        autocomplete="off"
+        placeholder="0x..."
+      >
+
+      <button
+        class="primary"
+        onclick="claimWelcome()"
+      >
+        🎁 Claim Bonus
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- WITHDRAW MODAL -->
+
+<div
+  id="withdrawModal"
+  class="modal"
+>
+
+  <div class="modal-box">
+
+    <h2>
+      💸 Withdraw
+    </h2>
+
+    <p class="card-desc">
+      Enter your BEP20 USDT wallet address.
+    </p>
+
+    <div class="form">
+
+      <input
+        id="withdrawAddress"
+        type="text"
+        autocomplete="off"
+        placeholder="0x..."
+      >
+
+      <button
+        class="primary"
+        onclick="withdraw()"
+      >
+        💸 Withdraw
+      </button>
+
+      <button
+        class="secondary"
+        onclick="closeModal('withdrawModal')"
+      >
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- PROMO MODAL -->
+
+<div
+  id="promoModal"
+  class="modal"
+>
+
+  <div class="modal-box">
+
+    <h2>
+      🎁 Promo Code
+    </h2>
+
+    <p class="card-desc">
+      Enter your promo code.
+    </p>
+
+    <div class="form">
+
+      <input
+        id="promoCode"
+        type="text"
+        autocomplete="off"
+        placeholder="PROMO CODE"
+      >
+
+      <button
+        class="primary"
+        onclick="claimPromo()"
+      >
+        🎁 Claim
+      </button>
+
+      <button
+        class="secondary"
+        onclick="closeModal('promoModal')"
+      >
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<div
+  id="toast"
+  class="toast"
+></div>
+
+
 <script>
 
 const tg =
-  window.Telegram?.WebApp;
+  window.Telegram?.WebApp || null;
 
-tg?.ready();
-tg?.expand();
+if (tg) {
+  tg.ready();
+  tg.expand();
+}
 
-const state = {
-  initData:
-    tg?.initData || "",
 
-  user:null
-};
+let currentUser = null;
+let referralLink = "";
 
-let aviatorTimer = null;
 
-// ======================================================
-// API
-// ======================================================
+function showToast(message) {
+
+  const toast =
+    document.getElementById("toast");
+
+  toast.textContent = message;
+
+  toast.classList.add("show");
+
+  clearTimeout(
+    window.__toastTimer
+  );
+
+  window.__toastTimer =
+    setTimeout(() => {
+      toast.classList.remove("show");
+    }, 2800);
+}
+
+
+function closeModal(id) {
+
+  document
+    .getElementById(id)
+    .classList.remove("show");
+}
+
+
+function openTelegram(url) {
+
+  if (tg) {
+    tg.openTelegramLink(url);
+  } else {
+    window.open(url,"_blank");
+  }
+}
+
+
+function showPage(pageId, navId) {
+
+  document
+    .querySelectorAll(".page")
+    .forEach(page =>
+      page.classList.remove("active")
+    );
+
+  document
+    .getElementById(pageId)
+    .classList.add("active");
+
+  document
+    .querySelectorAll(".nav-btn")
+    .forEach(btn =>
+      btn.classList.remove("active")
+    );
+
+  const nav =
+    document.getElementById(navId);
+
+  if (nav) {
+    nav.classList.add("active");
+  }
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
 
 async function api(
   url,
-  body = {}
-){
+  data = {}
+) {
 
   const response =
-    await fetch(
-      url,
-      {
-        method:"POST",
+    await fetch(url, {
+      method: "POST",
 
-        headers:{
-          "Content-Type":
-            "application/json",
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
 
-          "X-Telegram-Init-Data":
-            state.initData
-        },
+      body:
+        JSON.stringify(data)
+    });
 
-        body:
-          JSON.stringify(body)
-      }
-    );
+  let result;
 
-  let data;
-
-  try{
-    data =
+  try {
+    result =
       await response.json();
-  }catch{
+  } catch {
     throw new Error(
-      "INVALID_SERVER_RESPONSE"
+      "SERVER_ERROR"
     );
   }
 
-  if(
-    !response.ok ||
-    !data.success
-  ){
+  if (!response.ok ||
+      result.success === false) {
+
     throw new Error(
-      data.error ||
+      result.error ||
       "REQUEST_FAILED"
     );
   }
 
-  return data;
+  return result;
 }
 
-// ======================================================
-// INIT
-// ======================================================
 
-async function init(){
+async function loadUser() {
 
-  if(!state.initData){
+  const result =
+    await api("/api/user", {});
 
-    alert(
-      "Please open USDT Hub from Telegram."
+  currentUser =
+    result.user;
+
+  updateUI();
+
+  return result;
+}
+
+
+function updateUI() {
+
+  if (!currentUser) return;
+
+  const balance =
+    Number(
+      currentUser.balance || 0
+    );
+
+  document.getElementById(
+    "balance"
+  ).textContent =
+    balance.toFixed(6);
+
+  document.getElementById(
+    "profileBalance"
+  ).textContent =
+    balance.toFixed(6);
+
+  const name =
+    currentUser.firstName ||
+    currentUser.username ||
+    "User";
+
+  document.getElementById(
+    "welcomeName"
+  ).textContent =
+    `Welcome, ${name} 👋`;
+
+  document.getElementById(
+    "profileName"
+  ).textContent =
+    `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim()
+    || "User";
+
+  document.getElementById(
+    "profileUsername"
+  ).textContent =
+    currentUser.username
+      ? `@${currentUser.username}`
+      : `Telegram ID: ${currentUser.telegramId}`;
+
+  document.getElementById(
+    "adsCount"
+  ).textContent =
+    currentUser.adsWatched || 0;
+
+  document.getElementById(
+    "taskCount"
+  ).textContent =
+    currentUser.tasksCompleted || 0;
+
+  document.getElementById(
+    "refCount"
+  ).textContent =
+    currentUser.referrals || 0;
+
+  document.getElementById(
+    "profileAds"
+  ).textContent =
+    currentUser.adsWatched || 0;
+
+  document.getElementById(
+    "profileTasks"
+  ).textContent =
+    currentUser.tasksCompleted || 0;
+
+  document.getElementById(
+    "profileRefs"
+  ).textContent =
+    currentUser.referrals || 0;
+
+  document.getElementById(
+    "profileGames"
+  ).textContent =
+    Number(currentUser.xoPlays || 0) +
+    Number(currentUser.aviatorGames || 0);
+
+  const botUsername =
+    "USDT_Hub_bot";
+
+  referralLink =
+    `https://t.me/${botUsername}?startapp=ref_${currentUser.telegramId}`;
+
+  document.getElementById(
+    "refLink"
+  ).textContent =
+    referralLink;
+}
+
+
+async function verifyMembership() {
+
+  try {
+
+    showToast(
+      "Checking your memberships..."
+    );
+
+    const result =
+      await api(
+        "/api/verify-membership"
+      );
+
+    if (!result.joined) {
+
+      showToast(
+        "❌ You need to join both channels."
+      );
+
+      return;
+    }
+
+    closeModal(
+      "channelModal"
+    );
+
+    currentUser.channelsVerified =
+      true;
+
+    updateUI();
+
+    if (
+      !currentUser.welcomeBonusClaimed
+    ) {
+
+      document
+        .getElementById(
+          "welcomeModal"
+        )
+        .classList.add("show");
+    }
+
+    showToast(
+      "✅ Channels verified!"
+    );
+
+  } catch (error) {
+
+    showToast(
+      "❌ " +
+      friendlyError(error.message)
+    );
+  }
+}
+
+
+async function claimWelcome() {
+
+  const input =
+    document.getElementById(
+      "welcomeAddress"
+    );
+
+  const address =
+    input.value.trim();
+
+  if (!address) {
+    showToast(
+      "Enter your BEP20 address."
+    );
+    return;
+  }
+
+  try {
+
+    showToast(
+      "Processing your welcome bonus..."
+    );
+
+    const result =
+      await api(
+        "/api/claim-welcome",
+        { address }
+      );
+
+    closeModal(
+      "welcomeModal"
+    );
+
+    currentUser.welcomeBonusClaimed =
+      true;
+
+    currentUser.welcomeBonusStatus =
+      "paid";
+
+    currentUser.welcomeAddress =
+      address;
+
+    updateUI();
+
+    showToast(
+      `🎉 ${result.amount} USDT sent!`
+    );
+
+  } catch (error) {
+
+    showToast(
+      "❌ " +
+      friendlyError(error.message)
+    );
+  }
+}
+
+
+async function watchAd(provider) {
+
+  if (
+    !currentUser?.channelsVerified
+  ) {
+    showToast(
+      "Join the required channels first."
+    );
+    return;
+  }
+
+  try {
+
+    /*
+      The actual Monetag/Adsgram
+      SDK should call /api/ads only
+      after a REAL rewarded ad is
+      successfully completed.
+
+      This frontend does NOT fake
+      ad completion.
+    */
+
+    showToast(
+      "Opening " +
+      provider +
+      " ad..."
+    );
+
+    if (
+      provider === "monetag"
+    ) {
+
+      if (
+        typeof window.show_11526625 ===
+        "function"
+      ) {
+
+        await window.show_11526625();
+
+        await rewardAd(
+          "monetag"
+        );
+
+      } else {
+
+        showToast(
+          "Monetag SDK is not loaded yet."
+        );
+      }
+
+    } else {
+
+      showToast(
+        "Adsgram SDK must be connected here."
+      );
+    }
+
+  } catch (error) {
+
+    showToast(
+      "❌ Ad was not completed."
+    );
+  }
+}
+
+
+async function rewardAd(provider) {
+
+  const result =
+    await api(
+      "/api/ads",
+      { provider }
+    );
+
+  currentUser.balance =
+    Number(currentUser.balance || 0) +
+    Number(result.reward || 0);
+
+  currentUser.adsWatched =
+    Number(currentUser.adsWatched || 0) +
+    1;
+
+  updateUI();
+
+  showToast(
+    `🔥 +${result.reward} points`
+  );
+}
+
+
+async function playXO(choice) {
+
+  try {
+
+    const result =
+      await api(
+        "/api/games",
+        {
+          action: "xo",
+          choice
+        }
+      );
+
+    currentUser.balance =
+      result.balance;
+
+    currentUser.xoPlays =
+      Number(currentUser.xoPlays || 0) +
+      1;
+
+    if (result.win) {
+      showToast(
+        `🔥 You won ${result.payout}!`
+      );
+    } else {
+      showToast(
+        "😭 You lost this round."
+      );
+    }
+
+    updateUI();
+
+  } catch (error) {
+
+    showToast(
+      "❌ " +
+      friendlyError(error.message)
+    );
+  }
+}
+
+
+let aviatorRunning = false;
+
+
+async function playAviator() {
+
+  if (aviatorRunning) return;
+
+  const input =
+    document.getElementById(
+      "aviatorBet"
+    );
+
+  const bet =
+    Number(input.value);
+
+  if (
+    !Number.isInteger(bet) ||
+    bet <= 0
+  ) {
+
+    showToast(
+      "Enter a valid bet."
     );
 
     return;
   }
 
-  try{
+  aviatorRunning = true;
 
-    const data =
+  const multiplierEl =
+    document.getElementById(
+      "aviatorMultiplier"
+    );
+
+  const plane =
+    document.getElementById(
+      "aviatorPlane"
+    );
+
+  plane.style.animation =
+    "fly .35s infinite alternate ease-in-out";
+
+  let visual =
+    1.00;
+
+  const timer =
+    setInterval(() => {
+
+      visual +=
+        Math.random() * .25;
+
+      multiplierEl.textContent =
+        visual.toFixed(2) + "x";
+
+    }, 100);
+
+  try {
+
+    const result =
       await api(
-        "/api/user"
+        "/api/games",
+        {
+          action: "aviator",
+          bet
+        }
       );
 
-    state.user =
-      data.user;
+    clearInterval(timer);
 
-    renderUser();
+    multiplierEl.textContent =
+      Number(result.multiplier)
+        .toFixed(2) +
+      "x";
 
-    if(
-      !state.user.channelsVerified
-    ){
+    currentUser.balance =
+      result.balance;
 
-      document
-        .getElementById(
-          "channelLock"
-        )
-        .classList
-        .remove("hidden");
+    currentUser.aviatorGames =
+      Number(
+        currentUser.aviatorGames || 0
+      ) + 1;
 
-    }else{
+    updateUI();
 
-      document
-        .getElementById(
-          "channelLock"
-        )
-        .classList
-        .add("hidden");
+    if (
+      result.multiplier > 1
+    ) {
 
+      showToast(
+        `🚀 ${result.multiplier}x — +${result.payout} points!`
+      );
+
+    } else {
+
+      showToast(
+        "💥 The plane crashed!"
+      );
     }
+
+  } catch (error) {
+
+    clearInterval(timer);
+
+    showToast(
+      "❌ " +
+      friendlyError(error.message)
+    );
+
+  } finally {
+
+    aviatorRunning = false;
+  }
+}
+
+
+async function loadTasks() {
+
+  const container =
+    document.getElementById(
+      "tasksList"
+    );
+
+  container.innerHTML =
+    `<div class="empty">Loading tasks...</div>`;
+
+  try {
+
+    const result =
+      await api(
+        "/api/tasks",
+        {
+          action: "list"
+        }
+      );
+
+    if (
+      !result.tasks ||
+      !result.tasks.length
+    ) {
+
+      container.innerHTML =
+        `<div class="empty">No tasks available right now 🥀</div>`;
+
+      return;
+    }
+
+    container.innerHTML =
+      result.tasks.map(task => `
+
+        <div class="task">
+
+          <div class="task-head">
+
+            <div class="task-title">
+              ${escapeHTML(task.title)}
+            </div>
+
+            <div class="reward">
+              +${Number(task.reward || 0)}
+            </div>
+
+          </div>
+
+          <a
+            class="task-link"
+            href="${escapeAttribute(task.link)}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ${escapeHTML(task.link)}
+          </a>
+
+          <button
+            onclick="completeTask('${escapeAttribute(task.id)}')"
+          >
+            ✅ Complete Task
+          </button>
+
+        </div>
+
+      `).join("");
+
+  } catch (error) {
+
+    container.innerHTML =
+      `<div class="empty">❌ Failed to load tasks.</div>`;
+  }
+}
+
+
+async function completeTask(taskId) {
+
+  try {
+
+    const result =
+      await api(
+        "/api/tasks",
+        {
+          action: "complete",
+          taskId
+        }
+      );
+
+    currentUser.balance =
+      Number(currentUser.balance || 0) +
+      Number(result.reward || 0);
+
+    currentUser.tasksCompleted =
+      Number(
+        currentUser.tasksCompleted || 0
+      ) + 1;
+
+    updateUI();
+
+    showToast(
+      `🔥 Task completed! +${result.reward}`
+    );
+
+    loadTasks();
+
+  } catch (error) {
+
+    showToast(
+      "❌ " +
+      friendlyError(error.message)
+    );
+  }
+}
+
+
+async function loadReferrals() {
+
+  const container =
+    document.getElementById(
+      "referralsList"
+    );
+
+  container.textContent =
+    "Loading...";
+
+  try {
+
+    const result =
+      await api(
+        "/api/referral",
+        {
+          action: "list"
+        }
+      );
+
+    const refs =
+      result.referrals || [];
+
+    if (!refs.length) {
+
+      container.innerHTML =
+        `<div class="empty">No referrals yet. Go get the bag 🤝</div>`;
+
+      return;
+    }
+
+    container.innerHTML =
+      refs.map(ref => `
+
+        <div class="ref-item">
+          👤 Referral
+          <br>
+          <small>
+            Joined:
+            ${
+              ref.createdAt
+                ? "Registered"
+                : "Unknown"
+            }
+          </small>
+        </div>
+
+      `).join("");
+
+  } catch (error) {
+
+    container.textContent =
+      "Failed to load referrals.";
+  }
+}
+
+
+async function checkReferral() {
+
+  try {
 
     await api(
       "/api/referral",
       {
-        action:"check"
+        action: "check"
       }
     );
 
-  }catch(error){
+  } catch {}
+}
 
-    alert(
-      error.message
+
+function copyReferral() {
+
+  if (!referralLink) {
+    showToast(
+      "Referral link isn't ready."
+    );
+    return;
+  }
+
+  if (
+    navigator.clipboard
+  ) {
+
+    navigator.clipboard
+      .writeText(referralLink)
+      .then(() => {
+
+        showToast(
+          "📋 Referral link copied!"
+        );
+
+      });
+
+  } else {
+
+    showToast(
+      "Copy the link manually."
     );
   }
 }
 
-// ======================================================
-// USER UI
-// ======================================================
 
-function renderUser(){
+function openWithdraw() {
 
-  const balance =
-    Number(
-      state.user?.balance || 0
+  if (
+    !currentUser?.channelsVerified
+  ) {
+
+    showToast(
+      "Join the required channels first."
     );
+
+    return;
+  }
 
   document
     .getElementById(
-      "balance"
+      "withdrawModal"
     )
-    .textContent =
-      balance.toFixed(2);
-
-  const code =
-    state.user?.referralCode || "";
-
-  document
-    .getElementById(
-      "referralLink"
-    )
-    .textContent =
-      `https://t.me/YOUR_BOT_USERNAME?startapp=${code}`;
+    .classList.add("show");
 }
 
-// ======================================================
-// NAVIGATION
-// ======================================================
 
-function showPage(
-  id
-){
+async function withdraw() {
 
-  document
-    .querySelectorAll(
-      ".page"
-    )
-    .forEach(
-      page =>
-        page.classList
-          .remove("active")
+  const input =
+    document.getElementById(
+      "withdrawAddress"
     );
 
-  document
-    .getElementById(id)
-    .classList
-    .add("active");
+  const address =
+    input.value.trim();
 
-  if(id === "tasks"){
-    loadTasks();
+  if (!address) {
+
+    showToast(
+      "Enter your BEP20 address."
+    );
+
+    return;
   }
 
-  if(id === "games"){
-    startAviatorPolling();
-  }else{
-    clearInterval(
-      aviatorTimer
-    );
-  }
-}
+  try {
 
-// ======================================================
-// CHANNELS
-// ======================================================
-
-function openTelegram(
-  url
-){
-
-  if(
-    tg?.openTelegramLink
-  ){
-
-    tg.openTelegramLink(
-      url
+    showToast(
+      "Processing withdrawal..."
     );
 
-  }else{
-
-    window.open(
-      url,
-      "_blank"
-    );
-  }
-}
-
-async function verifyMembership(){
-
-  try{
-
-    const data =
-      await api(
-        "/api/verify-membership"
-      );
-
-    if(!data.joined){
-
-      alert(
-        "You haven't joined both channels yet."
-      );
-
-      return;
-    }
-
-    document
-      .getElementById(
-        "channelLock"
-      )
-      .classList
-      .add("hidden");
-
-    const user =
-      await api(
-        "/api/user"
-      );
-
-    state.user =
-      user.user;
-
-    renderUser();
-
-  }catch(error){
-
-    alert(
-      error.message
-    );
-  }
-}
-
-// ======================================================
-// ADS
-// ======================================================
-
-async function watchAd(
-  provider
-){
-
-  try{
-
-    /*
-      IMPORTANT:
-      This endpoint should only be called
-      AFTER your actual ad SDK reports
-      a completed/valid reward.
-
-      Do not use this button as a free
-      reward endpoint in production.
-    */
-
-    const data =
-      await api(
-        "/api/ads",
-        {
-          provider
-        }
-      );
-
-    state.user.balance =
-      Number(
-        state.user.balance || 0
-      ) +
-      Number(
-        data.reward || 0
-      );
-
-    renderUser();
-
-    alert(
-      `Reward: ${data.reward}`
-    );
-
-  }catch(error){
-
-    alert(
-      error.message
-    );
-  }
-}
-
-// ======================================================
-// TASKS
-// ======================================================
-
-async function loadTasks(){
-
-  try{
-
-    const data =
-      await api(
-        "/api/tasks",
-        {
-          action:"list"
-        }
-      );
-
-    const box =
-      document.getElementById(
-        "taskList"
-      );
-
-    if(
-      !data.tasks.length
-    ){
-
-      box.innerHTML =
-        `<p class="muted">
-          No active tasks.
-        </p>`;
-
-      return;
-    }
-
-    box.innerHTML =
-      data.tasks
-        .map(
-          task => `
-            <div class="task">
-
-              <b>
-                ${escapeHTML(
-                  task.title
-                )}
-              </b>
-
-              <div class="muted">
-                ${task.completions || 0}
-                /
-                ${task.maxCompletions || 50}
-                • Reward:
-                ${task.reward}
-              </div>
-
-              <button
-                class="btn"
-                onclick="completeTask('${task.id}')"
-              >
-                Complete
-              </button>
-
-            </div>
-          `
-        )
-        .join("");
-
-  }catch(error){
-
-    document
-      .getElementById(
-        "taskList"
-      )
-      .textContent =
-        error.message;
-  }
-}
-
-async function completeTask(
-  id
-){
-
-  try{
-
-    const data =
-      await api(
-        "/api/tasks",
-        {
-          action:"complete",
-          taskId:id
-        }
-      );
-
-    state.user.balance =
-      Number(
-        state.user.balance || 0
-      ) +
-      Number(
-        data.reward || 0
-      );
-
-    renderUser();
-
-    await loadTasks();
-
-    alert(
-      "Task completed!"
-    );
-
-  }catch(error){
-
-    alert(
-      error.message
-    );
-  }
-}
-
-// ======================================================
-// PROMO
-// ======================================================
-
-async function claimPromo(){
-
-  try{
-
-    const code =
-      document
-        .getElementById(
-          "promoCode"
-        )
-        .value;
-
-    const data =
-      await api(
-        "/api/promo",
-        {
-          code
-        }
-      );
-
-    state.user.balance =
-      Number(
-        state.user.balance || 0
-      ) +
-      Number(
-        data.reward || 0
-      );
-
-    renderUser();
-
-    alert(
-      `Added ${data.reward}`
-    );
-
-  }catch(error){
-
-    alert(
-      error.message
-    );
-  }
-}
-
-// ======================================================
-// WITHDRAW
-// ======================================================
-
-async function withdraw(){
-
-  try{
-
-    const address =
-      document
-        .getElementById(
-          "withdrawAddress"
-        )
-        .value
-        .trim();
-
-    if(!address){
-
-      alert(
-        "Enter your BEP20 address."
-      );
-
-      return;
-    }
-
-    const data =
+    const result =
       await api(
         "/api/withdraw",
         {
@@ -931,184 +2115,275 @@ async function withdraw(){
         }
       );
 
-    state.user.balance =
+    const points =
       Number(
-        state.user.balance || 0
-      ) -
-      Number(
-        data.points || 0
+        result.points || 0
       );
 
-    renderUser();
-
-    alert(
-      `Sent ${data.amount} USDT`
-    );
-
-  }catch(error){
-
-    alert(
-      error.message
-    );
-  }
-}
-
-// ======================================================
-// AVIATOR
-// ======================================================
-
-async function updateAviator(){
-
-  try{
-
-    const data =
-      await api(
-        "/api/games",
-        {
-          action:"state"
-        }
-      );
-
-    const round =
-      data.round;
-
-    document
-      .getElementById(
-        "multiplier"
-      )
-      .textContent =
+    currentUser.balance =
+      Math.max(
+        0,
         Number(
-          round.multiplier || 1
-        ).toFixed(2) +
-        "x";
+          currentUser.balance || 0
+        ) - points
+      );
 
-    document
-      .getElementById(
-        "aviatorStatus"
-      )
-      .textContent =
-        round.status ===
-        "crashed"
-          ? "💥 Crashed"
-          : "🟢 LIVE";
+    currentUser.withdrawals =
+      Number(
+        currentUser.withdrawals || 0
+      ) + 1;
 
-  }catch(error){
+    updateUI();
 
-    document
-      .getElementById(
-        "aviatorStatus"
-      )
-      .textContent =
-        error.message;
-  }
-}
-
-function startAviatorPolling(){
-
-  clearInterval(
-    aviatorTimer
-  );
-
-  updateAviator();
-
-  aviatorTimer =
-    setInterval(
-      updateAviator,
-      1000
-    );
-}
-
-async function startNewRound(){
-
-  try{
-
-    await api(
-      "/api/games",
-      {
-        action:"new"
-      }
+    closeModal(
+      "withdrawModal"
     );
 
-    updateAviator();
+    showToast(
+      `✅ ${result.amount} USDT sent!`
+    );
 
-  }catch(error){
+  } catch (error) {
 
-    alert(
-      error.message
+    showToast(
+      "❌ " +
+      friendlyError(error.message)
     );
   }
 }
 
-async function cashOutDemo(){
 
-  try{
+function openPromo() {
 
-    const data =
+  document
+    .getElementById(
+      "promoModal"
+    )
+    .classList.add("show");
+}
+
+
+async function claimPromo() {
+
+  const input =
+    document.getElementById(
+      "promoCode"
+    );
+
+  const code =
+    input.value.trim();
+
+  if (!code) {
+
+    showToast(
+      "Enter a promo code."
+    );
+
+    return;
+  }
+
+  try {
+
+    const result =
       await api(
-        "/api/games",
+        "/api/promo",
         {
-          action:"cashout"
+          code
         }
       );
 
-    alert(
-      `Demo cash-out: ${data.multiplier}x`
+    currentUser.balance =
+      Number(currentUser.balance || 0) +
+      Number(result.reward || 0);
+
+    updateUI();
+
+    closeModal(
+      "promoModal"
     );
 
-  }catch(error){
+    input.value = "";
 
-    alert(
-      error.message
+    showToast(
+      `🎁 +${result.reward} points`
+    );
+
+  } catch (error) {
+
+    showToast(
+      "❌ " +
+      friendlyError(error.message)
     );
   }
 }
 
-// ======================================================
-// HELPERS
-// ======================================================
 
-function copyReferral(){
+function friendlyError(error) {
 
-  const text =
+  const messages = {
+
+    CHANNELS_REQUIRED:
+      "Join both required channels first.",
+
+    WELCOME_ALREADY_CLAIMED:
+      "Welcome bonus already claimed.",
+
+    ADDRESS_ALREADY_USED:
+      "This wallet address was already used.",
+
+    INVALID_ADDRESS:
+      "Invalid BEP20 wallet address.",
+
+    MINIMUM_NOT_REACHED:
+      "You haven't reached the withdrawal minimum.",
+
+    INSUFFICIENT_POINTS:
+      "Not enough points.",
+
+    MONETAG_LIMIT:
+      "Today's Monetag limit is reached.",
+
+    ADSGRAM_LIMIT:
+      "Today's Adsgram limit is reached.",
+
+    ALREADY_COMPLETED:
+      "You already completed this task.",
+
+    TASK_FULL:
+      "This task is already full.",
+
+    TASK_CLOSED:
+      "This task is closed.",
+
+    TELEGRAM_MEMBERSHIP_REQUIRED:
+      "You haven't joined the task channel yet.",
+
+    INVALID_CODE:
+      "Invalid promo code.",
+
+    ALREADY_CLAIMED:
+      "You already claimed this code.",
+
+    XO_LIMIT:
+      "Today's XO limit is reached.",
+
+    SERVER_ERROR:
+      "Server error. Try again.",
+
+    USER_NOT_FOUND:
+      "Your account wasn't found."
+
+  };
+
+  return (
+    messages[error] ||
+    error ||
+    "Something went wrong."
+  );
+}
+
+
+function escapeHTML(value) {
+
+  return String(value ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+
+function escapeAttribute(value) {
+
+  return escapeHTML(value)
+    .replaceAll("`","&#096;");
+}
+
+
+async function startup() {
+
+  try {
+
+    /*
+      Telegram Web Apps provide
+      initData automatically.
+      The backend validates it.
+    */
+
+    if (
+      !tg ||
+      !tg.initData
+    ) {
+
+      throw new Error(
+        "OPEN_FROM_TELEGRAM"
+      );
+    }
+
+    await loadUser();
+
+    /*
+      First requirement:
+      both Telegram channels.
+    */
+
+    if (
+      !currentUser.channelsVerified
+    ) {
+
+      document
+        .getElementById(
+          "channelModal"
+        )
+        .classList.add("show");
+
+    } else if (
+      !currentUser.welcomeBonusClaimed
+    ) {
+
+      document
+        .getElementById(
+          "welcomeModal"
+        )
+        .classList.add("show");
+    }
+
+    await checkReferral();
+
     document
       .getElementById(
-        "referralLink"
+        "loading"
       )
-      .textContent;
+      .classList.add("hidden");
 
-  navigator
-    .clipboard
-    .writeText(text)
-    .then(
-      () =>
-        alert("Copied!")
+  } catch (error) {
+
+    document
+      .getElementById(
+        "loading"
+      )
+      .classList.add("hidden");
+
+    showToast(
+      "❌ " +
+      friendlyError(error.message)
     );
+
+    console.error(
+      "STARTUP ERROR:",
+      error
+    );
+  }
 }
 
-function escapeHTML(
-  value
-){
 
-  return String(value)
-    .replace(
-      /[&<>"']/g,
-      char => ({
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#039;"
-      }[char])
-    );
-}
-
-// ======================================================
-// START
-// ======================================================
-
-init();
+document.addEventListener(
+  "DOMContentLoaded",
+  startup
+);
 
 </script>
 
 </body>
-</html>
+  </html>
