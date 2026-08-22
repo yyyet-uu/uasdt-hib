@@ -123,7 +123,7 @@
 
 <body>
 
-  <!-- 1. LOADING SCREEN -->
+  <!-- LOADING SCREEN -->
   <div id="loadingScreen" class="loading-screen">
     <div style="text-align:center">
       <div class="logo-orb">₮</div>
@@ -132,7 +132,7 @@
     </div>
   </div>
 
-  <!-- 2. MANDATORY CHANNELS LOCK -->
+  <!-- MANDATORY CHANNELS LOCK -->
   <section id="lockScreen" class="lock-screen hidden">
     <div class="lock-wrap">
       <div class="lock-logo">🔒</div>
@@ -172,7 +172,7 @@
     </div>
   </section>
 
-  <!-- 3. WELCOME BONUS (0.01 USDT AUTOMATED PAYOUT) -->
+  <!-- WELCOME BONUS SCREEN -->
   <section id="welcomeScreen" class="welcome-screen hidden">
     <div class="welcome-wrap">
       <div class="welcome-icon">🎁</div>
@@ -189,7 +189,7 @@
     </div>
   </section>
 
-  <!-- 4. MAIN APP -->
+  <!-- MAIN APP (5-PAGE ARCHITECTURE) -->
   <main id="app" class="app hidden">
     <header class="topbar">
       <div class="brand">
@@ -209,7 +209,7 @@
 
     <!-- PAGE 1: HOME -->
     <section id="page-home" class="page active">
-      <!-- Top Rectangle: Balance & Direct Withdraw -->
+      <!-- Rectangle 1: Balance & Withdraw -->
       <div class="box-rect balance-box">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
@@ -221,7 +221,7 @@
         </div>
       </div>
 
-      <!-- 7-Day Login Streak Reward Box -->
+      <!-- Rectangle 2: 7-Day Login Streak -->
       <div class="box-rect">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div style="font-weight:900;font-size:14px">🔥 7-Day Login Streak</div>
@@ -238,7 +238,7 @@
         </div>
       </div>
 
-      <!-- Middle Rectangle: Progress & Activity -->
+      <!-- Rectangle 3: Progress & Stats -->
       <div class="box-rect">
         <div style="font-weight:900;margin-bottom:12px">📊 Your Activity Overview</div>
         <div class="stats-grid">
@@ -247,11 +247,11 @@
             <div id="adsCount" style="font-size:19px;font-weight:900;margin-top:4px">0</div>
           </div>
           <div class="stat-tile">
-            <div style="font-size:11px;color:var(--muted)">Tasks Completed</div>
+            <div style="font-size:11px;color:var(--muted)">Tasks Done</div>
             <div id="taskCount" style="font-size:19px;font-weight:900;margin-top:4px">0</div>
           </div>
           <div class="stat-tile">
-            <div style="font-size:11px;color:var(--muted)">Invited Friends</div>
+            <div style="font-size:11px;color:var(--muted)">Referrals</div>
             <div id="refCount" style="font-size:19px;font-weight:900;margin-top:4px">0</div>
           </div>
           <div class="stat-tile">
@@ -261,7 +261,7 @@
         </div>
       </div>
 
-      <!-- Bottom Rectangle: Direct Referral Share -->
+      <!-- Rectangle 4: Direct Referral Share -->
       <div class="box-rect" style="text-align:center">
         <div style="font-weight:900;font-size:15px">👥 Refer Friends • Earn 1,000 PTS ($0.01)</div>
         <div style="font-size:12px;color:var(--muted);margin:4px 0 14px">Get 500 PTS on channel join + 500 PTS when referral watches 2 ads.</div>
@@ -319,7 +319,6 @@
 
       <div class="section-title">✈️ Live Synchronized Aviator</div>
       <div class="aviator">
-        <!-- Live Multiplier Ribbon -->
         <div class="ribbon-track" id="aviatorRibbon">
           <div class="ribbon-pill high">3.40x</div>
           <div class="ribbon-pill crash">1.12x</div>
@@ -494,7 +493,7 @@ function openTelegram(url) {
 
 function setLoading(show) { $("loadingScreen").classList.toggle("hidden", !show); }
 
-// Resilient API Requester supporting both direct path & query fallback
+// Resilient API requester preventing 404 & JSON parse crashes
 async function apiRequest(endpoint, body = {}) {
   const headers = {
     "Content-Type": "application/json",
@@ -511,7 +510,6 @@ async function apiRequest(endpoint, body = {}) {
       body: JSON.stringify({ ...body, endpoint })
     });
   } catch {
-    // Fallback to /api/index with query param
     response = await fetch(`/api/index?endpoint=${endpoint}`, {
       method: "POST",
       headers,
@@ -544,7 +542,14 @@ async function initialize() {
       return;
     }
 
-    const data = await apiRequest("user");
+    const urlParams = new URLSearchParams(window.location.search);
+    const startParam =
+      tg?.initDataUnsafe?.start_param ||
+      urlParams.get("tgWebAppStartParam") ||
+      urlParams.get("startapp") ||
+      "";
+
+    const data = await apiRequest("user", { startParam });
     if (!data?.user) throw new Error("USER_DATA_MISSING");
 
     currentUser = data.user;
@@ -612,7 +617,7 @@ function updateUserUI() {
   $("vipBadge").textContent = currentUser.vipTier || "Bronze";
 
   const botName = currentUser.botUsername || "Ussdt_hub_bot";
-  $("refLink").textContent = `https://t.me/${botName}?start=ref_${currentUser.telegramId}`;
+  $("refLink").textContent = `https://t.me/${botName}?startapp=ref_${currentUser.telegramId}`;
 
   const ml = Number(currentUser.monetagToday || 0);
   const al = Number(currentUser.adsgramToday || 0);
@@ -750,7 +755,6 @@ function getClientLiveRound(timestamp = Date.now()) {
   const roundIndex = Math.floor(epochSeconds / 16);
   const msInRound = timestamp % 16000;
 
-  // Predictable pseudo-random matching backend seed logic
   const seed = (roundIndex * 9301 + 49297) % 233280;
   const rand = seed / 233280;
   let crashMultiplier;
@@ -823,7 +827,6 @@ function startSynchronizedAviatorLoop() {
       planeEl.style.bottom = (14 + progress * 58) + "%";
       statusEl.textContent = "✈️ Flying live...";
 
-      // Auto-Cashout check
       const autoVal = Number($("autoCashoutVal").value || 0);
       if (autoVal > 1.0 && round.currentMultiplier >= autoVal && activeAviatorBet && !activeAviatorBet.cashedOut) {
         handleAviatorAction();
