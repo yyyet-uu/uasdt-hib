@@ -326,7 +326,7 @@ async function verifyMembership(req, res) {
 }
 
 // =====================================================
-// WELCOME BONUS & PAYMENT PROOF
+// WELCOME BONUS & AUTOMATED PAYMENT PROOF
 // =====================================================
 
 async function claimWelcome(req, res) {
@@ -945,7 +945,7 @@ async function withdraw(req, res) {
 }
 
 // =====================================================
-// TELEGRAM WEBHOOK
+// ATTRACTIVE TELEGRAM /START WEBHOOK HANDLER
 // =====================================================
 
 async function telegram(req, res) {
@@ -953,6 +953,7 @@ async function telegram(req, res) {
 
   if (update?.message?.text?.startsWith("/start")) {
     const chatId = update.message.chat.id;
+    const firstName = update.message.from?.first_name || "Trader";
     const text = update.message.text.trim();
     const parts = text.split(" ");
     const startParam = parts.length > 1 ? parts[1] : "";
@@ -960,15 +961,34 @@ async function telegram(req, res) {
     const baseUrl = CONFIG.WEBAPP_URL;
     const launchUrl = startParam ? `${baseUrl}?startapp=${startParam}` : baseUrl;
 
+    const welcomeMessage = [
+      `💎 <b>WELCOME TO USDT HUB, ${firstName.toUpperCase()}!</b> 💎`,
+      `<i>The #1 Automated Micro-Earning & Live Gaming Hub on Telegram.</i>`,
+      ``,
+      `━━━━━━━━━━━━━━━━━━━━`,
+      `🎁 <b>0.01 USDT Welcome Gift:</b> Instant BEP20 blockchain payout`,
+      `📺 <b>Daily Ad Mining:</b> Earn up to 3,000+ PTS daily with Monetag & Adsgram`,
+      `✈️ <b>Live Aviator Arena:</b> Provably fair multiplayer flight multiplier`,
+      `👥 <b>1,000 PTS / Referral:</b> 500 PTS on join + 500 PTS on 2 ads`,
+      `💸 <b>Direct BEP20 Payouts:</b> 10,000 PTS = 0.10 USDT (Auto-sent to wallet)`,
+      `━━━━━━━━━━━━━━━━━━━━`,
+      ``,
+      `⚡ <b>Quick Exchange Rate:</b>`,
+      `<code>10,000 PTS  =  0.10 USDT</code>`,
+      `<code>100,000 PTS =  1.00 USDT</code>`,
+      ``,
+      `👇 <b>Tap below to launch the Mini App and claim your bonus!</b>`
+    ].join("\n");
+
     await sendMessage(
       chatId,
-      "🔥 <b>Welcome to USDT Hub!</b>\n\nEarn rewards from daily ads, community tasks, referrals, and live Aviator.",
+      welcomeMessage,
       {
         reply_markup: {
           inline_keyboard: [
             [
               {
-                text: "🚀 OPEN USDT HUB",
+                text: "🚀 OPEN USDT HUB APP",
                 web_app: { url: launchUrl }
               }
             ],
@@ -976,6 +996,16 @@ async function telegram(req, res) {
               {
                 text: "📢 Payment Proofs",
                 url: "https://t.me/birr_gram"
+              },
+              {
+                text: "💎 Official News",
+                url: "https://t.me/usdt_g_ram"
+              }
+            ],
+            [
+              {
+                text: "💬 Community & Support",
+                url: `https://t.me/${CONFIG.SUPPORT_USERNAME || "birr_gram"}`
               }
             ]
           ]
