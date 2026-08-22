@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-
   <meta name="theme-color" content="#07111f">
   <meta name="apple-mobile-web-app-capable" content="yes">
 
@@ -12,1018 +11,112 @@
   <!-- Telegram Mini App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
 
-  <style>
-    *{
-      box-sizing:border-box;
-      -webkit-tap-highlight-color:transparent;
-    }
+  <!-- Monetag SDK -->
+  <script src="//libtl.com/sdk.js" data-zone="11601754" data-sdk="show_11601754"></script>
 
+  <!-- Adsgram SDK -->
+  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+
+  <style>
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     :root{
-      --bg:#050b15;
-      --bg2:#091426;
-      --card:rgba(14,27,48,.88);
-      --card2:rgba(18,34,58,.92);
-      --line:rgba(255,255,255,.08);
-      --text:#f5f8ff;
-      --muted:#8fa1bd;
-      --blue:#3b82f6;
-      --cyan:#22d3ee;
-      --green:#22c55e;
-      --red:#ef4444;
-      --yellow:#facc15;
-      --purple:#8b5cf6;
+      --bg:#050b15;--bg2:#091426;--card:rgba(14,27,48,.88);--card2:rgba(18,34,58,.92);
+      --line:rgba(255,255,255,.08);--text:#f5f8ff;--muted:#8fa1bd;--blue:#3b82f6;
+      --cyan:#22d3ee;--green:#22c55e;--red:#ef4444;--yellow:#facc15;--purple:#8b5cf6;
       --shadow:0 20px 60px rgba(0,0,0,.38);
     }
-
     html,body{
-      margin:0;
-      padding:0;
-      width:100%;
-      min-height:100%;
-      background:
-        radial-gradient(circle at 20% 0%,rgba(59,130,246,.18),transparent 30%),
-        radial-gradient(circle at 100% 20%,rgba(139,92,246,.13),transparent 30%),
-        var(--bg);
-      color:var(--text);
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      overflow-x:hidden;
-    }
-
-    body{
-      min-height:100vh;
-      padding-bottom:90px;
-    }
-
-    button,input{
-      font:inherit;
-    }
-
-    button{
-      border:0;
-      cursor:pointer;
-      color:white;
-    }
-
-    .hidden{
-      display:none!important;
-    }
-
-    .loading-screen{
-      position:fixed;
-      inset:0;
-      z-index:9999;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:#050b15;
-    }
-
-    .loader-box{
-      text-align:center;
-    }
-
-    .logo-orb{
-      width:78px;
-      height:78px;
-      margin:auto;
-      border-radius:25px;
-      display:grid;
-      place-items:center;
-      font-size:34px;
-      font-weight:900;
-      background:linear-gradient(145deg,#2563eb,#06b6d4);
-      box-shadow:0 0 50px rgba(37,99,235,.45);
-      animation:pulse 1.5s infinite;
-    }
-
-    .loader-box h2{
-      margin:18px 0 5px;
-    }
-
-    .loader-box p{
-      color:var(--muted);
-      margin:0;
-    }
-
-    @keyframes pulse{
-      50%{transform:scale(1.08);box-shadow:0 0 70px rgba(34,211,238,.5)}
-    }
-
-    /* LOCK SCREEN */
-
-    .lock-screen{
-      position:fixed;
-      inset:0;
-      z-index:9000;
-      overflow:auto;
-      padding:28px 18px;
-      background:
-        radial-gradient(circle at 50% 0%,rgba(37,99,235,.24),transparent 40%),
-        #050b15;
-    }
-
-    .lock-wrap{
-      max-width:470px;
-      margin:40px auto;
-    }
-
-    .lock-logo{
-      width:86px;
-      height:86px;
-      border-radius:28px;
-      display:grid;
-      place-items:center;
-      margin:0 auto 22px;
-      font-size:38px;
-      background:linear-gradient(145deg,#2563eb,#06b6d4);
-      box-shadow:0 25px 70px rgba(37,99,235,.35);
-    }
-
-    .lock-title{
-      text-align:center;
-      font-size:29px;
-      font-weight:900;
-      margin-bottom:8px;
-    }
-
-    .lock-sub{
-      text-align:center;
-      color:var(--muted);
-      line-height:1.55;
-      margin-bottom:25px;
-    }
-
-    .join-card{
-      padding:17px;
-      border:1px solid var(--line);
-      background:linear-gradient(145deg,rgba(17,34,59,.95),rgba(8,19,35,.95));
-      border-radius:22px;
-      margin-bottom:12px;
-      box-shadow:var(--shadow);
-    }
-
-    .join-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
-
-    .join-info{
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-
-    .channel-icon{
-      width:48px;
-      height:48px;
-      border-radius:16px;
-      display:grid;
-      place-items:center;
-      background:rgba(59,130,246,.15);
-      font-size:23px;
-    }
-
-    .join-name{
-      font-weight:800;
-    }
-
-    .join-handle{
-      color:var(--muted);
-      font-size:13px;
-      margin-top:3px;
-    }
-
-    .join-btn{
-      padding:11px 14px;
-      border-radius:13px;
-      background:#1689e8;
-      font-weight:800;
-    }
-
-    .verify-btn{
-      width:100%;
-      padding:17px;
-      margin-top:10px;
-      border-radius:17px;
-      font-size:16px;
-      font-weight:900;
-      background:linear-gradient(135deg,#2563eb,#06b6d4);
-      box-shadow:0 12px 35px rgba(37,99,235,.28);
-    }
-
-    .verify-btn:disabled{
-      opacity:.55;
-    }
-
-    .verify-status{
-      text-align:center;
-      color:var(--muted);
-      font-size:13px;
-      margin-top:14px;
-      min-height:20px;
-    }
-
-    /* WELCOME */
-
-    .welcome-screen{
-      position:fixed;
-      inset:0;
-      z-index:8500;
-      overflow:auto;
-      padding:25px 18px;
-      background:
-        radial-gradient(circle at 50% 0%,rgba(34,197,94,.15),transparent 35%),
-        #050b15;
-    }
-
-    .welcome-wrap{
-      max-width:470px;
-      margin:35px auto;
-    }
-
-    .welcome-icon{
-      width:92px;
-      height:92px;
-      border-radius:30px;
-      display:grid;
-      place-items:center;
-      margin:0 auto 20px;
-      font-size:44px;
-      background:linear-gradient(145deg,#16a34a,#22c55e);
-      box-shadow:0 25px 70px rgba(34,197,94,.25);
-    }
-
-    .welcome-screen h1{
-      text-align:center;
-      font-size:30px;
-      margin:0 0 9px;
-    }
-
-    .welcome-screen .desc{
-      text-align:center;
-      color:var(--muted);
-      line-height:1.5;
-      margin-bottom:25px;
-    }
-
-    .address-card{
-      padding:20px;
-      border:1px solid var(--line);
-      border-radius:22px;
-      background:var(--card);
-      box-shadow:var(--shadow);
-    }
-
-    .address-card label{
-      display:block;
-      color:#c8d4e7;
-      font-size:13px;
-      font-weight:700;
-      margin-bottom:9px;
-    }
-
-    .address-input{
-      width:100%;
-      padding:16px;
-      border-radius:15px;
-      border:1px solid var(--line);
-      outline:none;
-      color:white;
-      background:#071221;
-    }
-
-    .address-input:focus{
-      border-color:#3b82f6;
-      box-shadow:0 0 0 3px rgba(59,130,246,.12);
-    }
-
-    .claim-btn{
-      width:100%;
-      padding:17px;
-      border-radius:16px;
-      margin-top:13px;
-      background:linear-gradient(135deg,#16a34a,#22c55e);
-      font-weight:900;
-      box-shadow:0 12px 35px rgba(34,197,94,.2);
-    }
-
-    .small-note{
-      margin-top:13px;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.5;
-      text-align:center;
-    }
-
-    /* APP */
-
-    .app{
-      width:100%;
-      max-width:700px;
-      margin:auto;
-      padding:18px 15px 30px;
-    }
-
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom:18px;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:11px;
-    }
-
-    .brand-logo{
-      width:46px;
-      height:46px;
-      border-radius:15px;
-      display:grid;
-      place-items:center;
-      font-size:21px;
-      font-weight:900;
-      background:linear-gradient(145deg,#2563eb,#06b6d4);
-      box-shadow:0 10px 30px rgba(37,99,235,.25);
-    }
-
-    .brand-name{
-      font-size:18px;
-      font-weight:900;
-    }
-
-    .brand-sub{
-      font-size:11px;
-      color:var(--muted);
-      margin-top:2px;
-    }
-
-    .profile{
-      width:43px;
-      height:43px;
-      border-radius:50%;
-      display:grid;
-      place-items:center;
-      background:#12223a;
-      border:1px solid var(--line);
-      font-weight:900;
-    }
-
-    .page{
-      display:none;
-      animation:pageIn .25s ease;
-    }
-
-    .page.active{
-      display:block;
-    }
-
-    @keyframes pageIn{
-      from{opacity:0;transform:translateY(8px)}
-      to{opacity:1;transform:none}
-    }
-
-    .balance-card{
-      position:relative;
-      overflow:hidden;
-      padding:24px;
-      border-radius:27px;
-      background:
-        radial-gradient(circle at 90% 0%,rgba(34,211,238,.25),transparent 38%),
-        linear-gradient(135deg,#102a56,#0b1730);
-      border:1px solid rgba(96,165,250,.15);
-      box-shadow:var(--shadow);
-    }
-
-    .balance-card:after{
-      content:"";
-      position:absolute;
-      width:150px;
-      height:150px;
-      right:-70px;
-      bottom:-70px;
-      border-radius:50%;
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .balance-label{
-      color:#a8b9d3;
-      font-size:13px;
-    }
-
-    .balance{
-      font-size:38px;
-      line-height:1;
-      font-weight:950;
-      margin:9px 0;
-      letter-spacing:-1.5px;
-    }
-
-    .balance small{
-      font-size:16px;
-      color:#9bb7df;
-      letter-spacing:0;
-    }
-
-    .welcome-user{
-      color:#c8d6eb;
-      font-size:13px;
-    }
-
-    .quick-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:11px;
-      margin-top:13px;
-    }
-
-    .quick{
-      padding:17px;
-      border:1px solid var(--line);
-      background:var(--card);
-      border-radius:19px;
-    }
-
-    .quick-icon{
-      font-size:21px;
-    }
-
-    .quick-value{
-      font-size:20px;
-      font-weight:900;
-      margin-top:7px;
-    }
-
-    .quick-label{
-      color:var(--muted);
-      font-size:11px;
-      margin-top:2px;
-    }
-
-    .section-title{
-      margin:25px 2px 11px;
-      font-size:18px;
-      font-weight:900;
-    }
-
-    .feature-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:12px;
-    }
-
-    .feature{
-      padding:19px;
-      border-radius:21px;
-      border:1px solid var(--line);
-      background:linear-gradient(145deg,rgba(16,32,55,.96),rgba(9,20,36,.96));
-      text-align:left;
-      min-height:125px;
-    }
-
-    .feature-icon{
-      font-size:28px;
-      margin-bottom:13px;
-    }
-
-    .feature-title{
-      font-weight:900;
-    }
-
-    .feature-desc{
-      color:var(--muted);
-      font-size:11px;
-      margin-top:5px;
-      line-height:1.4;
-    }
-
-    .card{
-      padding:18px;
-      border:1px solid var(--line);
-      border-radius:22px;
-      background:var(--card);
-      box-shadow:0 15px 40px rgba(0,0,0,.18);
-      margin-bottom:13px;
-    }
-
-    .action-btn{
-      width:100%;
-      padding:15px;
-      border-radius:15px;
-      font-weight:900;
-      background:linear-gradient(135deg,#2563eb,#3b82f6);
-    }
-
-    .action-btn.green{
-      background:linear-gradient(135deg,#16a34a,#22c55e);
-    }
-
-    .action-btn.red{
-      background:linear-gradient(135deg,#dc2626,#ef4444);
-    }
-
-    .action-btn.purple{
-      background:linear-gradient(135deg,#7c3aed,#8b5cf6);
-    }
-
-    .action-btn:disabled{
-      opacity:.45;
-    }
-
-    .input{
-      width:100%;
-      padding:14px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:#071221;
-      color:white;
-      outline:none;
-      margin-bottom:10px;
-    }
-
-    .input:focus{
-      border-color:#3b82f6;
-    }
-
-    .task{
-      padding:16px;
-      border-radius:18px;
-      background:#0a172a;
-      border:1px solid var(--line);
-      margin-bottom:10px;
-    }
-
-    .task-top{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-    }
-
-    .task-title{
-      font-weight:800;
-    }
-
-    .task-reward{
-      color:#4ade80;
-      font-weight:900;
-      white-space:nowrap;
-    }
-
-    .task-meta{
-      color:var(--muted);
-      font-size:11px;
-      margin:7px 0 12px;
-    }
-
-    .task-btn{
-      width:100%;
-      padding:12px;
-      border-radius:13px;
-      background:#1d4ed8;
-      font-weight:800;
-    }
+      margin:0;padding:0;width:100%;min-height:100%;
+      background:radial-gradient(circle at 20% 0%,rgba(59,130,246,.18),transparent 30%),radial-gradient(circle at 100% 20%,rgba(139,92,246,.13),transparent 30%),var(--bg);
+      color:var(--text);font-family:Inter,system-ui,-apple-system,sans-serif;overflow-x:hidden;
+    }
+    body{min-height:100vh;padding-bottom:90px}
+    button,input,select{font:inherit}
+    button{border:0;cursor:pointer;color:white}
+    .hidden{display:none!important}
+
+    /* LOADING */
+    .loading-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#050b15}
+    .loader-box{text-align:center}
+    .logo-orb{width:78px;height:78px;margin:auto;border-radius:25px;display:grid;place-items:center;font-size:34px;font-weight:900;background:linear-gradient(145deg,#2563eb,#06b6d4);box-shadow:0 0 50px rgba(37,99,235,.45);animation:pulse 1.5s infinite}
+    @keyframes pulse{50%{transform:scale(1.08);box-shadow:0 0 70px rgba(34,211,238,.5)}}
+
+    /* LOCK & WELCOME */
+    .lock-screen,.welcome-screen{position:fixed;inset:0;z-index:9000;overflow:auto;padding:28px 18px;background:radial-gradient(circle at 50% 0%,rgba(37,99,235,.24),transparent 40%),#050b15}
+    .lock-wrap,.welcome-wrap{max-width:470px;margin:35px auto}
+    .lock-logo,.welcome-icon{width:86px;height:86px;border-radius:28px;display:grid;place-items:center;margin:0 auto 20px;font-size:38px;background:linear-gradient(145deg,#2563eb,#06b6d4);box-shadow:0 25px 70px rgba(37,99,235,.35)}
+    .welcome-icon{background:linear-gradient(145deg,#16a34a,#22c55e)}
+    .join-card,.address-card{padding:17px;border:1px solid var(--line);background:linear-gradient(145deg,rgba(17,34,59,.95),rgba(8,19,35,.95));border-radius:22px;margin-bottom:12px;box-shadow:var(--shadow)}
+    .join-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .join-info{display:flex;align-items:center;gap:12px}
+    .channel-icon{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:rgba(59,130,246,.15);font-size:23px}
+    .join-btn{padding:11px 14px;border-radius:13px;background:#1689e8;font-weight:800}
+
+    /* MAIN APP */
+    .app{width:100%;max-width:700px;margin:auto;padding:18px 15px 30px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .brand{display:flex;align-items:center;gap:11px}
+    .brand-logo{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;font-size:21px;font-weight:900;background:linear-gradient(145deg,#2563eb,#06b6d4);box-shadow:0 10px 30px rgba(37,99,235,.25)}
+    .profile{width:43px;height:43px;border-radius:50%;display:grid;place-items:center;background:#12223a;border:1px solid var(--line);font-weight:900}
+    .page{display:none;animation:pageIn .25s ease}
+    .page.active{display:block}
+    @keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+    .balance-card{position:relative;overflow:hidden;padding:24px;border-radius:27px;background:radial-gradient(circle at 90% 0%,rgba(34,211,238,.25),transparent 38%),linear-gradient(135deg,#102a56,#0b1730);border:1px solid rgba(96,165,250,.15);box-shadow:var(--shadow)}
+    .balance{font-size:38px;line-height:1;font-weight:950;margin:9px 0;letter-spacing:-1.5px}
+    .quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-top:13px}
+    .quick{padding:17px;border:1px solid var(--line);background:var(--card);border-radius:19px}
+    .quick-value{font-size:20px;font-weight:900;margin-top:7px}
+    .quick-label{color:var(--muted);font-size:11px;margin-top:2px}
+    .section-title{margin:25px 2px 11px;font-size:18px;font-weight:900}
+    .feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .feature{padding:19px;border-radius:21px;border:1px solid var(--line);background:linear-gradient(145deg,rgba(16,32,55,.96),rgba(9,20,36,.96));text-align:left;min-height:120px}
+    .card{padding:18px;border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 15px 40px rgba(0,0,0,.18);margin-bottom:13px}
+    .action-btn{width:100%;padding:15px;border-radius:15px;font-weight:900;background:linear-gradient(135deg,#2563eb,#3b82f6)}
+    .action-btn.green{background:linear-gradient(135deg,#16a34a,#22c55e)}
+    .action-btn.purple{background:linear-gradient(135deg,#7c3aed,#8b5cf6)}
+    .input{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);background:#071221;color:white;outline:none;margin-bottom:10px}
 
     /* ADS */
+    .ad-provider{display:flex;justify-content:space-between;align-items:center;padding:16px;border-radius:18px;background:#09182b;border:1px solid var(--line);margin-bottom:11px}
+    .watch-btn{padding:11px 16px;border-radius:13px;background:#2563eb;font-size:12px;font-weight:900}
 
-    .ad-provider{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:16px;
-      border-radius:18px;
-      background:#09182b;
-      border:1px solid var(--line);
-      margin-bottom:11px;
-    }
+    /* LIVE AVIATOR */
+    .aviator{position:relative;overflow:hidden;min-height:380px;border-radius:27px;background:radial-gradient(circle at 50% 45%,rgba(239,68,68,.13),transparent 30%),linear-gradient(180deg,#071323,#030914);border:1px solid rgba(255,255,255,.07);box-shadow:var(--shadow)}
+    .aviator-head{position:absolute;top:16px;left:17px;right:17px;z-index:3;display:flex;justify-content:space-between;align-items:center}
+    .live-dot{display:flex;align-items:center;gap:6px;color:#4ade80;font-size:11px;font-weight:800}
+    .live-dot:before{content:"";width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 12px #22c55e;animation:blink 1s infinite}
+    @keyframes blink{50%{opacity:.25}}
+    .aviator-screen{position:absolute;inset:60px 15px 85px;overflow:hidden;border-radius:20px;background:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:35px 35px;display:grid;place-items:center}
+    .multiplier{font-size:58px;font-weight:950;letter-spacing:-3px;z-index:2}
+    .multiplier.crashed{color:#ef4444;text-shadow:0 0 30px rgba(239,68,68,.45)}
+    .multiplier.flying{color:#fff;text-shadow:0 0 35px rgba(255,255,255,.25)}
+    .multiplier.betting{color:#facc15}
+    .plane{position:absolute;left:10%;bottom:14%;z-index:3;font-size:35px;transition:all .1s linear}
+    .aviator-status{position:absolute;left:0;right:0;bottom:52px;text-align:center;color:var(--muted);font-size:12px;z-index:4}
+    .aviator-controls{position:absolute;bottom:13px;left:13px;right:13px;display:grid;grid-template-columns:1fr 1.2fr;gap:9px;z-index:5}
+    .aviator-play{border-radius:14px;font-weight:950;background:linear-gradient(135deg,#dc2626,#f97316)}
+    .aviator-play.cashout{background:linear-gradient(135deg,#16a34a,#22c55e)}
 
-    .ad-left{
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-
-    .ad-icon{
-      width:45px;
-      height:45px;
-      border-radius:14px;
-      display:grid;
-      place-items:center;
-      background:rgba(59,130,246,.14);
-      font-size:22px;
-    }
-
-    .ad-name{
-      font-weight:900;
-    }
-
-    .ad-count{
-      color:var(--muted);
-      font-size:11px;
-      margin-top:3px;
-    }
-
-    .watch-btn{
-      padding:11px 13px;
-      border-radius:13px;
-      background:#2563eb;
-      font-size:12px;
-      font-weight:900;
-    }
-
-    /* REFERRAL */
-
-    .ref-box{
-      padding:20px;
-      text-align:center;
-      border-radius:22px;
-      background:
-        radial-gradient(circle at 50% 0%,rgba(139,92,246,.22),transparent 55%),
-        var(--card);
-      border:1px solid var(--line);
-    }
-
-    .ref-code{
-      margin:13px 0;
-      padding:13px;
-      border-radius:14px;
-      background:#071221;
-      border:1px dashed rgba(139,92,246,.4);
-      font-weight:900;
-      word-break:break-all;
-    }
-
-    .ref-buttons{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:9px;
-    }
-
-    .ref-list{
-      margin-top:13px;
-    }
-
-    .ref-item{
-      display:flex;
-      justify-content:space-between;
-      padding:13px 0;
-      border-bottom:1px solid var(--line);
-      font-size:13px;
-    }
-
-    /* PROMO */
-
-    .promo-card{
-      text-align:center;
-    }
-
-    .promo-title{
-      font-size:22px;
-      font-weight:950;
-      margin-bottom:5px;
-    }
-
-    .promo-sub{
-      color:var(--muted);
-      font-size:12px;
-      margin-bottom:16px;
-    }
-
-    /* WITHDRAW */
-
-    .withdraw-amount{
-      text-align:center;
-      font-size:31px;
-      font-weight:950;
-      margin:7px 0 3px;
-    }
-
-    .withdraw-note{
-      text-align:center;
-      color:var(--muted);
-      font-size:12px;
-      margin-bottom:17px;
-    }
-
-    /* AVIATOR */
-
-    .aviator{
-      position:relative;
-      overflow:hidden;
-      min-height:430px;
-      border-radius:27px;
-      background:
-        radial-gradient(circle at 50% 45%,rgba(239,68,68,.13),transparent 30%),
-        linear-gradient(180deg,#071323,#030914);
-      border:1px solid rgba(255,255,255,.07);
-      box-shadow:var(--shadow);
-    }
-
-    .aviator-head{
-      position:absolute;
-      top:16px;
-      left:17px;
-      right:17px;
-      z-index:3;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-
-    .aviator-logo{
-      font-weight:950;
-      font-size:18px;
-      letter-spacing:.5px;
-    }
-
-    .live-dot{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      color:#4ade80;
-      font-size:11px;
-      font-weight:800;
-    }
-
-    .live-dot:before{
-      content:"";
-      width:7px;
-      height:7px;
-      border-radius:50%;
-      background:#22c55e;
-      box-shadow:0 0 12px #22c55e;
-      animation:blink 1s infinite;
-    }
-
-    @keyframes blink{
-      50%{opacity:.25}
-    }
-
-    .aviator-screen{
-      position:absolute;
-      inset:65px 15px 88px;
-      overflow:hidden;
-      border-radius:20px;
-      background:
-        linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
-        linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
-      background-size:35px 35px;
-    }
-
-    .multiplier{
-      position:absolute;
-      inset:0;
-      display:grid;
-      place-items:center;
-      z-index:2;
-      font-size:59px;
-      font-weight:950;
-      letter-spacing:-3px;
-      text-shadow:0 0 35px rgba(255,255,255,.15);
-    }
-
-    .multiplier.crashed{
-      color:#ef4444;
-      text-shadow:0 0 30px rgba(239,68,68,.45);
-    }
-
-    .multiplier.flying{
-      color:#fff;
-    }
-
-    .flight-line{
-      position:absolute;
-      width:150%;
-      height:3px;
-      left:-20%;
-      bottom:15%;
-      background:linear-gradient(90deg,transparent,#ef4444,#f97316,transparent);
-      transform:rotate(-13deg);
-      transform-origin:center;
-      opacity:.15;
-    }
-
-    .plane{
-      position:absolute;
-      left:10%;
-      bottom:14%;
-      z-index:3;
-      font-size:35px;
-      filter:drop-shadow(0 0 12px rgba(249,115,22,.55));
-      transform:rotate(-12deg);
-      transition:all .12s linear;
-    }
-
-    .plane.fly{
-      animation:planeFloat .6s infinite alternate ease-in-out;
-    }
-
-    @keyframes planeFloat{
-      from{transform:rotate(-12deg) translateY(0)}
-      to{transform:rotate(-12deg) translateY(-5px)}
-    }
-
-    .aviator-status{
-      position:absolute;
-      left:0;
-      right:0;
-      bottom:53px;
-      text-align:center;
-      color:var(--muted);
-      font-size:12px;
-      z-index:4;
-    }
-
-    .aviator-controls{
-      position:absolute;
-      bottom:13px;
-      left:13px;
-      right:13px;
-      display:grid;
-      grid-template-columns:1fr 1.2fr;
-      gap:9px;
-      z-index:5;
-    }
-
-    .bet-input{
-      width:100%;
-      padding:14px;
-      border-radius:14px;
-      background:#081425;
-      color:white;
-      border:1px solid var(--line);
-      outline:none;
-    }
-
-    .aviator-play{
-      border-radius:14px;
-      font-weight:950;
-      background:linear-gradient(135deg,#dc2626,#f97316);
-    }
-
-    .aviator-play:disabled{
-      opacity:.45;
-    }
-
-    /* XO */
-
-    .xo-board{
-      width:250px;
-      max-width:90vw;
-      margin:20px auto;
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:7px;
-    }
-
-    .xo-cell{
-      aspect-ratio:1;
-      border-radius:15px;
-      background:#09182b;
-      border:1px solid var(--line);
-      font-size:30px;
-      font-weight:950;
-    }
-
-    .xo-cell:active{
-      transform:scale(.96);
-    }
+    /* REFERRALS & RULES */
+    .rules-list{list-style:none;padding:0;margin:10px 0 0;font-size:12px;color:var(--muted);line-height:1.6}
+    .rules-list li{margin-bottom:8px;display:flex;gap:8px}
 
     /* BOTTOM NAV */
+    .bottom-nav{position:fixed;z-index:1000;bottom:0;left:0;right:0;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:rgba(4,10,20,.94);backdrop-filter:blur(20px);border-top:1px solid var(--line);display:flex;justify-content:center}
+    .nav-inner{width:100%;max-width:700px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+    .nav-btn{padding:8px 3px;border-radius:13px;background:transparent;color:#72849f;font-size:10px;font-weight:800}
+    .nav-btn.active{color:#60a5fa;background:rgba(59,130,246,.10)}
+    .nav-icon{font-size:19px;display:block;margin-bottom:2px}
 
-    .bottom-nav{
-      position:fixed;
-      z-index:1000;
-      bottom:0;
-      left:0;
-      right:0;
-      padding:8px 8px calc(8px + env(safe-area-inset-bottom));
-      background:rgba(4,10,20,.94);
-      backdrop-filter:blur(20px);
-      border-top:1px solid var(--line);
-      display:flex;
-      justify-content:center;
-    }
-
-    .nav-inner{
-      width:100%;
-      max-width:700px;
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:4px;
-    }
-
-    .nav-btn{
-      padding:8px 3px;
-      border-radius:13px;
-      background:transparent;
-      color:#72849f;
-      font-size:10px;
-      font-weight:800;
-    }
-
-    .nav-icon{
-      font-size:19px;
-      display:block;
-      margin-bottom:2px;
-    }
-
-    .nav-btn.active{
-      color:#60a5fa;
-      background:rgba(59,130,246,.10);
-    }
-
-    /* TOAST */
-
-    .toast{
-      position:fixed;
-      z-index:11000;
-      left:50%;
-      bottom:95px;
-      transform:translate(-50%,20px);
-      width:calc(100% - 32px);
-      max-width:450px;
-      padding:14px 16px;
-      border-radius:15px;
-      background:#102139;
-      border:1px solid var(--line);
-      box-shadow:var(--shadow);
-      opacity:0;
-      pointer-events:none;
-      transition:.25s;
-      font-size:13px;
-      text-align:center;
-    }
-
-    .toast.show{
-      opacity:1;
-      transform:translate(-50%,0);
-    }
-
-    .toast.error{
-      border-color:rgba(239,68,68,.35);
-    }
-
-    .toast.success{
-      border-color:rgba(34,197,94,.35);
-    }
-
-    /* MODAL */
-
-    .modal{
-      position:fixed;
-      inset:0;
-      z-index:10500;
-      display:flex;
-      align-items:flex-end;
-      justify-content:center;
-      padding:15px;
-      background:rgba(0,0,0,.65);
-      backdrop-filter:blur(8px);
-    }
-
-    .modal-box{
-      width:100%;
-      max-width:520px;
-      max-height:88vh;
-      overflow:auto;
-      padding:21px;
-      border-radius:25px;
-      background:#0b182b;
-      border:1px solid var(--line);
-      box-shadow:0 30px 90px rgba(0,0,0,.55);
-    }
-
-    .modal-title{
-      font-size:21px;
-      font-weight:950;
-      margin-bottom:7px;
-    }
-
-    .modal-sub{
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.5;
-      margin-bottom:16px;
-    }
-
-    .close-btn{
-      width:100%;
-      margin-top:9px;
-      padding:13px;
-      border-radius:14px;
-      background:#17263c;
-      font-weight:800;
-    }
-
-    @media(max-width:380px){
-      .balance{font-size:33px}
-      .multiplier{font-size:48px}
-      .feature{padding:15px}
-    }
+    /* TOAST & MODAL */
+    .toast{position:fixed;z-index:11000;left:50%;bottom:95px;transform:translate(-50%,20px);width:calc(100% - 32px);max-width:450px;padding:14px;border-radius:15px;background:#102139;border:1px solid var(--line);box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.25s;font-size:13px;text-align:center}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    .toast.success{border-color:rgba(34,197,94,.4)}
+    .toast.error{border-color:rgba(239,68,68,.4)}
+    .modal{position:fixed;inset:0;z-index:10500;display:flex;align-items:flex-end;justify-content:center;padding:15px;background:rgba(0,0,0,.65);backdrop-filter:blur(8px)}
+    .modal-box{width:100%;max-width:520px;max-height:88vh;overflow:auto;padding:21px;border-radius:25px;background:#0b182b;border:1px solid var(--line)}
+    .close-btn{width:100%;margin-top:9px;padding:13px;border-radius:14px;background:#17263c;font-weight:800}
   </style>
 </head>
 
@@ -1033,22 +126,17 @@
   <div id="loadingScreen" class="loading-screen">
     <div class="loader-box">
       <div class="logo-orb">₮</div>
-      <h2>USDT Hub</h2>
-      <p>Loading your account...</p>
+      <h2 style="margin:18px 0 5px">USDT Hub</h2>
+      <p style="color:var(--muted);margin:0">Loading your account...</p>
     </div>
   </div>
 
   <!-- CHANNEL LOCK -->
   <section id="lockScreen" class="lock-screen hidden">
     <div class="lock-wrap">
-
       <div class="lock-logo">🔒</div>
-
-      <div class="lock-title">
-        Join to Continue
-      </div>
-
-      <div class="lock-sub">
+      <h2 style="text-align:center;margin-bottom:8px">Join to Continue</h2>
+      <div style="text-align:center;color:var(--muted);line-height:1.55;margin-bottom:25px">
         You must join both official USDT Hub channels before you can access the app.
       </div>
 
@@ -1057,15 +145,11 @@
           <div class="join-info">
             <div class="channel-icon">📢</div>
             <div>
-              <div class="join-name">Birr Gram</div>
-              <div class="join-handle">@birr_gram</div>
+              <div style="font-weight:800">Birr Gram</div>
+              <div style="color:var(--muted);font-size:13px">@birr_gram</div>
             </div>
           </div>
-
-          <button class="join-btn"
-                  onclick="openTelegram('https://t.me/birr_gram')">
-            JOIN
-          </button>
+          <button class="join-btn" onclick="openTelegram('https://t.me/birr_gram')">JOIN</button>
         </div>
       </div>
 
@@ -1074,650 +158,271 @@
           <div class="join-info">
             <div class="channel-icon">💎</div>
             <div>
-              <div class="join-name">USDT Gram</div>
-              <div class="join-handle">@usdt_g_ram</div>
+              <div style="font-weight:800">USDT Gram</div>
+              <div style="color:var(--muted);font-size:13px">@usdt_g_ram</div>
             </div>
           </div>
-
-          <button class="join-btn"
-                  onclick="openTelegram('https://t.me/usdt_g_ram')">
-            JOIN
-          </button>
+          <button class="join-btn" onclick="openTelegram('https://t.me/usdt_g_ram')">JOIN</button>
         </div>
       </div>
 
-      <button id="verifyBtn"
-              class="verify-btn"
-              onclick="verifyChannels()">
-        ✅ VERIFY MEMBERSHIP
-      </button>
-
-      <div id="verifyStatus" class="verify-status">
-        Join both channels, then verify.
-      </div>
-
+      <button id="verifyBtn" class="action-btn" style="margin-top:10px" onclick="verifyChannels()">✅ VERIFY MEMBERSHIP</button>
+      <div id="verifyStatus" style="text-align:center;color:var(--muted);font-size:13px;margin-top:14px">Join both channels, then verify.</div>
     </div>
   </section>
 
   <!-- WELCOME BONUS -->
   <section id="welcomeScreen" class="welcome-screen hidden">
     <div class="welcome-wrap">
-
       <div class="welcome-icon">🎁</div>
-
-      <h1>Welcome Bonus</h1>
-
-      <div class="desc">
-        Enter your BEP20 wallet address to receive your welcome bonus.
+      <h1 style="text-align:center;margin:0 0 9px">Welcome Bonus</h1>
+      <div style="text-align:center;color:var(--muted);line-height:1.5;margin-bottom:25px">
+        Enter your BEP20 wallet address to receive your 0.01 USDT welcome bonus.
       </div>
 
       <div class="address-card">
-
-        <label>BEP20 / BNB Smart Chain Address</label>
-
-        <input
-          id="welcomeAddress"
-          class="address-input"
-          type="text"
-          inputmode="text"
-          autocomplete="off"
-          placeholder="0x..."
-        >
-
-        <button
-          id="claimBtn"
-          class="claim-btn"
-          onclick="claimWelcome()">
-          🎁 CLAIM WELCOME BONUS
-        </button>
-
-        <div class="small-note">
-          Your address can only claim the welcome bonus once.
-          Make sure the address belongs to a wallet you control.
-        </div>
-
+        <label style="display:block;color:#c8d4e7;font-size:13px;font-weight:700;margin-bottom:9px">BEP20 / BNB Smart Chain Address</label>
+        <input id="welcomeAddress" class="input" placeholder="0x...">
+        <button id="claimBtn" class="action-btn green" onclick="claimWelcome()">🎁 CLAIM WELCOME BONUS</button>
       </div>
     </div>
   </section>
 
   <!-- MAIN APP -->
   <main id="app" class="app hidden">
-
     <header class="topbar">
       <div class="brand">
         <div class="brand-logo">₮</div>
         <div>
-          <div class="brand-name">USDT Hub</div>
-          <div class="brand-sub">Earn • Play • Withdraw</div>
+          <div style="font-size:18px;font-weight:900">USDT Hub</div>
+          <div style="font-size:11px;color:var(--muted)">Earn • Play • Withdraw</div>
         </div>
       </div>
-
-      <div id="profile" class="profile">U</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="openDepositModal()" style="background:#1e3a8a;padding:8px 14px;border-radius:12px;font-weight:800;font-size:12px">💳 Deposit</button>
+        <div id="profile" class="profile">U</div>
+      </div>
     </header>
 
     <!-- HOME -->
     <section id="page-home" class="page active">
-
       <div class="balance-card">
-        <div class="balance-label">Available Balance</div>
-
-        <div class="balance">
-          <span id="balance">0.00</span>
-          <small>PTS</small>
-        </div>
-
-        <div class="welcome-user">
-          Welcome, <b id="userName">User</b> 👋
-        </div>
+        <div style="color:#a8b9d3;font-size:13px">Available Balance</div>
+        <div class="balance"><span id="balance">0.00</span> <small style="font-size:16px;color:#9bb7df">PTS</small></div>
+        <div style="color:#c8d6eb;font-size:13px">Welcome, <b id="userName">User</b> 👋</div>
       </div>
 
       <div class="quick-grid">
-
         <div class="quick">
-          <div class="quick-icon">👥</div>
+          <div>👥</div>
           <div id="refCount" class="quick-value">0</div>
           <div class="quick-label">Referrals</div>
         </div>
-
         <div class="quick">
-          <div class="quick-icon">📺</div>
+          <div>📺</div>
           <div id="adsCount" class="quick-value">0</div>
           <div class="quick-label">Ads watched</div>
         </div>
-
         <div class="quick">
-          <div class="quick-icon">🎯</div>
+          <div>🎯</div>
           <div id="taskCount" class="quick-value">0</div>
           <div class="quick-label">Tasks completed</div>
         </div>
-
         <div class="quick">
-          <div class="quick-icon">🏆</div>
+          <div>✈️</div>
           <div id="winCount" class="quick-value">0</div>
-          <div class="quick-label">Game wins</div>
+          <div class="quick-label">Aviator wins</div>
         </div>
-
       </div>
 
       <div class="section-title">Quick Actions</div>
-
       <div class="feature-grid">
-
-        <button class="feature"
-                onclick="showPage('ads')">
-          <div class="feature-icon">📺</div>
-          <div class="feature-title">Watch Ads</div>
-          <div class="feature-desc">
-            Watch available ads and earn points.
-          </div>
+        <button class="feature" onclick="showPage('ads')">
+          <div style="font-size:26px;margin-bottom:10px">📺</div>
+          <div style="font-weight:900">Watch Ads</div>
+          <div style="color:var(--muted);font-size:11px;margin-top:4px">Watch Monetag & Adsgram ads.</div>
         </button>
-
-        <button class="feature"
-                onclick="showPage('tasks')">
-          <div class="feature-icon">🎯</div>
-          <div class="feature-title">Tasks</div>
-          <div class="feature-desc">
-            Complete Telegram tasks for rewards.
-          </div>
+        <button class="feature" onclick="showPage('games')">
+          <div style="font-size:26px;margin-bottom:10px">✈️</div>
+          <div style="font-weight:900">Live Aviator</div>
+          <div style="color:var(--muted);font-size:11px;margin-top:4px">Play global synchronized game.</div>
         </button>
-
-        <button class="feature"
-                onclick="showPage('games')">
-          <div class="feature-icon">✈️</div>
-          <div class="feature-title">Aviator</div>
-          <div class="feature-desc">
-            Play the live-style multiplier game.
-          </div>
+        <button class="feature" onclick="showPage('tasks')">
+          <div style="font-size:26px;margin-bottom:10px">🎯</div>
+          <div style="font-weight:900">Tasks</div>
+          <div style="color:var(--muted);font-size:11px;margin-top:4px">Earn points from Telegram tasks.</div>
         </button>
-
-        <button class="feature"
-                onclick="showPage('referrals')">
-          <div class="feature-icon">👥</div>
-          <div class="feature-title">Refer Friends</div>
-          <div class="feature-desc">
-            Invite friends and earn referral rewards.
-          </div>
+        <button class="feature" onclick="showPage('referrals')">
+          <div style="font-size:26px;margin-bottom:10px">👥</div>
+          <div style="font-weight:900">Referrals</div>
+          <div style="color:var(--muted);font-size:11px;margin-top:4px">Invite friends & view rules.</div>
         </button>
-
       </div>
-
-      <div class="section-title">USDT Hub</div>
-
-      <div class="card">
-        <div style="font-weight:900;margin-bottom:7px">
-          💎 Earn more, withdraw smarter
-        </div>
-
-        <div style="color:var(--muted);font-size:12px;line-height:1.55">
-          Earn through ads, verified Telegram tasks and referrals.
-          Your balance can be used for supported games or withdrawals.
-        </div>
-      </div>
-
     </section>
 
     <!-- ADS -->
     <section id="page-ads" class="page">
-
       <div class="section-title">📺 Watch & Earn</div>
-
-      <div class="card">
-        <div style="font-weight:900">
-          Earn points by watching ads
+      <div class="ad-provider">
+        <div>
+          <div style="font-weight:900">Monetag Ad</div>
+          <div id="monetagCount" style="color:var(--muted);font-size:11px">0 / 25 today</div>
         </div>
-
-        <div style="color:var(--muted);font-size:12px;margin-top:5px;line-height:1.5">
-          Each provider has its own daily limit.
-        </div>
+        <button id="monetagBtn" class="watch-btn" onclick="watchAd('monetag')">WATCH</button>
       </div>
 
       <div class="ad-provider">
-
-        <div class="ad-left">
-          <div class="ad-icon">📺</div>
-
-          <div>
-            <div class="ad-name">Monetag</div>
-            <div id="monetagCount" class="ad-count">
-              0 / 0 today
-            </div>
-          </div>
+        <div>
+          <div style="font-weight:900">Adsgram Ad</div>
+          <div id="adsgramCount" style="color:var(--muted);font-size:11px">0 / 25 today</div>
         </div>
-
-        <button
-          id="monetagBtn"
-          class="watch-btn"
-          onclick="watchAd('monetag')">
-          WATCH
-        </button>
-
+        <button id="adsgramBtn" class="watch-btn" onclick="watchAd('adsgram')">WATCH</button>
       </div>
-
-      <div class="ad-provider">
-
-        <div class="ad-left">
-          <div class="ad-icon">🎬</div>
-
-          <div>
-            <div class="ad-name">Adsgram</div>
-            <div id="adsgramCount" class="ad-count">
-              0 / 0 today
-            </div>
-          </div>
-        </div>
-
-        <button
-          id="adsgramBtn"
-          class="watch-btn"
-          onclick="watchAd('adsgram')">
-          WATCH
-        </button>
-
-      </div>
-
     </section>
 
     <!-- TASKS -->
     <section id="page-tasks" class="page">
-
       <div class="section-title">🎯 Telegram Tasks</div>
-
       <div class="card">
-        <button class="action-btn"
-                onclick="openCreateTask()">
-          ➕ CREATE A TASK
-        </button>
+        <button class="action-btn" onclick="openCreateTask()">➕ CREATE A TASK</button>
       </div>
-
-      <div id="tasksList">
-        <div class="card" style="text-align:center;color:var(--muted)">
-          Loading tasks...
-        </div>
-      </div>
-
+      <div id="tasksList"></div>
     </section>
 
     <!-- REFERRALS -->
     <section id="page-referrals" class="page">
-
       <div class="section-title">👥 Referrals</div>
-
-      <div class="ref-box">
-
-        <div style="font-size:14px;color:var(--muted)">
-          Your referral link
-        </div>
-
-        <div id="refLink" class="ref-code">
-          Loading...
-        </div>
-
-        <div class="ref-buttons">
-
-          <button class="action-btn purple"
-                  onclick="copyReferral()">
-            📋 COPY
-          </button>
-
-          <button class="action-btn"
-                  onclick="shareReferral()">
-            🚀 SHARE
-          </button>
-
-        </div>
-
-      </div>
-
-      <div class="card" style="margin-top:13px">
-
-        <div style="font-weight:900">
-          Referral statistics
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
-
-          <div class="quick">
-            <div class="quick-label">People invited</div>
-            <div id="refTotal" class="quick-value">0</div>
-          </div>
-
-          <div class="quick">
-            <div class="quick-label">Referral earnings</div>
-            <div id="refEarnings" class="quick-value">0</div>
-          </div>
-
-        </div>
-
-      </div>
-
-      <div class="section-title">Your referrals</div>
-
-      <div id="referralList" class="ref-list">
-        <div class="card" style="text-align:center;color:var(--muted)">
-          No referrals yet.
+      <div class="card" style="text-align:center">
+        <div style="font-size:13px;color:var(--muted)">Your referral link</div>
+        <div id="refLink" style="margin:12px 0;padding:12px;border-radius:14px;background:#071221;border:1px dashed rgba(139,92,246,.4);font-weight:900;word-break:break-all">Loading...</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+          <button class="action-btn purple" onclick="copyReferral()">📋 COPY</button>
+          <button class="action-btn" onclick="shareReferral()">🚀 SHARE</button>
         </div>
       </div>
 
+      <div class="card">
+        <div style="font-weight:900">📜 Referral Rules & Guidelines</div>
+        <ul class="rules-list">
+          <li>🔹 <b>Direct Bonus:</b> Earn points whenever an invited friend joins and verifies our required channels.</li>
+          <li>🔹 <b>Ad Activity:</b> Earn additional bonuses when your referrals stay active and watch daily ads.</li>
+          <li>🔹 <b>Fair Play:</b> Self-referrals, emulator bots, or automated accounts will be detected and permanently banned.</li>
+          <li>🔹 <b>Payouts:</b> Referral balances combine into your total balance and can be withdrawn or used in Aviator.</li>
+        </ul>
+      </div>
+
+      <div class="section-title">Your Referrals (<span id="refTotal">0</span>)</div>
+      <div id="referralList"></div>
     </section>
 
-    <!-- GAMES -->
+    <!-- LIVE SYNCHRONIZED AVIATOR -->
     <section id="page-games" class="page">
-
-      <div class="section-title">🎮 Games</div>
-
-      <!-- AVIATOR -->
+      <div class="section-title">✈️ Live Aviator</div>
       <div class="aviator">
-
         <div class="aviator-head">
-
-          <div class="aviator-logo">
-            ✈️ AVIATOR
-          </div>
-
-          <div class="live-dot">
-            LIVE
-          </div>
-
+          <div style="font-weight:950;font-size:18px">✈️ AVIATOR ARENA</div>
+          <div class="live-dot">LIVE SYNC</div>
         </div>
 
         <div class="aviator-screen">
-
-          <div id="aviatorMultiplier"
-               class="multiplier">
-            1.00x
-          </div>
-
-          <div class="flight-line"></div>
-
-          <div id="aviatorPlane"
-               class="plane">
-            ✈️
-          </div>
-
+          <div id="aviatorMultiplier" class="multiplier">1.00x</div>
+          <div id="aviatorPlane" class="plane">✈️</div>
         </div>
 
-        <div id="aviatorStatus"
-             class="aviator-status">
-          Ready for takeoff
-        </div>
+        <div id="aviatorStatus" class="aviator-status">Connecting to live round...</div>
 
         <div class="aviator-controls">
-
-          <input
-            id="aviatorBet"
-            class="bet-input"
-            type="number"
-            min="1"
-            step="1"
-            placeholder="Bet points"
-          >
-
-          <button
-            id="aviatorBtn"
-            class="aviator-play"
-            onclick="playAviator()">
-            PLACE BET
-          </button>
-
+          <input id="aviatorBet" class="input" style="margin-bottom:0" type="number" min="1" step="1" placeholder="Bet points">
+          <button id="aviatorBtn" class="aviator-play" onclick="handleAviatorAction()">PLACE BET</button>
         </div>
-
       </div>
 
       <div class="card" style="margin-top:13px">
-        <div style="font-weight:900">
-          How Aviator works
-        </div>
-
+        <div style="font-weight:900">How Live Aviator Works</div>
         <div style="color:var(--muted);font-size:12px;line-height:1.55;margin-top:7px">
-          Choose your bet and start a round. The multiplier rises during
-          the flight. The final result is decided by the server. Your
-          browser animation only visualizes the round.
+          All players share the same live flight! You have <b>5 seconds</b> before each round starts to place your bet. Once the plane takes off, cash out before it flies away to lock in your profit!
         </div>
       </div>
-
-      <!-- XO -->
-
-      <div class="section-title">❌⭕ XO</div>
-
-      <div class="card">
-
-        <div style="text-align:center;color:var(--muted);font-size:12px">
-          Choose X or O. Each play uses the configured entry cost.
-        </div>
-
-        <div class="xo-board">
-
-          <button class="xo-cell" onclick="playXO('x')">X</button>
-          <button class="xo-cell" onclick="playXO('o')">O</button>
-          <button class="xo-cell" onclick="playXO('x')">X</button>
-
-          <button class="xo-cell" onclick="playXO('o')">O</button>
-          <button class="xo-cell" onclick="playXO('x')">X</button>
-          <button class="xo-cell" onclick="playXO('o')">O</button>
-
-          <button class="xo-cell" onclick="playXO('x')">X</button>
-          <button class="xo-cell" onclick="playXO('o')">O</button>
-          <button class="xo-cell" onclick="playXO('x')">X</button>
-
-        </div>
-
-        <div id="xoResult"
-             style="text-align:center;font-weight:900;min-height:25px">
-        </div>
-
-      </div>
-
     </section>
 
     <!-- PROMO -->
     <section id="page-promo" class="page">
-
-      <div class="section-title">🎁 Promo</div>
-
-      <div class="card promo-card">
-
-        <div class="promo-title">
-          Enter a promo code
-        </div>
-
-        <div class="promo-sub">
-          Each valid code can only be claimed once per account.
-        </div>
-
-        <input
-          id="promoCode"
-          class="input"
-          placeholder="PROMO CODE"
-          autocomplete="off"
-        >
-
-        <button class="action-btn green"
-                onclick="claimPromo()">
-          🎁 CLAIM CODE
-        </button>
-
+      <div class="section-title">🎁 Promo Codes</div>
+      <div class="card" style="text-align:center">
+        <input id="promoCode" class="input" placeholder="ENTER CODE" autocomplete="off">
+        <button class="action-btn green" onclick="claimPromo()">CLAIM CODE</button>
       </div>
-
-      <div class="card">
-
-        <div style="font-weight:900;margin-bottom:10px">
-          Available codes
-        </div>
-
-        <div style="color:var(--muted);font-size:12px;line-height:1.8">
-          USDTHUB • MONEYTIME • CRYPTOBONUS • FASTUSDT
-          • DAILYCLAIM • LUCKYWIN • REWARD777
-        </div>
-
-      </div>
-
     </section>
 
     <!-- WITHDRAW -->
     <section id="page-withdraw" class="page">
-
-      <div class="section-title">💸 Withdraw</div>
-
+      <div class="section-title">💸 Withdraw USDT</div>
       <div class="card">
-
-        <div style="text-align:center;color:var(--muted);font-size:12px">
-          Available balance
-        </div>
-
-        <div id="withdrawBalance"
-             class="withdraw-amount">
-          0
-        </div>
-
-        <div class="withdraw-note">
-          Minimum withdrawal is configured by the backend.
-        </div>
-
-        <input
-          id="withdrawAddress"
-          class="input"
-          placeholder="BEP20 address 0x..."
-          autocomplete="off"
-        >
-
-        <button
-          id="withdrawBtn"
-          class="action-btn green"
-          onclick="withdraw()">
-          💸 WITHDRAW
-        </button>
-
+        <div style="text-align:center;color:var(--muted);font-size:12px">Available balance</div>
+        <div id="withdrawBalance" style="text-align:center;font-size:32px;font-weight:950;margin:6px 0">0 PTS</div>
+        <input id="withdrawAddress" class="input" placeholder="BEP20 address 0x..." autocomplete="off">
+        <button id="withdrawBtn" class="action-btn green" onclick="withdraw()">💸 WITHDRAW</button>
       </div>
-
-      <div class="card">
-
-        <div style="font-weight:900">
-          ⚠️ Before withdrawing
-        </div>
-
-        <div style="color:var(--muted);font-size:12px;line-height:1.55;margin-top:8px">
-          Double-check your BEP20 address. Blockchain transactions cannot
-          normally be reversed after they are sent.
-        </div>
-
-      </div>
-
     </section>
-
   </main>
 
-  <!-- NAV -->
+  <!-- BOTTOM NAV -->
   <nav id="bottomNav" class="bottom-nav hidden">
-
     <div class="nav-inner">
-
-      <button class="nav-btn active"
-              data-page="home"
-              onclick="showPage('home')">
-        <span class="nav-icon">🏠</span>
-        Home
-      </button>
-
-      <button class="nav-btn"
-              data-page="ads"
-              onclick="showPage('ads')">
-        <span class="nav-icon">📺</span>
-        Ads
-      </button>
-
-      <button class="nav-btn"
-              data-page="tasks"
-              onclick="showPage('tasks')">
-        <span class="nav-icon">🎯</span>
-        Tasks
-      </button>
-
-      <button class="nav-btn"
-              data-page="games"
-              onclick="showPage('games')">
-        <span class="nav-icon">🎮</span>
-        Games
-      </button>
-
-      <button class="nav-btn"
-              data-page="referrals"
-              onclick="showPage('referrals')">
-        <span class="nav-icon">👥</span>
-        Refer
-      </button>
-
+      <button class="nav-btn active" data-page="home" onclick="showPage('home')"><span class="nav-icon">🏠</span>Home</button>
+      <button class="nav-btn" data-page="ads" onclick="showPage('ads')"><span class="nav-icon">📺</span>Ads</button>
+      <button class="nav-btn" data-page="games" onclick="showPage('games')"><span class="nav-icon">✈️</span>Aviator</button>
+      <button class="nav-btn" data-page="tasks" onclick="showPage('tasks')"><span class="nav-icon">🎯</span>Tasks</button>
+      <button class="nav-btn" data-page="referrals" onclick="showPage('referrals')"><span class="nav-icon">👥</span>Refer</button>
     </div>
-
   </nav>
 
   <!-- TOAST -->
   <div id="toast" class="toast"></div>
 
+  <!-- DEPOSIT MODAL -->
+  <div id="depositModal" class="modal hidden">
+    <div class="modal-box">
+      <div style="font-size:20px;font-weight:900;margin-bottom:6px">💳 Deposit USDT (BEP20)</div>
+      <div style="color:var(--muted);font-size:12px;margin-bottom:14px">Send USDT on BNB Smart Chain (BEP20) to the address below, then submit your TX Hash.</div>
+
+      <label style="font-size:11px;color:var(--muted);font-weight:700">DEPOSIT ADDRESS</label>
+      <div id="depAddressText" style="padding:12px;background:#071221;border-radius:12px;font-size:12px;word-break:break-all;margin:6px 0 10px;border:1px solid var(--line)">Loading...</div>
+      <button class="action-btn purple" style="padding:10px;margin-bottom:14px" onclick="copyDepositAddress()">📋 COPY ADDRESS</button>
+
+      <label style="font-size:11px;color:var(--muted);font-weight:700">SUBMIT TX HASH</label>
+      <input id="depositTxHash" class="input" placeholder="0x... transaction hash">
+      <button class="action-btn green" onclick="submitDeposit()">✅ SUBMIT DEPOSIT</button>
+      <button class="close-btn" onclick="closeDepositModal()">CLOSE</button>
+    </div>
+  </div>
+
   <!-- CREATE TASK MODAL -->
   <div id="taskModal" class="modal hidden">
-
     <div class="modal-box">
+      <div style="font-size:20px;font-weight:900;margin-bottom:6px">➕ Create Telegram Task</div>
+      <div style="color:var(--muted);font-size:12px;margin-bottom:14px">Requires 1 point to post. Users will receive rewards upon verified membership.</div>
 
-      <div class="modal-title">
-        ➕ Create Telegram Task
-      </div>
-
-      <div class="modal-sub">
-        Creating a task costs the configured amount of points.
-        Users will receive the configured reward after completing it.
-      </div>
-
-      <input
-        id="taskTitle"
-        class="input"
-        placeholder="Task title"
-      >
-
-      <input
-        id="taskLink"
-        class="input"
-        placeholder="Telegram link e.g. https://t.me/example"
-      >
-
-      <input
-        id="taskChatId"
-        class="input"
-        placeholder="Chat ID or @username"
-      >
-
-      <select id="taskType"
-              class="input">
+      <input id="taskTitle" class="input" placeholder="Task Title">
+      <input id="taskLink" class="input" placeholder="Telegram Link e.g. https://t.me/example">
+      <input id="taskChatId" class="input" placeholder="Chat ID or @username">
+      <select id="taskType" class="input">
         <option value="channel">Channel</option>
-        <option value="bot">Bot</option>
+        <option value="group">Group</option>
       </select>
 
-      <button class="action-btn"
-              onclick="createTask()">
-        🚀 CREATE TASK
-      </button>
-
-      <button class="close-btn"
-              onclick="closeCreateTask()">
-        CANCEL
-      </button>
-
+      <button class="action-btn" onclick="createTask()">🚀 CREATE TASK</button>
+      <button class="close-btn" onclick="closeCreateTask()">CANCEL</button>
     </div>
-
   </div>
 
 <script>
 "use strict";
 
-/* =====================================================
-   TELEGRAM
-===================================================== */
-
 const tg = window.Telegram?.WebApp;
-
 if (tg) {
   tg.ready();
   tg.expand();
-
   try {
     tg.setHeaderColor("#050b15");
     tg.setBackgroundColor("#050b15");
@@ -1725,15 +430,10 @@ if (tg) {
 }
 
 const INIT_DATA = tg?.initData || "";
-
 let currentUser = null;
 let appReady = false;
-let aviatorTimer = null;
-let aviatorRunning = false;
-
-/* =====================================================
-   CONFIG
-===================================================== */
+let activeAviatorBet = null;
+let currentAviatorRound = null;
 
 const API = {
   user: "/api/user",
@@ -1741,1570 +441,592 @@ const API = {
   welcome: "/api/claim-welcome",
   ads: "/api/ads",
   games: "/api/games",
+  deposit: "/api/deposit",
   promo: "/api/promo",
   referral: "/api/referral",
   tasks: "/api/tasks",
   withdraw: "/api/withdraw"
 };
 
-const CHANNELS = {
-  first: "https://t.me/birr_gram",
-  second: "https://t.me/usdt_g_ram"
-};
+function $(id) { return document.getElementById(id); }
 
-/* =====================================================
-   HELPERS
-===================================================== */
-
-function $(id){
-  return document.getElementById(id);
+function escapeHTML(str) {
+  return String(str ?? "").replace(/[&<>'"]/g, tag => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+  }[tag] || tag));
 }
 
-function escapeHTML(value){
-  return String(value ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-
-function formatNumber(value){
-  const n = Number(value || 0);
-
-  return n.toLocaleString(undefined,{
-    maximumFractionDigits:8
-  });
-}
-
-function showToast(message,type=""){
+function showToast(message, type = "") {
   const toast = $("toast");
-
   toast.textContent = message;
   toast.className = "toast show " + type;
-
   clearTimeout(showToast.timer);
-
-  showToast.timer = setTimeout(()=>{
-    toast.className = "toast";
-  },3200);
+  showToast.timer = setTimeout(() => { toast.className = "toast"; }, 3200);
 }
 
-function openTelegram(url){
-  try{
-    if(tg?.openTelegramLink){
-      tg.openTelegramLink(url);
-    }else{
-      window.open(url,"_blank");
-    }
-  }catch{
-    window.open(url,"_blank");
-  }
+function openTelegram(url) {
+  try {
+    if (tg?.openTelegramLink) tg.openTelegramLink(url);
+    else window.open(url, "_blank");
+  } catch { window.open(url, "_blank"); }
 }
 
-function setLoading(show){
-  $("loadingScreen").classList.toggle("hidden",!show);
+function setLoading(show) {
+  $("loadingScreen").classList.toggle("hidden", !show);
 }
 
-/* =====================================================
-   API REQUEST
-===================================================== */
-
-async function apiRequest(url,options={}){
-  const headers = {
-    "Content-Type":"application/json",
-    ...(options.headers || {})
-  };
-
-  /*
-    Telegram recommends sending the raw initData to
-    your backend for validation.
-  */
-
+async function apiRequest(url, options = {}) {
+  const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
   headers["X-Telegram-Init-Data"] = INIT_DATA;
 
-  const response = await fetch(url,{
-    method:options.method || "POST",
+  const response = await fetch(url, {
+    method: options.method || "POST",
     headers,
-    body:options.body
-      ? JSON.stringify(options.body)
-      : undefined
+    body: options.body ? JSON.stringify(options.body) : undefined
   });
 
-  let data = null;
-
-  try{
-    data = await response.json();
-  }catch{
-    throw new Error("SERVER_INVALID_RESPONSE");
+  const data = await response.json().catch(() => { throw new Error("SERVER_INVALID_RESPONSE"); });
+  if (!response.ok || data?.success === false) {
+    throw new Error(data?.error || `HTTP_${response.status}`);
   }
-
-  if(!response.ok || data?.success === false){
-    throw new Error(
-      data?.error ||
-      `HTTP_${response.status}`
-    );
-  }
-
   return data;
 }
 
-/* =====================================================
-   INITIALIZATION
-===================================================== */
-
-async function initialize(){
-
+// ==========================================
+// APP INITIALIZATION & LIFECYCLE
+// ==========================================
+async function initialize() {
   setLoading(true);
-
-  try{
-
-    if(!INIT_DATA){
-
+  try {
+    if (!INIT_DATA) {
       setLoading(false);
-
-      showToast(
-        "Open USDT Hub from Telegram.",
-        "error"
-      );
-
+      showToast("Open USDT Hub from Telegram.", "error");
       return;
     }
 
-    const data =
-      await apiRequest(API.user);
-
-    if(!data?.user){
-      throw new Error("USER_DATA_MISSING");
-    }
+    const data = await apiRequest(API.user);
+    if (!data?.user) throw new Error("USER_DATA_MISSING");
 
     currentUser = data.user;
-
     updateUserUI();
 
-    /*
-      Always verify membership from the server.
-      Do not trust localStorage for this.
-    */
-
-    if(!currentUser.channelsVerified){
-
+    if (!currentUser.channelsVerified) {
       setLoading(false);
       showLock();
-
       return;
     }
 
-    /*
-      If backend says the welcome bonus has not
-      been claimed, show the welcome screen.
-    */
-
-    if(!currentUser.welcomeBonusClaimed){
-
+    if (!currentUser.welcomeBonusClaimed) {
       setLoading(false);
       showWelcome();
-
       return;
     }
 
     unlockApp();
-
-  }catch(error){
-
+  } catch (error) {
     console.error(error);
-
     setLoading(false);
-
-    showToast(
-      readableError(error.message),
-      "error"
-    );
+    showToast(readableError(error.message), "error");
   }
 }
 
-/* =====================================================
-   SCREEN STATE
-===================================================== */
-
-function hideAllScreens(){
-
-  $("lockScreen")
-    .classList.add("hidden");
-
-  $("welcomeScreen")
-    .classList.add("hidden");
-
-  $("app")
-    .classList.add("hidden");
-
-  $("bottomNav")
-    .classList.add("hidden");
+function hideAllScreens() {
+  $("lockScreen").classList.add("hidden");
+  $("welcomeScreen").classList.add("hidden");
+  $("app").classList.add("hidden");
+  $("bottomNav").classList.add("hidden");
 }
 
-function showLock(){
-
+function showLock() {
   hideAllScreens();
-
-  $("lockScreen")
-    .classList.remove("hidden");
-
-  $("verifyStatus").textContent =
-    "Join both channels, then verify.";
+  $("lockScreen").classList.remove("hidden");
+  $("verifyStatus").textContent = "Join both channels, then verify.";
 }
 
-function showWelcome(){
-
+function showWelcome() {
   hideAllScreens();
-
-  $("welcomeScreen")
-    .classList.remove("hidden");
-
-  $("welcomeAddress").value =
-    currentUser?.welcomeAddress || "";
+  $("welcomeScreen").classList.remove("hidden");
 }
 
-function unlockApp(){
-
+function unlockApp() {
+  setLoading(false);
   hideAllScreens();
-
   $("app").classList.remove("hidden");
   $("bottomNav").classList.remove("hidden");
-
   appReady = true;
 
   updateUserUI();
-
   loadTasks();
   loadReferrals();
+  startSynchronizedAviatorLoop();
 }
 
-/* =====================================================
-   USER UI
-===================================================== */
-
-function updateUserUI(){
-
-  if(!currentUser) return;
-
-  const name =
-    currentUser.firstName ||
-    currentUser.username ||
-    "User";
-
+function updateUserUI() {
+  if (!currentUser) return;
+  const name = currentUser.firstName || currentUser.username || "User";
   $("userName").textContent = name;
+  $("balance").textContent = Number(currentUser.balance || 0).toFixed(2);
+  $("withdrawBalance").textContent = Number(currentUser.balance || 0).toFixed(2) + " PTS";
+  $("refCount").textContent = currentUser.referrals || 0;
+  $("adsCount").textContent = currentUser.adsWatched || 0;
+  $("taskCount").textContent = currentUser.tasksCompleted || 0;
+  $("winCount").textContent = currentUser.aviatorWins || 0;
+  $("profile").textContent = String(name).charAt(0).toUpperCase();
 
-  const balance =
-    Number(currentUser.balance || 0);
+  const botName = currentUser.botUsername || "USDTHubBot";
+  $("refLink").textContent = `https://t.me/${botName}?start=ref_${currentUser.telegramId}`;
 
-  $("balance").textContent =
-    formatNumber(balance);
-
-  $("withdrawBalance").textContent =
-    formatNumber(balance);
-
-  $("refCount").textContent =
-    formatNumber(currentUser.referrals || 0);
-
-  $("adsCount").textContent =
-    formatNumber(currentUser.adsWatched || 0);
-
-  $("taskCount").textContent =
-    formatNumber(currentUser.tasksCompleted || 0);
-
-  const wins =
-    Number(currentUser.xoWins || 0) +
-    Number(currentUser.aviatorWins || 0);
-
-  $("winCount").textContent =
-    formatNumber(wins);
-
-  $("profile").textContent =
-    String(name).charAt(0).toUpperCase();
-
-  const uid =
-    currentUser.telegramId;
-
-  const botUsername =
-    currentUser.botUsername ||
-    "";
-
-  /*
-    If bot username isn't supplied by backend,
-    use the current Telegram start URL format.
-    The backend can later provide botUsername.
-  */
-
-  if(botUsername){
-    $("refLink").textContent =
-      `https://t.me/${botUsername}?start=ref_${uid}`;
-  }else{
-    $("refLink").textContent =
-      `ref_${uid}`;
-  }
-
-  updateAdCounters();
+  $("monetagCount").textContent = `${currentUser.monetagToday || 0} / 25 today`;
+  $("adsgramCount").textContent = `${currentUser.adsgramToday || 0} / 25 today`;
 }
 
-/* =====================================================
-   CHANNEL VERIFICATION
-===================================================== */
-
-async function verifyChannels(){
-
-  const button = $("verifyBtn");
-  const status = $("verifyStatus");
-
-  button.disabled = true;
-  button.textContent = "⏳ CHECKING...";
-
-  status.textContent =
-    "Checking both Telegram channels...";
-
-  try{
-
-    const data =
-      await apiRequest(API.verify);
-
-    if(data.joined){
-
-      status.textContent =
-        "✅ Both channels verified!";
-
+// ==========================================
+// CHANNEL MEMBERSHIP & WELCOME CLAIM
+// ==========================================
+async function verifyChannels() {
+  const btn = $("verifyBtn");
+  btn.disabled = true;
+  btn.textContent = "⏳ CHECKING...";
+  try {
+    const data = await apiRequest(API.verify);
+    if (data.joined) {
       currentUser.channelsVerified = true;
-
-      setTimeout(()=>{
-
-        if(!currentUser.welcomeBonusClaimed){
-          showWelcome();
-        }else{
-          unlockApp();
-        }
-
-      },500);
-
-    }else{
-
-      status.textContent =
-        "❌ You must join both channels first.";
-
-      showToast(
-        "Please join both channels.",
-        "error"
-      );
-
-      button.disabled = false;
-      button.textContent =
-        "✅ VERIFY MEMBERSHIP";
+      if (!currentUser.welcomeBonusClaimed) showWelcome();
+      else unlockApp();
+    } else {
+      showToast("Please join both channels first.", "error");
+      btn.disabled = false;
+      btn.textContent = "✅ VERIFY MEMBERSHIP";
     }
-
-  }catch(error){
-
-    console.error(error);
-
-    status.textContent =
-      readableError(error.message);
-
-    showToast(
-      readableError(error.message),
-      "error"
-    );
-
-    button.disabled = false;
-    button.textContent =
-      "✅ VERIFY MEMBERSHIP";
+  } catch (err) {
+    showToast(readableError(err.message), "error");
+    btn.disabled = false;
+    btn.textContent = "✅ VERIFY MEMBERSHIP";
   }
 }
 
-/* =====================================================
-   WELCOME BONUS
-===================================================== */
-
-async function claimWelcome(){
-
-  const input = $("welcomeAddress");
-  const button = $("claimBtn");
-
-  const address =
-    input.value.trim();
-
-  if(!/^0x[a-fA-F0-9]{40}$/.test(address)){
-
-    showToast(
-      "Enter a valid BEP20 address.",
-      "error"
-    );
-
-    input.focus();
+async function claimWelcome() {
+  const address = $("welcomeAddress").value.trim();
+  if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+    showToast("Enter a valid BEP20 address.", "error");
     return;
   }
 
-  button.disabled = true;
-  button.textContent =
-    "⏳ PROCESSING...";
-
-  try{
-
-    const data =
-      await apiRequest(
-        API.welcome,
-        {
-          body:{ address }
-        }
-      );
-
-    if(data.success){
-
-      currentUser.welcomeBonusClaimed = true;
-      currentUser.welcomeBonusStatus = "paid";
-      currentUser.welcomeAddress = address;
-
-      showToast(
-        `🎁 ${data.amount || ""} USDT welcome bonus sent!`,
-        "success"
-      );
-
-      setTimeout(()=>{
-        unlockApp();
-      },900);
-
-    }else{
-      throw new Error(
-        data.error || "CLAIM_FAILED"
-      );
-    }
-
-  }catch(error){
-
-    console.error(error);
-
-    showToast(
-      readableError(error.message),
-      "error"
-    );
-
-    button.disabled = false;
-    button.textContent =
-      "🎁 CLAIM WELCOME BONUS";
+  const btn = $("claimBtn");
+  btn.disabled = true;
+  btn.textContent = "⏳ PROCESSING...";
+  try {
+    const data = await apiRequest(API.welcome, { body: { address } });
+    currentUser.welcomeBonusClaimed = true;
+    showToast(`🎁 Bonus sent! Hash: ${data.txHash.slice(0, 10)}...`, "success");
+    setTimeout(unlockApp, 1000);
+  } catch (err) {
+    showToast(readableError(err.message), "error");
+    btn.disabled = false;
+    btn.textContent = "🎁 CLAIM WELCOME BONUS";
   }
 }
 
-/* =====================================================
-   NAVIGATION
-===================================================== */
+// ==========================================
+// ADS (MONETAG & ADSGRAM)
+// ==========================================
+async function watchAd(provider) {
+  const btn = provider === "monetag" ? $("monetagBtn") : $("adsgramBtn");
+  btn.disabled = true;
 
-function showPage(page){
-
-  if(!appReady) return;
-
-  document
-    .querySelectorAll(".page")
-    .forEach(el=>{
-      el.classList.remove("active");
-    });
-
-  const target =
-    $("page-" + page);
-
-  if(!target) return;
-
-  target.classList.add("active");
-
-  document
-    .querySelectorAll(".nav-btn")
-    .forEach(btn=>{
-      btn.classList.toggle(
-        "active",
-        btn.dataset.page === page
-      );
-    });
-
-  if(page === "tasks"){
-    loadTasks();
-  }
-
-  if(page === "referrals"){
-    loadReferrals();
-  }
-
-  if(page === "ads"){
-    updateAdCounters();
-  }
-}
-
-/* =====================================================
-   ADS
-===================================================== */
-
-function updateAdCounters(){
-
-  if(!currentUser) return;
-
-  const ml =
-    Number(currentUser.monetagToday || 0);
-
-  const al =
-    Number(currentUser.adsgramToday || 0);
-
-  /*
-    These limits are also enforced by backend.
-    The values can be exposed by backend later.
-    Default values match the configured frontend.
-  */
-
-  const monetagLimit =
-    Number(currentUser.monetagLimit || 50);
-
-  const adsgramLimit =
-    Number(currentUser.adsgramLimit || 50);
-
-  $("monetagCount").textContent =
-    `${ml} / ${monetagLimit} today`;
-
-  $("adsgramCount").textContent =
-    `${al} / ${adsgramLimit} today`;
-
-  $("monetagBtn").disabled =
-    ml >= monetagLimit;
-
-  $("adsgramBtn").disabled =
-    al >= adsgramLimit;
-}
-
-async function watchAd(provider){
-
-  if(
-    provider !== "monetag" &&
-    provider !== "adsgram"
-  ){
-    return;
-  }
-
-  const button =
-    provider === "monetag"
-      ? $("monetagBtn")
-      : $("adsgramBtn");
-
-  button.disabled = true;
-  button.textContent = "LOADING...";
-
-  try{
-
-    /*
-      Your actual Monetag/Adsgram SDK should be
-      integrated here when the backend/provider
-      callback setup is finalized.
-
-      The reward endpoint remains the backend
-      authority.
-    */
-
-    if(provider === "monetag"){
-      await showMonetagAd();
-    }else{
-      await showAdsgramAd();
-    }
-
-    const data =
-      await apiRequest(
-        API.ads,
-        {
-          body:{ provider }
-        }
-      );
-
-    currentUser.balance =
-      Number(currentUser.balance || 0) +
-      Number(data.reward || 0);
-
-    currentUser.adsWatched =
-      Number(currentUser.adsWatched || 0) + 1;
-
-    if(provider === "monetag"){
-      currentUser.monetagToday =
-        Number(data.monetagToday || 0);
-    }else{
-      currentUser.adsgramToday =
-        Number(data.adsgramToday || 0);
-    }
-
-    updateUserUI();
-
-    showToast(
-      `+${data.reward} points earned!`,
-      "success"
-    );
-
-  }catch(error){
-
-    showToast(
-      readableError(error.message),
-      "error"
-    );
-
-  }finally{
-
-    button.disabled = false;
-    button.textContent = "WATCH";
-
-    updateAdCounters();
-  }
-}
-
-/*
-  Provider placeholders.
-
-  IMPORTANT:
-  These do NOT falsely claim that an ad was watched.
-  Replace the provider implementation with the official
-  SDK callback once its exact SDK is installed.
-*/
-
-async function showMonetagAd(){
-
-  /*
-    If Monetag SDK exists, use it.
-
-    This supports common Monetag SDK exposure without
-    crashing when the SDK isn't loaded.
-  */
-
-  if(typeof window.show_11526625 === "function"){
-
-    await new Promise((resolve,reject)=>{
-
-      try{
-
-        const result =
-          window.show_11526625();
-
-        if(result?.then){
-          result.then(resolve).catch(reject);
-        }else{
-          resolve();
-        }
-
-      }catch(error){
-        reject(error);
+  try {
+    if (provider === "monetag") {
+      if (typeof window.show_11601754 === "function") {
+        await window.show_11601754();
+      } else {
+        throw new Error("MONETAG_NOT_READY");
       }
-
-    });
-
-    return;
-  }
-
-  /*
-    Do not automatically award a real reward when
-    no provider exists.
-  */
-
-  throw new Error(
-    "MONETAG_NOT_READY"
-  );
-}
-
-async function showAdsgramAd(){
-
-  if(window.Adsgram){
-
-    const controller =
-      window.Adsgram.init({
-        blockId:
-          window.ADSGRAM_BLOCK_ID || ""
-      });
-
-    if(controller?.show){
-      await controller.show();
-      return;
-    }
-  }
-
-  throw new Error(
-    "ADSGRAM_NOT_READY"
-  );
-}
-
-/* =====================================================
-   TASKS
-===================================================== */
-
-async function loadTasks(){
-
-  const container =
-    $("tasksList");
-
-  container.innerHTML =
-    `<div class="card" style="text-align:center;color:var(--muted)">
-      Loading tasks...
-    </div>`;
-
-  try{
-
-    const data =
-      await apiRequest(
-        API.tasks,
-        {
-          body:{ action:"list" }
-        }
-      );
-
-    const tasks =
-      Array.isArray(data.tasks)
-        ? data.tasks
-        : [];
-
-    if(!tasks.length){
-
-      container.innerHTML =
-        `<div class="card" style="text-align:center;color:var(--muted)">
-          No active tasks right now.
-        </div>`;
-
-      return;
+    } else if (provider === "adsgram") {
+      if (window.Adsgram) {
+        const AdController = window.Adsgram.init({ blockId: "43948" });
+        await AdController.show();
+      } else {
+        throw new Error("ADSGRAM_NOT_READY");
+      }
     }
 
-    container.innerHTML =
-      tasks.map(task=>{
-
-        const completed =
-          Number(task.completions || 0);
-
-        const limit =
-          Number(task.maxCompletions || 0);
-
-        return `
-          <div class="task">
-
-            <div class="task-top">
-
-              <div class="task-title">
-                ${escapeHTML(task.title)}
-              </div>
-
-              <div class="task-reward">
-                +${escapeHTML(task.reward)}
-              </div>
-
-            </div>
-
-            <div class="task-meta">
-              ${completed}/${limit} completed
-              • ${escapeHTML(task.type || "task")}
-            </div>
-
-            <button
-              class="task-btn"
-              onclick="completeTask('${escapeHTML(task.id)}','${escapeHTML(task.link)}')">
-              🚀 COMPLETE TASK
-            </button>
-
-          </div>
-        `;
-
-      }).join("");
-
-  }catch(error){
-
-    container.innerHTML =
-      `<div class="card" style="text-align:center;color:#f87171">
-        ${escapeHTML(readableError(error.message))}
-      </div>`;
-  }
-}
-
-async function completeTask(taskId,link){
-
-  try{
-
-    if(link){
-      openTelegram(link);
-    }
-
-    showToast(
-      "Join the task first, then press complete again.",
-      ""
-    );
-
-    const data =
-      await apiRequest(
-        API.tasks,
-        {
-          body:{
-            action:"complete",
-            taskId
-          }
-        }
-      );
-
-    currentUser.balance =
-      Number(currentUser.balance || 0) +
-      Number(data.reward || 0);
-
-    currentUser.tasksCompleted =
-      Number(currentUser.tasksCompleted || 0) + 1;
+    const res = await apiRequest(API.ads, { body: { provider } });
+    currentUser.balance = Number(currentUser.balance || 0) + Number(res.reward || 0);
+    currentUser.adsWatched = Number(currentUser.adsWatched || 0) + 1;
+    if (provider === "monetag") currentUser.monetagToday = res.monetagToday;
+    else currentUser.adsgramToday = res.adsgramToday;
 
     updateUserUI();
-
-    showToast(
-      `🎯 +${data.reward} points earned!`,
-      "success"
-    );
-
-    loadTasks();
-
-  }catch(error){
-
-    showToast(
-      readableError(error.message),
-      "error"
-    );
+    showToast(`+${res.reward} PTS earned!`, "success");
+  } catch (err) {
+    showToast(readableError(err.message), "error");
+  } finally {
+    btn.disabled = false;
   }
 }
 
-/* =====================================================
-   CREATE TASK
-===================================================== */
+// ==========================================
+// SYNCHRONIZED LIVE AVIATOR ENGINE
+// ==========================================
+function getClientLiveRound(timestamp = Date.now()) {
+  const epochSeconds = Math.floor(timestamp / 1000);
+  const roundIndex = Math.floor(epochSeconds / 15);
+  const msInRound = timestamp % 15000;
 
-function openCreateTask(){
-  $("taskModal").classList.remove("hidden");
+  const seed = (roundIndex * 9301 + 49297) % 233280;
+  const rand = seed / 233280;
+  let crashMultiplier;
+
+  if (rand < 0.40) crashMultiplier = 1.00 + rand * 0.5;
+  else if (rand < 0.70) crashMultiplier = 1.20 + (rand - 0.40) * 2.0;
+  else if (rand < 0.88) crashMultiplier = 1.80 + (rand - 0.70) * 7.0;
+  else if (rand < 0.96) crashMultiplier = 3.00 + (rand - 0.88) * 25.0;
+  else crashMultiplier = 5.00 + (rand - 0.96) * 150.0;
+
+  crashMultiplier = Math.round(crashMultiplier * 100) / 100;
+  const flyTimeMs = Math.min(7000, Math.max(1500, Math.log(crashMultiplier + 1) * 3500));
+  const bettingDuration = 5000;
+
+  let phase;
+  let currentMultiplier = 1.00;
+
+  if (msInRound < bettingDuration) {
+    phase = "BETTING";
+  } else if (msInRound < bettingDuration + flyTimeMs) {
+    phase = "FLYING";
+    const progress = (msInRound - bettingDuration) / flyTimeMs;
+    currentMultiplier = Math.min(crashMultiplier, Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.8)));
+  } else {
+    phase = "CRASHED";
+    currentMultiplier = crashMultiplier;
+  }
+
+  return { roundIndex, phase, crashMultiplier, currentMultiplier, msInRound, flyTimeMs };
 }
 
-function closeCreateTask(){
-  $("taskModal").classList.add("hidden");
+function startSynchronizedAviatorLoop() {
+  const multEl = $("aviatorMultiplier");
+  const planeEl = $("aviatorPlane");
+  const statusEl = $("aviatorStatus");
+  const btn = $("aviatorBtn");
+
+  function frame() {
+    const round = getClientLiveRound(Date.now());
+    currentAviatorRound = round;
+
+    if (activeAviatorBet && activeAviatorBet.roundIndex !== round.roundIndex) {
+      activeAviatorBet = null;
+    }
+
+    if (round.phase === "BETTING") {
+      const countdown = Math.max(1, Math.ceil((5000 - round.msInRound) / 1000));
+      multEl.textContent = `${countdown}s`;
+      multEl.className = "multiplier betting";
+      planeEl.style.left = "10%";
+      planeEl.style.bottom = "14%";
+      statusEl.textContent = `⏳ Next round in ${countdown}s (Betting Open)`;
+
+      if (activeAviatorBet) {
+        btn.disabled = true;
+        btn.textContent = `BET: ${activeAviatorBet.bet} PTS`;
+        btn.className = "aviator-play";
+      } else {
+        btn.disabled = false;
+        btn.textContent = "PLACE BET";
+        btn.className = "aviator-play";
+      }
+    } else if (round.phase === "FLYING") {
+      multEl.textContent = round.currentMultiplier.toFixed(2) + "x";
+      multEl.className = "multiplier flying";
+
+      const progress = (round.msInRound - 5000) / round.flyTimeMs;
+      planeEl.style.left = (10 + progress * 72) + "%";
+      planeEl.style.bottom = (14 + progress * 58) + "%";
+      statusEl.textContent = "✈️ Flying live...";
+
+      if (activeAviatorBet && !activeAviatorBet.cashedOut) {
+        btn.disabled = false;
+        const currentWin = (activeAviatorBet.bet * round.currentMultiplier).toFixed(2);
+        btn.textContent = `CASH OUT (+${currentWin})`;
+        btn.className = "aviator-play cashout";
+      } else {
+        btn.disabled = true;
+        btn.textContent = "ROUND IN PROGRESS";
+        btn.className = "aviator-play";
+      }
+    } else {
+      multEl.textContent = round.crashMultiplier.toFixed(2) + "x";
+      multEl.className = "multiplier crashed";
+      planeEl.style.left = "85%";
+      planeEl.style.bottom = "75%";
+      statusEl.textContent = "💥 FLEW AWAY!";
+
+      if (activeAviatorBet && !activeAviatorBet.cashedOut) {
+        btn.disabled = true;
+        btn.textContent = "CRASHED";
+        btn.className = "aviator-play";
+      }
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  requestAnimationFrame(frame);
 }
 
-async function createTask(){
+async function handleAviatorAction() {
+  const round = currentAviatorRound;
+  if (!round) return;
 
-  const title =
-    $("taskTitle").value.trim();
+  if (round.phase === "BETTING") {
+    const bet = Number($("aviatorBet").value);
+    if (!bet || bet <= 0) {
+      showToast("Enter a valid bet.", "error");
+      return;
+    }
 
-  const link =
-    $("taskLink").value.trim();
+    try {
+      await apiRequest(API.games, { body: { action: "aviator_bet", bet } });
+      activeAviatorBet = { roundIndex: round.roundIndex, bet, cashedOut: false };
+      currentUser.balance = Number(currentUser.balance || 0) - bet;
+      updateUserUI();
+      showToast(`✅ Bet of ${bet} PTS placed!`, "success");
+    } catch (err) {
+      showToast(readableError(err.message), "error");
+    }
+  } else if (round.phase === "FLYING" && activeAviatorBet && !activeAviatorBet.cashedOut) {
+    try {
+      const data = await apiRequest(API.games, { body: { action: "aviator_cashout" } });
+      activeAviatorBet.cashedOut = true;
+      currentUser.balance = Number(currentUser.balance || 0) + Number(data.payout || 0);
+      currentUser.aviatorWins = Number(currentUser.aviatorWins || 0) + 1;
+      updateUserUI();
+      showToast(`🚀 Cashed out at ${data.multiplier}x (+${data.payout} PTS)!`, "success");
+    } catch (err) {
+      showToast(readableError(err.message), "error");
+    }
+  }
+}
 
-  const chatId =
-    $("taskChatId").value.trim();
+// ==========================================
+// TASKS & MODAL
+// ==========================================
+async function loadTasks() {
+  const container = $("tasksList");
+  try {
+    const data = await apiRequest(API.tasks, { body: { action: "list" } });
+    const list = data.tasks || [];
+    if (!list.length) {
+      container.innerHTML = `<div class="card" style="text-align:center;color:var(--muted)">No active tasks right now.</div>`;
+      return;
+    }
 
-  const type =
-    $("taskType").value;
+    container.innerHTML = list.map(t => `
+      <div class="card" style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-weight:900">
+          <div>${escapeHTML(t.title)}</div>
+          <div style="color:#4ade80">+${t.reward} PTS</div>
+        </div>
+        <div style="color:var(--muted);font-size:11px;margin:6px 0 12px">
+          ${t.completions || 0}/${t.maxCompletions} completed • ${escapeHTML(t.type)}
+        </div>
+        <button class="action-btn" onclick="completeTask('${t.id}', '${escapeHTML(t.link)}')">🚀 JOIN & CLAIM</button>
+      </div>
+    `).join("");
+  } catch {
+    container.innerHTML = `<div class="card" style="text-align:center;color:#ef4444">Failed to load tasks.</div>`;
+  }
+}
 
-  if(!title || !link || !chatId){
+async function completeTask(taskId, link) {
+  if (link) openTelegram(link);
+  try {
+    const data = await apiRequest(API.tasks, { body: { action: "complete", taskId } });
+    currentUser.balance = Number(currentUser.balance || 0) + Number(data.reward || 0);
+    currentUser.tasksCompleted = Number(currentUser.tasksCompleted || 0) + 1;
+    updateUserUI();
+    showToast(`🎯 +${data.reward} PTS rewarded!`, "success");
+    loadTasks();
+  } catch (err) {
+    showToast(readableError(err.message), "error");
+  }
+}
 
-    showToast(
-      "Fill all task fields.",
-      "error"
-    );
+function openCreateTask() { $("taskModal").classList.remove("hidden"); }
+function closeCreateTask() { $("taskModal").classList.add("hidden"); }
 
+async function createTask() {
+  const title = $("taskTitle").value.trim();
+  const link = $("taskLink").value.trim();
+  const chatId = $("taskChatId").value.trim();
+  const type = $("taskType").value;
+
+  if (!title || !link || !chatId) {
+    showToast("Fill in all task fields.", "error");
     return;
   }
 
-  try{
-
-    const data =
-      await apiRequest(
-        API.tasks,
-        {
-          body:{
-            action:"create",
-            title,
-            link,
-            chatId,
-            type
-          }
-        }
-      );
-
+  try {
+    await apiRequest(API.tasks, { body: { action: "create", title, link, chatId, type } });
     closeCreateTask();
-
-    $("taskTitle").value = "";
-    $("taskLink").value = "";
-    $("taskChatId").value = "";
-
-    showToast(
-      "✅ Task created successfully!",
-      "success"
-    );
-
+    $("taskTitle").value = ""; $("taskLink").value = ""; $("taskChatId").value = "";
+    showToast("✅ Task created!", "success");
     loadTasks();
-
-    /*
-      Refresh user because creating a task can
-      deduct balance.
-    */
-
-    await refreshUser();
-
-  }catch(error){
-
-    showToast(
-      readableError(error.message),
-      "error"
-    );
+    const u = await apiRequest(API.user);
+    if (u.user) { currentUser = u.user; updateUserUI(); }
+  } catch (err) {
+    showToast(readableError(err.message), "error");
   }
 }
 
-/* =====================================================
-   REFERRALS
-===================================================== */
+// ==========================================
+// DEPOSIT MODAL & FLOW
+// ==========================================
+async function openDepositModal() {
+  $("depositModal").classList.remove("hidden");
+  try {
+    const info = await apiRequest(API.deposit, { body: { action: "info" } });
+    $("depAddressText").textContent = info.depositAddress || "Not configured";
+  } catch {}
+}
+function closeDepositModal() { $("depositModal").classList.add("hidden"); }
 
-async function loadReferrals(){
+async function copyDepositAddress() {
+  const addr = $("depAddressText").textContent;
+  await navigator.clipboard.writeText(addr);
+  showToast("📋 Deposit address copied!", "success");
+}
 
-  try{
+async function submitDeposit() {
+  const txHash = $("depositTxHash").value.trim();
+  if (!txHash) {
+    showToast("Please enter transaction hash.", "error");
+    return;
+  }
 
-    const data =
-      await apiRequest(
-        API.referral,
-        {
-          body:{ action:"list" }
-        }
-      );
+  try {
+    await apiRequest(API.deposit, { body: { action: "submit", txHash } });
+    $("depositTxHash").value = "";
+    closeDepositModal();
+    showToast("✅ Deposit submitted for verification!", "success");
+  } catch (err) {
+    showToast(readableError(err.message), "error");
+  }
+}
 
-    const refs =
-      Array.isArray(data.referrals)
-        ? data.referrals
-        : [];
+// ==========================================
+// REFERRAL & PROMO
+// ==========================================
+async function loadReferrals() {
+  try {
+    const data = await apiRequest(API.referral, { body: { action: "list" } });
+    const list = data.referrals || [];
+    $("refTotal").textContent = list.length;
+    $("refCount").textContent = list.length;
 
-    $("refTotal").textContent =
-      refs.length;
-
-    $("refCount").textContent =
-      refs.length;
-
-    $("refEarnings").textContent =
-      formatNumber(
-        currentUser.referralPoints || 0
-      );
-
-    if(!refs.length){
-
-      $("referralList").innerHTML =
-        `<div class="card" style="text-align:center;color:var(--muted)">
-          No referrals yet.
-        </div>`;
-
-    }else{
-
-      $("referralList").innerHTML =
-        refs.map((ref,index)=>`
-
-          <div class="ref-item">
-
-            <span>
-              👤 Referral #${index + 1}
-            </span>
-
-            <span style="color:#4ade80">
-              ${
-                ref.channelRewarded &&
-                ref.adsRewarded
-                  ? "Rewarded"
-                  : "Pending"
-              }
-            </span>
-
-          </div>
-
-        `).join("");
+    if (!list.length) {
+      $("referralList").innerHTML = `<div class="card" style="text-align:center;color:var(--muted)">No referrals yet. Invite friends to start earning!</div>`;
+      return;
     }
 
-  }catch(error){
-
-    console.error(error);
-  }
+    $("referralList").innerHTML = list.map((r, i) => `
+      <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px">
+        <span>👤 User ${r.referredUserId.slice(0, 5)}***</span>
+        <span style="color:#4ade80">${r.channelRewarded ? "Verified (+0.10 PTS)" : "Pending"}</span>
+      </div>
+    `).join("");
+  } catch {}
 }
 
-function getReferralLink(){
-
-  const botUsername =
-    currentUser?.botUsername;
-
-  if(botUsername){
-
-    return `https://t.me/${botUsername}?start=ref_${currentUser.telegramId}`;
-  }
-
-  return `ref_${currentUser.telegramId}`;
+async function copyReferral() {
+  const link = $("refLink").textContent;
+  await navigator.clipboard.writeText(link);
+  showToast("📋 Referral link copied!", "success");
 }
 
-async function copyReferral(){
-
-  const link =
-    getReferralLink();
-
-  try{
-
-    await navigator.clipboard.writeText(link);
-
-    showToast(
-      "📋 Referral link copied!",
-      "success"
-    );
-
-  }catch{
-
-    showToast(
-      link,
-      ""
-    );
-  }
-}
-
-function shareReferral(){
-
-  const link =
-    getReferralLink();
-
-  const text =
-    "🔥 Join me on USDT Hub and earn rewards!";
-
-  const url =
-    `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
-
+function shareReferral() {
+  const link = $("refLink").textContent;
+  const url = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent("🔥 Join me on USDT Hub and earn crypto!")}`;
   openTelegram(url);
 }
 
-/* =====================================================
-   PROMO
-===================================================== */
-
-async function claimPromo(){
-
-  const input =
-    $("promoCode");
-
-  const code =
-    input.value.trim().toUpperCase();
-
-  if(!code){
-
-    showToast(
-      "Enter a promo code.",
-      "error"
-    );
-
-    return;
-  }
-
-  try{
-
-    const data =
-      await apiRequest(
-        API.promo,
-        {
-          body:{ code }
-        }
-      );
-
-    currentUser.balance =
-      Number(currentUser.balance || 0) +
-      Number(data.reward || 0);
-
+async function claimPromo() {
+  const code = $("promoCode").value.trim().toUpperCase();
+  if (!code) return;
+  try {
+    const data = await apiRequest(API.promo, { body: { code } });
+    currentUser.balance = Number(currentUser.balance || 0) + Number(data.reward || 0);
     updateUserUI();
-
-    input.value = "";
-
-    showToast(
-      `🎁 +${data.reward} points claimed!`,
-      "success"
-    );
-
-  }catch(error){
-
-    showToast(
-      readableError(error.message),
-      "error"
-    );
+    $("promoCode").value = "";
+    showToast(`🎁 +${data.reward} PTS claimed!`, "success");
+  } catch (err) {
+    showToast(readableError(err.message), "error");
   }
 }
 
-/* =====================================================
-   WITHDRAW
-===================================================== */
-
-async function withdraw(){
-
-  const address =
-    $("withdrawAddress")
-      .value
-      .trim();
-
-  if(!/^0x[a-fA-F0-9]{40}$/.test(address)){
-
-    showToast(
-      "Enter a valid BEP20 address.",
-      "error"
-    );
-
+// ==========================================
+// WITHDRAW
+// ==========================================
+async function withdraw() {
+  const address = $("withdrawAddress").value.trim();
+  if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+    showToast("Enter a valid BEP20 address.", "error");
     return;
   }
 
-  const button =
-    $("withdrawBtn");
-
-  button.disabled = true;
-  button.textContent =
-    "⏳ PROCESSING...";
-
-  try{
-
-    const data =
-      await apiRequest(
-        API.withdraw,
-        {
-          body:{ address }
-        }
-      );
-
-    /*
-      Backend has already deducted the points.
-    */
-
-    currentUser.balance =
-      Number(currentUser.balance || 0) -
-      Number(data.points || 0);
-
+  const btn = $("withdrawBtn");
+  btn.disabled = true;
+  btn.textContent = "⏳ PROCESSING...";
+  try {
+    const data = await apiRequest(API.withdraw, { body: { address } });
+    currentUser.balance = Number(currentUser.balance || 0) - Number(data.points || 0);
     updateUserUI();
-
     $("withdrawAddress").value = "";
-
-    showToast(
-      `✅ Withdrawal submitted: ${data.amount} USDT`,
-      "success"
-    );
-
-  }catch(error){
-
-    showToast(
-      readableError(error.message),
-      "error"
-    );
-
-  }finally{
-
-    button.disabled = false;
-    button.textContent =
-      "💸 WITHDRAW";
+    showToast(`✅ Withdrawal sent: ${data.amount} USDT`, "success");
+  } catch (err) {
+    showToast(readableError(err.message), "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "💸 WITHDRAW";
   }
 }
 
-/* =====================================================
-   XO
-===================================================== */
-
-async function playXO(choice){
-
-  try{
-
-    const data =
-      await apiRequest(
-        API.games,
-        {
-          body:{
-            action:"xo",
-            choice
-          }
-        }
-      );
-
-    currentUser.balance =
-      Number(data.balance || 0);
-
-    if(data.win){
-
-      currentUser.xoWins =
-        Number(currentUser.xoWins || 0) + 1;
-
-      $("xoResult").innerHTML =
-        `🔥 YOU WON +${escapeHTML(data.payout)} POINTS!`;
-
-    }else{
-
-      $("xoResult").textContent =
-        "🥀 You lost this round.";
-    }
-
-    updateUserUI();
-
-  }catch(error){
-
-    $("xoResult").textContent =
-      readableError(error.message);
-
-    showToast(
-      readableError(error.message),
-      "error"
-    );
-  }
-}
-
-/* =====================================================
-   AVIATOR
-===================================================== */
-
-function animateAviator(){
-
-  const multiplier =
-    $("aviatorMultiplier");
-
-  const plane =
-    $("aviatorPlane");
-
-  const status =
-    $("aviatorStatus");
-
-  const start =
-    performance.now();
-
-  function frame(now){
-
-    if(!aviatorRunning) return;
-
-    const seconds =
-      (now - start) / 1000;
-
-    /*
-      Visual-only multiplier.
-      The backend result remains authoritative.
-    */
-
-    const visual =
-      1 + Math.pow(seconds,1.25) * 0.22;
-
-    multiplier.textContent =
-      visual.toFixed(2) + "x";
-
-    multiplier.classList.add("flying");
-
-    const x =
-      Math.min(82,10 + seconds * 8);
-
-    const y =
-      Math.min(72,14 + seconds * 6);
-
-    plane.style.left = x + "%";
-    plane.style.bottom = y + "%";
-
-    status.textContent =
-      "✈️ Flying...";
-
-    aviatorTimer =
-      requestAnimationFrame(frame);
-  }
-
-  aviatorTimer =
-    requestAnimationFrame(frame);
-}
-
-function resetAviator(){
-
-  cancelAnimationFrame(aviatorTimer);
-
-  aviatorRunning = false;
-
-  const multiplier =
-    $("aviatorMultiplier");
-
-  const plane =
-    $("aviatorPlane");
-
-  const status =
-    $("aviatorStatus");
-
-  multiplier.textContent =
-    "1.00x";
-
-  multiplier.className =
-    "multiplier";
-
-  plane.style.left = "10%";
-  plane.style.bottom = "14%";
-
-  status.textContent =
-    "Ready for takeoff";
-}
-
-async function playAviator(){
-
-  if(aviatorRunning){
-    return;
-  }
-
-  const bet =
-    Number($("aviatorBet").value);
-
-  if(
-    !Number.isInteger(bet) ||
-    bet <= 0
-  ){
-
-    showToast(
-      "Enter a valid whole-number bet.",
-      "error"
-    );
-
-    return;
-  }
-
-  const button =
-    $("aviatorBtn");
-
-  button.disabled = true;
-  button.textContent =
-    "FLYING...";
-
-  aviatorRunning = true;
-
-  animateAviator();
-
-  try{
-
-    /*
-      The server determines the actual multiplier
-      and payout. We wait for that result while
-      showing the flight animation.
-    */
-
-    const dataPromise =
-      apiRequest(
-        API.games,
-        {
-          body:{
-            action:"aviator",
-            bet
-          }
-        }
-      );
-
-    const data =
-      await dataPromise;
-
-    /*
-      Keep the flight on screen for a short moment
-      so the server result feels like an actual round.
-    */
-
-    await wait(700);
-
-    aviatorRunning = false;
-
-    cancelAnimationFrame(aviatorTimer);
-
-    const multiplier =
-      Number(data.multiplier || 0);
-
-    const finalMultiplier =
-      $("aviatorMultiplier");
-
-    finalMultiplier.textContent =
-      multiplier.toFixed(2) + "x";
-
-    if(multiplier > 1){
-
-      finalMultiplier.classList.add("flying");
-
-      $("aviatorStatus").textContent =
-        `🚀 CASHED OUT • +${data.payout} points`;
-
-    }else{
-
-      finalMultiplier.classList.remove("flying");
-      finalMultiplier.classList.add("crashed");
-
-      $("aviatorStatus").textContent =
-        "💥 CRASHED";
-
-    }
-
-    currentUser.balance =
-      Number(data.balance || 0);
-
-    if(multiplier > 1){
-
-      currentUser.aviatorWins =
-        Number(currentUser.aviatorWins || 0) + 1;
-    }
-
-    currentUser.aviatorGames =
-      Number(currentUser.aviatorGames || 0) + 1;
-
-    updateUserUI();
-
-    if(multiplier > 1){
-
-      showToast(
-        `🚀 ${multiplier.toFixed(2)}x • +${data.payout} points`,
-        "success"
-      );
-
-    }else{
-
-      showToast(
-        "💥 Aviator crashed.",
-        "error"
-      );
-    }
-
-    setTimeout(resetAviator,2500);
-
-  }catch(error){
-
-    resetAviator();
-
-    showToast(
-      readableError(error.message),
-      "error"
-    );
-
-  }finally{
-
-    setTimeout(()=>{
-
-      button.disabled = false;
-      button.textContent =
-        "PLACE BET";
-
-    },1000);
-  }
-}
-
-function wait(ms){
-  return new Promise(resolve=>{
-    setTimeout(resolve,ms);
+// ==========================================
+// NAVIGATION & HELPERS
+// ==========================================
+function showPage(page) {
+  if (!appReady) return;
+  document.querySelectorAll(".page").forEach(el => el.classList.remove("active"));
+  const target = $("page-" + page);
+  if (target) target.classList.add("active");
+
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.page === page);
   });
+
+  if (page === "tasks") loadTasks();
+  if (page === "referrals") loadReferrals();
 }
 
-/* =====================================================
-   REFRESH USER
-===================================================== */
-
-async function refreshUser(){
-
-  try{
-
-    const data =
-      await apiRequest(API.user);
-
-    if(data?.user){
-
-      currentUser =
-        data.user;
-
-      updateUserUI();
-    }
-
-  }catch(error){
-
-    console.error(
-      "refreshUser:",
-      error
-    );
-  }
-}
-
-/* =====================================================
-   ERROR TRANSLATION
-===================================================== */
-
-function readableError(error){
-
+function readableError(err) {
   const errors = {
-
-    INVALID_ADDRESS:
-      "That wallet address is invalid.",
-
-    CHANNELS_REQUIRED:
-      "You must join both channels first.",
-
-    WELCOME_ALREADY_CLAIMED:
-      "You already claimed the welcome bonus.",
-
-    ADDRESS_ALREADY_USED:
-      "That wallet address has already claimed the bonus.",
-
-    USER_NOT_FOUND:
-      "Your account was not found. Reopen the app.",
-
-    MONETAG_LIMIT:
-      "You reached today's Monetag limit.",
-
-    ADSGRAM_LIMIT:
-      "You reached today's Adsgram limit.",
-
-    MONETAG_NOT_READY:
-      "Monetag is not ready yet.",
-
-    ADSGRAM_NOT_READY:
-      "Adsgram is not ready yet.",
-
-    INVALID_PROVIDER:
-      "Invalid ad provider.",
-
-    INVALID_CODE:
-      "That promo code is invalid.",
-
-    ALREADY_CLAIMED:
-      "You already claimed this promo code.",
-
-    MINIMUM_NOT_REACHED:
-      "You have not reached the withdrawal minimum.",
-
-    INSUFFICIENT_POINTS:
-      "You don't have enough points.",
-
-    TASK_NOT_FOUND:
-      "Task not found.",
-
-    TASK_CLOSED:
-      "This task is closed.",
-
-    TASK_FULL:
-      "This task is already full.",
-
-    ALREADY_COMPLETED:
-      "You already completed this task.",
-
-    TELEGRAM_MEMBERSHIP_REQUIRED:
-      "Join the Telegram task first.",
-
-    XO_LIMIT:
-      "You reached today's XO limit.",
-
-    INVALID_BET:
-      "Enter a valid bet.",
-
-    UNKNOWN_GAME:
-      "Unknown game.",
-
-    SERVER_INVALID_RESPONSE:
-      "Server returned an invalid response.",
-
-    "Method not allowed":
-      "Invalid request method."
-
+    INVALID_ADDRESS: "Invalid BEP20 address.",
+    CHANNELS_REQUIRED: "You must join both channels first.",
+    WELCOME_ALREADY_CLAIMED: "Welcome bonus already claimed.",
+    ADDRESS_ALREADY_USED: "This address was already used.",
+    MONETAG_LIMIT: "Daily Monetag limit reached.",
+    ADSGRAM_LIMIT: "Daily Adsgram limit reached.",
+    INSUFFICIENT_POINTS: "Insufficient points balance.",
+    ROUND_ALREADY_STARTED: "Round has already started! Wait for next 5s window.",
+    CANNOT_CASHOUT_NOW: "Plane is not flying right now.",
+    ALREADY_CASHED_OUT: "Already cashed out this round.",
+    BET_ALREADY_PLACED: "Bet already placed for this round.",
+    TELEGRAM_MEMBERSHIP_REQUIRED: "Join the Telegram task first."
   };
-
-  return errors[error] ||
-    String(error || "Request failed");
+  return errors[err] || String(err || "Action failed");
 }
 
-/* =====================================================
-   START
-===================================================== */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  initialize
-);
-
-window.addEventListener(
-  "load",
-  ()=>{
-    try{
-      tg?.ready();
-    }catch{}
-  }
-);
-
+document.addEventListener("DOMContentLoaded", initialize);
 </script>
-
 </body>
-            </html>
+</html>
