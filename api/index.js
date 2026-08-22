@@ -15,13 +15,12 @@ import { sendUSDT, getPayoutWalletInfo } from "../lib/payout.js";
 import { CONFIG } from "../lib/config.js";
 
 // =====================================================
-// ROUTING & PATH HELPERS
+// ROUTING & TIME HELPERS
 // =====================================================
 
 function getPath(req) {
   const rawUrl = String(req.url || "");
-  const cleanPath = rawUrl.split("?")[0].replace(/\/+$/, "");
-  return cleanPath || "/";
+  return rawUrl.split("?")[0].replace(/\/+$/, "") || "/";
 }
 
 function today() {
@@ -48,7 +47,6 @@ function getUser(req) {
   return result;
 }
 
-// Calculate VIP Tier based on lifetime points earned
 function getVipTier(totalPts = 0) {
   const tiers = Object.values(CONFIG.VIP_TIERS).sort((a, b) => b.minPts - a.minPts);
   for (const tier of tiers) {
@@ -58,7 +56,7 @@ function getVipTier(totalPts = 0) {
 }
 
 // =====================================================
-// PROVABLY FAIR SYNCHRONIZED AVIATOR ENGINE
+// PROVABLY FAIR LIVE AVIATOR ENGINE
 // =====================================================
 
 function calculateRoundCrash(roundIndex) {
@@ -70,8 +68,7 @@ function calculateRoundCrash(roundIndex) {
   const intVal = parseInt(hash.slice(0, 8), 16);
   const rand = intVal / 0xffffffff;
 
-  // Unpredictable dynamic curve with 4.5% house edge
-  if (rand < 0.045) return 1.00; // Instant crash
+  if (rand < 0.045) return 1.00;
   if (rand < 0.55) return Number((1.01 + rand * 0.45).toFixed(2));
   if (rand < 0.80) return Number((1.25 + (rand - 0.55) * 2.8).toFixed(2));
   if (rand < 0.93) return Number((1.95 + (rand - 0.80) * 8.0).toFixed(2));
@@ -105,7 +102,6 @@ function getLiveAviatorState(timestamp = Date.now()) {
     currentMultiplier = crashMultiplier;
   }
 
-  // Generate last 12 historical crash points for live ribbon
   const history = [];
   for (let i = 1; i <= 12; i++) {
     history.push(calculateRoundCrash(roundIndex - i));
@@ -123,12 +119,17 @@ function getLiveAviatorState(timestamp = Date.now()) {
 }
 
 // =====================================================
-// USER INITIALIZATION & STREAK TRACKING
+// USER REGISTRATION & REFERRAL ENGINE
 // =====================================================
 
 async function userHandler(req, res) {
-  const { user, startParam } = getUser(req);
+  let { user, startParam } = getUser(req);
   const uid = String(user.id);
+
+  if (!startParam && req.body?.startParam) {
+    startParam = String(req.body.startParam).trim();
+  }
+
   const userRef = db.collection("users").doc(uid);
   const existing = await userRef.get();
 
@@ -151,10 +152,12 @@ async function userHandler(req, res) {
 
   let inviterId = null;
   if (startParam && String(startParam).startsWith("ref_")) {
-    const possible = String(startParam).slice(4);
+    const possible = String(startParam).slice(4).trim();
     if (possible && possible !== uid) {
-      const inviter = await db.collection("users").doc(possible).get();
-      if (inviter.exists) inviterId = possible;
+      const inviterDoc = await db.collection("users").doc(possible).get();
+      if (inviterDoc.exists) {
+        inviterId = possible;
+      }
     }
   }
 
@@ -227,7 +230,7 @@ async function userHandler(req, res) {
 }
 
 // =====================================================
-// 7-DAY LOGIN STREAK REWARD
+// 7-DAY LOGIN STREAK
 // =====================================================
 
 async function claimStreak(req, res) {
@@ -302,7 +305,6 @@ async function verifyMembership(req, res) {
     { merge: true }
   );
 
-  // Credit 500 PTS to inviter upon verified channel membership
   if (u.referredBy) {
     const refDocRef = db.collection("referrals").doc(`${u.referredBy}_${uid}`);
     const refSnap = await refDocRef.get();
@@ -324,7 +326,7 @@ async function verifyMembership(req, res) {
 }
 
 // =====================================================
-// WELCOME BONUS (0.01 USDT) + BROADCAST PROOF
+// WELCOME BONUS & PAYMENT PROOF
 // =====================================================
 
 async function claimWelcome(req, res) {
@@ -389,7 +391,6 @@ async function claimWelcome(req, res) {
       updatedAt: FieldValue.serverTimestamp()
     });
 
-    // Notify user & broadcast proof to @birr_gram
     notifyWelcomeBonus(uid, CONFIG.WELCOME_USDT, payment.txHash);
     broadcastPaymentProof({
       type: "welcome",
@@ -421,7 +422,7 @@ async function claimWelcome(req, res) {
 }
 
 // =====================================================
-// ADS (75 PTS + VIP BOOST + 500 PTS REFERRAL MILESTONE)
+// ADS (MONETAG & ADSGRAM)
 // =====================================================
 
 async function ads(req, res) {
@@ -485,7 +486,6 @@ async function ads(req, res) {
     };
   });
 
-  // Credit 500 PTS milestone to inviter after 2 ads
   if (shouldRewardInviter && inviterId) {
     const refDocRef = db.collection("referrals").doc(`${inviterId}_${uid}`);
     const refSnap = await refDocRef.get();
@@ -859,7 +859,7 @@ async function tasks(req, res) {
 }
 
 // =====================================================
-// WITHDRAW (10,000 PTS = 0.10 USDT) + PROOF BROADCAST
+// WITHDRAW & AUTOMATED PROOFS
 // =====================================================
 
 async function withdraw(req, res) {
@@ -872,7 +872,7 @@ async function withdraw(req, res) {
 
   const minPoints = Number(CONFIG.WITHDRAW_MIN_POINTS);
   const pointsPerUSDT = Number(CONFIG.POINTS_PER_USDT);
-  const amount = minPoints / pointsPerUSDT; // 0.10 USDT
+  const amount = minPoints / pointsPerUSDT;
 
   const userRef = db.collection("users").doc(uid);
   const withdrawalRef = db.collection("withdrawals").doc();
@@ -911,7 +911,6 @@ async function withdraw(req, res) {
       paidAt: FieldValue.serverTimestamp()
     });
 
-    // Send direct notification and broadcast to @birr_gram
     notifyWithdrawalSuccess(uid, amount.toFixed(2), payment.txHash);
     broadcastPaymentProof({
       type: "withdraw",
@@ -946,7 +945,7 @@ async function withdraw(req, res) {
 }
 
 // =====================================================
-// TELEGRAM BOT WEBHOOK
+// TELEGRAM WEBHOOK
 // =====================================================
 
 async function telegram(req, res) {
@@ -954,39 +953,42 @@ async function telegram(req, res) {
 
   if (update?.message?.text?.startsWith("/start")) {
     const chatId = update.message.chat.id;
-    const webAppUrl = CONFIG.WEBAPP_URL;
+    const text = update.message.text.trim();
+    const parts = text.split(" ");
+    const startParam = parts.length > 1 ? parts[1] : "";
 
-    if (webAppUrl) {
-      await sendMessage(
-        chatId,
-        "🔥 <b>Welcome to USDT Hub!</b>\n\nEarn rewards from daily ads, community tasks, referrals, and live Aviator.",
-        {
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: "🚀 OPEN USDT HUB",
-                  web_app: { url: webAppUrl }
-                }
-              ],
-              [
-                {
-                  text: "📢 Payment Proofs",
-                  url: "https://t.me/birr_gram"
-                }
-              ]
+    const baseUrl = CONFIG.WEBAPP_URL;
+    const launchUrl = startParam ? `${baseUrl}?startapp=${startParam}` : baseUrl;
+
+    await sendMessage(
+      chatId,
+      "🔥 <b>Welcome to USDT Hub!</b>\n\nEarn rewards from daily ads, community tasks, referrals, and live Aviator.",
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "🚀 OPEN USDT HUB",
+                web_app: { url: launchUrl }
+              }
+            ],
+            [
+              {
+                text: "📢 Payment Proofs",
+                url: "https://t.me/birr_gram"
+              }
             ]
-          }
+          ]
         }
-      );
-    }
+      }
+    );
   }
 
   return res.status(200).json({ success: true });
 }
 
 // =====================================================
-// MASTER HANDLER
+// MASTER HANDLER ROUTER
 // =====================================================
 
 export default async function handler(req, res) {
@@ -994,8 +996,6 @@ export default async function handler(req, res) {
 
   try {
     const path = getPath(req);
-
-    // Support both direct path calls and endpoint queries
     const endpoint = req.query?.endpoint || req.body?.endpoint || "";
 
     if (path === "/api/index" || path === "/api" || path === "/") {
@@ -1013,7 +1013,6 @@ export default async function handler(req, res) {
       return telegram(req, res);
     }
 
-    // Handlers for all actions
     if (path === "/api/user" || endpoint === "user") return userHandler(req, res);
     if (path === "/api/claim-streak" || endpoint === "claim-streak") return claimStreak(req, res);
     if (path === "/api/verify-membership" || endpoint === "verify-membership") return verifyMembership(req, res);
