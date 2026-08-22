@@ -1,80 +1,91 @@
+import crypto from "crypto";
+import { ethers } from "ethers";
 import { db, FieldValue } from "../lib/firebase.js";
-import {
-  validateInitData,
-  getInitData
-} from "../lib/auth.js";
-
+import { validateInitData, getInitData } from "../lib/auth.js";
 import {
   getChatMember,
-  sendMessage
+  sendMessage,
+  broadcastPaymentProof,
+  notifyNewReferral,
+  notifyReferralBonus,
+  notifyWithdrawalSuccess,
+  notifyWelcomeBonus
 } from "../lib/telegram.js";
-
-import {
-  sendUSDT,
-  getPayoutWalletInfo
-} from "../lib/payout.js";
-
+import { sendUSDT, getPayoutWalletInfo } from "../lib/payout.js";
 import { CONFIG } from "../lib/config.js";
-import { ethers } from "ethers";
 
 // =====================================================
-// HELPERS
+// ROUTING & PATH HELPERS
 // =====================================================
 
 function getPath(req) {
-  return String(req.url || "")
-    .split("?")[0]
-    .replace(/\/+$/, "") || "/";
+  const rawUrl = String(req.url || "");
+  const cleanPath = rawUrl.split("?")[0].replace(/\/+$/, "");
+  return cleanPath || "/";
 }
 
 function today() {
-  return new Date()
-    .toISOString()
-    .slice(0, 10);
+  return new Date().toISOString().slice(0, 10);
+}
+
+function yesterday() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().slice(0, 10);
 }
 
 function memberOK(member) {
-  return [
-    "member",
-    "administrator",
-    "creator"
-  ].includes(member?.status);
+  return ["member", "administrator", "creator"].includes(member?.status);
 }
 
 function getUser(req) {
   const initData = getInitData(req);
-
-  if (!initData) {
-    throw new Error("TELEGRAM_INIT_DATA_MISSING");
-  }
+  if (!initData) throw new Error("TELEGRAM_INIT_DATA_MISSING");
 
   const result = validateInitData(initData);
-
-  if (!result?.user) {
-    throw new Error("INVALID_TELEGRAM_USER");
-  }
+  if (!result?.user) throw new Error("INVALID_TELEGRAM_USER");
 
   return result;
 }
 
-// Synchronized Aviator round calculation
-function getLiveAviatorRound(timestamp = Date.now()) {
+// Calculate VIP Tier based on lifetime points earned
+function getVipTier(totalPts = 0) {
+  const tiers = Object.values(CONFIG.VIP_TIERS).sort((a, b) => b.minPts - a.minPts);
+  for (const tier of tiers) {
+    if (totalPts >= tier.minPts) return tier;
+  }
+  return CONFIG.VIP_TIERS.BRONZE;
+}
+
+// =====================================================
+// PROVABLY FAIR SYNCHRONIZED AVIATOR ENGINE
+// =====================================================
+
+function calculateRoundCrash(roundIndex) {
+  const hash = crypto
+    .createHmac("sha256", CONFIG.AVIATOR_SERVER_SECRET)
+    .update(String(roundIndex))
+    .digest("hex");
+
+  const intVal = parseInt(hash.slice(0, 8), 16);
+  const rand = intVal / 0xffffffff;
+
+  // Unpredictable dynamic curve with 4.5% house edge
+  if (rand < 0.045) return 1.00; // Instant crash
+  if (rand < 0.55) return Number((1.01 + rand * 0.45).toFixed(2));
+  if (rand < 0.80) return Number((1.25 + (rand - 0.55) * 2.8).toFixed(2));
+  if (rand < 0.93) return Number((1.95 + (rand - 0.80) * 8.0).toFixed(2));
+  if (rand < 0.985) return Number((3.00 + (rand - 0.93) * 35.0).toFixed(2));
+  return Number((8.00 + (rand - 0.985) * 120.0).toFixed(2));
+}
+
+function getLiveAviatorState(timestamp = Date.now()) {
   const epochSeconds = Math.floor(timestamp / 1000);
-  const roundIndex = Math.floor(epochSeconds / 15);
-  const msInRound = timestamp % 15000;
+  const roundIndex = Math.floor(epochSeconds / 16);
+  const msInRound = timestamp % 16000;
 
-  const seed = (roundIndex * 9301 + 49297) % 233280;
-  const rand = seed / 233280;
-  let crashMultiplier;
-
-  if (rand < 0.40) crashMultiplier = 1.00 + rand * 0.5;
-  else if (rand < 0.70) crashMultiplier = 1.20 + (rand - 0.40) * 2.0;
-  else if (rand < 0.88) crashMultiplier = 1.80 + (rand - 0.70) * 7.0;
-  else if (rand < 0.96) crashMultiplier = 3.00 + (rand - 0.88) * 25.0;
-  else crashMultiplier = 5.00 + (rand - 0.96) * 150.0;
-
-  crashMultiplier = Math.round(crashMultiplier * 100) / 100;
-  const flyTimeMs = Math.min(7000, Math.max(1500, Math.log(crashMultiplier + 1) * 3500));
+  const crashMultiplier = calculateRoundCrash(roundIndex);
+  const flyTimeMs = Math.min(8500, Math.max(1600, Math.log(crashMultiplier + 1) * 3600));
   const bettingDuration = 5000;
 
   let phase;
@@ -85,10 +96,19 @@ function getLiveAviatorRound(timestamp = Date.now()) {
   } else if (msInRound < bettingDuration + flyTimeMs) {
     phase = "FLYING";
     const progress = (msInRound - bettingDuration) / flyTimeMs;
-    currentMultiplier = Math.min(crashMultiplier, Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.8)));
+    currentMultiplier = Math.min(
+      crashMultiplier,
+      Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.75))
+    );
   } else {
     phase = "CRASHED";
     currentMultiplier = crashMultiplier;
+  }
+
+  // Generate last 12 historical crash points for live ribbon
+  const history = [];
+  for (let i = 1; i <= 12; i++) {
+    history.push(calculateRoundCrash(roundIndex - i));
   }
 
   return {
@@ -96,40 +116,14 @@ function getLiveAviatorRound(timestamp = Date.now()) {
     phase,
     crashMultiplier,
     currentMultiplier: Number(currentMultiplier.toFixed(2)),
-    msInRound
+    msInRound,
+    flyTimeMs,
+    history
   };
 }
 
 // =====================================================
-// HEALTH & PAYOUT INFO
-// =====================================================
-
-async function health(req, res) {
-  return res.status(200).json({
-    success: true,
-    message: "USDT Hub API is working",
-    method: req.method,
-    path: getPath(req)
-  });
-}
-
-async function payoutInfo(req, res) {
-  try {
-    const info = await getPayoutWalletInfo();
-    return res.status(200).json({
-      success: true,
-      ...info
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: error?.message || String(error)
-    });
-  }
-}
-
-// =====================================================
-// USER
+// USER INITIALIZATION & STREAK TRACKING
 // =====================================================
 
 async function userHandler(req, res) {
@@ -140,12 +134,17 @@ async function userHandler(req, res) {
 
   if (existing.exists) {
     const userData = existing.data();
-    return res.json({
+    const vip = getVipTier(userData.balance || 0);
+
+    return res.status(200).json({
       success: true,
       newUser: false,
       user: {
         ...userData,
-        botUsername: CONFIG.BOT_USERNAME
+        vipTier: vip.name,
+        vipMultiplier: vip.multiplier,
+        botUsername: CONFIG.BOT_USERNAME,
+        isAdmin: uid === String(CONFIG.ADMIN_ID)
       }
     });
   }
@@ -155,9 +154,7 @@ async function userHandler(req, res) {
     const possible = String(startParam).slice(4);
     if (possible && possible !== uid) {
       const inviter = await db.collection("users").doc(possible).get();
-      if (inviter.exists) {
-        inviterId = possible;
-      }
+      if (inviter.exists) inviterId = possible;
     }
   }
 
@@ -181,6 +178,8 @@ async function userHandler(req, res) {
     welcomeAddress: null,
     channelsVerified: false,
     appUnlocked: false,
+    streakDay: 0,
+    lastStreakDate: null,
     aviatorGames: 0,
     aviatorWins: 0,
     withdrawals: 0,
@@ -199,8 +198,6 @@ async function userHandler(req, res) {
     batch.create(referralRef, {
       inviterId,
       referredUserId: uid,
-      channelReward: CONFIG.REFERRAL_CHANNEL,
-      adsReward: CONFIG.REFERRAL_ADS,
       channelRewarded: false,
       adsRewarded: false,
       createdAt: FieldValue.serverTimestamp()
@@ -210,43 +207,86 @@ async function userHandler(req, res) {
       referrals: FieldValue.increment(1),
       updatedAt: FieldValue.serverTimestamp()
     });
+
+    notifyNewReferral(inviterId, user.first_name || "New Explorer");
   }
 
   await batch.commit();
 
-  return res.status(201).json({
+  return res.status(200).json({
     success: true,
     newUser: true,
     user: {
       ...userData,
-      botUsername: CONFIG.BOT_USERNAME
+      vipTier: "Bronze",
+      vipMultiplier: 1.0,
+      botUsername: CONFIG.BOT_USERNAME,
+      isAdmin: uid === String(CONFIG.ADMIN_ID)
     }
   });
 }
 
 // =====================================================
-// CHANNEL MEMBERSHIP
+// 7-DAY LOGIN STREAK REWARD
+// =====================================================
+
+async function claimStreak(req, res) {
+  const { user } = getUser(req);
+  const uid = String(user.id);
+  const userRef = db.collection("users").doc(uid);
+  const dToday = today();
+  const dYesterday = yesterday();
+
+  let streakReward = 0;
+  let newStreak = 1;
+
+  await db.runTransaction(async tx => {
+    const snap = await tx.get(userRef);
+    if (!snap.exists) throw new Error("USER_NOT_FOUND");
+    const u = snap.data();
+
+    if (u.lastStreakDate === dToday) {
+      throw new Error("STREAK_ALREADY_CLAIMED_TODAY");
+    }
+
+    if (u.lastStreakDate === dYesterday) {
+      newStreak = ((u.streakDay || 0) % 7) + 1;
+    } else {
+      newStreak = 1;
+    }
+
+    streakReward = CONFIG.DAILY_STREAK_REWARDS[newStreak - 1] || 50;
+
+    tx.update(userRef, {
+      balance: FieldValue.increment(streakReward),
+      streakDay: newStreak,
+      lastStreakDate: dToday,
+      updatedAt: FieldValue.serverTimestamp()
+    });
+  });
+
+  return res.status(200).json({
+    success: true,
+    streakDay: newStreak,
+    reward: streakReward
+  });
+}
+
+// =====================================================
+// CHANNEL MEMBERSHIP VERIFICATION
 // =====================================================
 
 async function verifyMembership(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
 
-  if (!Array.isArray(CONFIG.CHANNELS) || CONFIG.CHANNELS.length === 0) {
-    throw new Error("CHANNELS_NOT_CONFIGURED");
-  }
-
   const results = await Promise.all(
     CONFIG.CHANNELS.map(channel => getChatMember(channel, uid))
   );
 
   const joined = results.every(memberOK);
-
   if (!joined) {
-    return res.json({
-      success: true,
-      joined: false
-    });
+    return res.status(200).json({ success: true, joined: false });
   }
 
   const userRef = db.collection("users").doc(uid);
@@ -262,10 +302,11 @@ async function verifyMembership(req, res) {
     { merge: true }
   );
 
-  // If referred, credit inviter for channel join
+  // Credit 500 PTS to inviter upon verified channel membership
   if (u.referredBy) {
     const refDocRef = db.collection("referrals").doc(`${u.referredBy}_${uid}`);
     const refSnap = await refDocRef.get();
+
     if (refSnap.exists && !refSnap.data().channelRewarded) {
       await db.runTransaction(async tx => {
         tx.update(refDocRef, { channelRewarded: true });
@@ -275,17 +316,15 @@ async function verifyMembership(req, res) {
           updatedAt: FieldValue.serverTimestamp()
         });
       });
+      notifyReferralBonus(u.referredBy, "Referral joined channels", CONFIG.REFERRAL_CHANNEL);
     }
   }
 
-  return res.json({
-    success: true,
-    joined: true
-  });
+  return res.status(200).json({ success: true, joined: true });
 }
 
 // =====================================================
-// WELCOME BONUS
+// WELCOME BONUS (0.01 USDT) + BROADCAST PROOF
 // =====================================================
 
 async function claimWelcome(req, res) {
@@ -293,11 +332,9 @@ async function claimWelcome(req, res) {
   const uid = String(user.id);
   const address = String(req.body?.address || "").trim();
 
-  if (!ethers.isAddress(address)) {
-    throw new Error("INVALID_ADDRESS");
-  }
-
+  if (!ethers.isAddress(address)) throw new Error("INVALID_ADDRESS");
   const normalized = ethers.getAddress(address);
+
   const userRef = db.collection("users").doc(uid);
   const addressRef = db.collection("welcomeClaims").doc(normalized.toLowerCase());
   const payoutRef = db.collection("payouts").doc();
@@ -352,14 +389,17 @@ async function claimWelcome(req, res) {
       updatedAt: FieldValue.serverTimestamp()
     });
 
-    try {
-      await sendMessage(
-        uid,
-        `🎁 <b>Welcome bonus sent!</b>\n\n💰 ${CONFIG.WELCOME_USDT} USDT\n\n🔗 ${payment.txHash}`
-      );
-    } catch {}
+    // Notify user & broadcast proof to @birr_gram
+    notifyWelcomeBonus(uid, CONFIG.WELCOME_USDT, payment.txHash);
+    broadcastPaymentProof({
+      type: "welcome",
+      userId: uid,
+      amountUSDT: CONFIG.WELCOME_USDT,
+      txHash: payment.txHash,
+      address: normalized
+    });
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       amount: CONFIG.WELCOME_USDT,
       txHash: payment.txHash
@@ -381,7 +421,7 @@ async function claimWelcome(req, res) {
 }
 
 // =====================================================
-// ADS
+// ADS (75 PTS + VIP BOOST + 500 PTS REFERRAL MILESTONE)
 // =====================================================
 
 async function ads(req, res) {
@@ -389,13 +429,13 @@ async function ads(req, res) {
   const uid = String(user.id);
   const provider = String(req.body?.provider || "").toLowerCase();
 
-  if (!["monetag", "adsgram"].includes(provider)) {
-    throw new Error("INVALID_PROVIDER");
-  }
+  if (!["monetag", "adsgram"].includes(provider)) throw new Error("INVALID_PROVIDER");
 
   const userRef = db.collection("users").doc(uid);
   const d = today();
   let result;
+  let shouldRewardInviter = false;
+  let inviterId = null;
 
   await db.runTransaction(async tx => {
     const snap = await tx.get(userRef);
@@ -418,8 +458,12 @@ async function ads(req, res) {
     if (provider === "monetag") monetagToday++;
     else adsgramToday++;
 
+    const totalAds = Number(u.adsWatched || 0) + 1;
+    const vip = getVipTier(u.balance || 0);
+    const finalReward = Math.round(CONFIG.AD_REWARD * vip.multiplier);
+
     tx.update(userRef, {
-      balance: FieldValue.increment(CONFIG.AD_REWARD),
+      balance: FieldValue.increment(finalReward),
       adsWatched: FieldValue.increment(1),
       [`${provider}Ads`]: FieldValue.increment(1),
       monetagToday,
@@ -428,17 +472,38 @@ async function ads(req, res) {
       updatedAt: FieldValue.serverTimestamp()
     });
 
+    if (u.referredBy && totalAds >= 2) {
+      shouldRewardInviter = true;
+      inviterId = u.referredBy;
+    }
+
     result = {
-      reward: CONFIG.AD_REWARD,
+      reward: finalReward,
       monetagToday,
-      adsgramToday
+      adsgramToday,
+      totalAds
     };
   });
 
-  return res.json({
-    success: true,
-    ...result
-  });
+  // Credit 500 PTS milestone to inviter after 2 ads
+  if (shouldRewardInviter && inviterId) {
+    const refDocRef = db.collection("referrals").doc(`${inviterId}_${uid}`);
+    const refSnap = await refDocRef.get();
+
+    if (refSnap.exists && !refSnap.data().adsRewarded) {
+      await db.runTransaction(async tx => {
+        tx.update(refDocRef, { adsRewarded: true });
+        tx.update(db.collection("users").doc(inviterId), {
+          balance: FieldValue.increment(CONFIG.REFERRAL_ADS),
+          referralPoints: FieldValue.increment(CONFIG.REFERRAL_ADS),
+          updatedAt: FieldValue.serverTimestamp()
+        });
+      });
+      notifyReferralBonus(inviterId, "Referral watched 2 ads", CONFIG.REFERRAL_ADS);
+    }
+  }
+
+  return res.status(200).json({ success: true, ...result });
 }
 
 // =====================================================
@@ -450,16 +515,15 @@ async function games(req, res) {
   const uid = String(user.id);
   const action = String(req.body?.action || "").toLowerCase();
   const userRef = db.collection("users").doc(uid);
-  const currentRound = getLiveAviatorRound(Date.now());
+  const currentRound = getLiveAviatorState(Date.now());
 
   if (action === "aviator_status") {
-    return res.json({
+    return res.status(200).json({
       success: true,
       ...currentRound
     });
   }
 
-  // User places bet for the current synchronized round
   if (action === "aviator_bet") {
     const bet = Number(req.body?.bet);
     if (!Number.isFinite(bet) || bet <= 0) throw new Error("INVALID_BET");
@@ -497,14 +561,13 @@ async function games(req, res) {
       });
     });
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       bet,
       roundIndex: currentRound.roundIndex
     });
   }
 
-  // User cashes out during live flight
   if (action === "aviator_cashout") {
     if (currentRound.phase !== "FLYING") {
       throw new Error("CANNOT_CASHOUT_NOW");
@@ -523,7 +586,7 @@ async function games(req, res) {
       }
 
       const multiplier = currentRound.currentMultiplier;
-      payout = Number((b.bet * multiplier).toFixed(2));
+      payout = Math.floor(b.bet * multiplier);
 
       tx.update(betDocRef, {
         cashedOut: true,
@@ -540,7 +603,7 @@ async function games(req, res) {
       });
     });
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       multiplier: currentRound.currentMultiplier,
       payout
@@ -551,7 +614,7 @@ async function games(req, res) {
 }
 
 // =====================================================
-// DEPOSIT
+// DEPOSIT SYSTEM
 // =====================================================
 
 async function deposit(req, res) {
@@ -560,7 +623,7 @@ async function deposit(req, res) {
   const action = String(req.body?.action || "").toLowerCase();
 
   if (action === "info") {
-    return res.json({
+    return res.status(200).json({
       success: true,
       depositAddress: CONFIG.DEPOSIT_ADDRESS,
       pointsPerUSDT: CONFIG.POINTS_PER_USDT
@@ -585,9 +648,9 @@ async function deposit(req, res) {
       });
     });
 
-    return res.json({
+    return res.status(200).json({
       success: true,
-      message: "Deposit submitted for verification"
+      message: "Deposit submitted for blockchain verification"
     });
   }
 
@@ -595,23 +658,15 @@ async function deposit(req, res) {
 }
 
 // =====================================================
-// PROMO
+// PROMO CODES (200 PTS)
 // =====================================================
-
-const PROMO_CODES = [
-  "USDTHUB", "MONDAYUSDT", "TUESDAYUSDT", "MONEYTIME",
-  "CRYPTOBONUS", "BIRRGRAM2026", "FASTUSDT", "DAILYCLAIM",
-  "LUCKYWIN", "REWARD777", "TELEGRAMVIP", "EARNMORE",
-  "BINANCEHUB", "FREEUSDT200", "CLAIMNOW", "MEGAREWARD",
-  "SUPERPAY", "BOOSTPOINTS", "STARTHUB", "GOLDENUSDT"
-];
 
 async function promo(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
   const code = String(req.body?.code || "").trim().toUpperCase();
 
-  if (!PROMO_CODES.includes(code)) {
+  if (!CONFIG.PROMO_CODES.includes(code)) {
     throw new Error("INVALID_CODE");
   }
 
@@ -638,14 +693,14 @@ async function promo(req, res) {
     });
   });
 
-  return res.json({
+  return res.status(200).json({
     success: true,
     reward: CONFIG.PROMO_REWARD
   });
 }
 
 // =====================================================
-// REFERRALS
+// REFERRALS & LEADERBOARD
 // =====================================================
 
 async function referral(req, res) {
@@ -655,9 +710,24 @@ async function referral(req, res) {
 
   if (action === "list") {
     const snap = await db.collection("referrals").where("inviterId", "==", uid).get();
-    return res.json({
+    return res.status(200).json({
       success: true,
       referrals: snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    });
+  }
+
+  if (action === "leaderboard") {
+    const snap = await db.collection("users").orderBy("referrals", "desc").limit(10).get();
+    return res.status(200).json({
+      success: true,
+      leaderboard: snap.docs.map(doc => {
+        const d = doc.data();
+        return {
+          firstName: d.firstName || "User",
+          referrals: d.referrals || 0,
+          referralPoints: d.referralPoints || 0
+        };
+      })
     });
   }
 
@@ -665,7 +735,7 @@ async function referral(req, res) {
 }
 
 // =====================================================
-// TASKS
+// TASKS (100,000 PTS OR FREE FOR ADMIN)
 // =====================================================
 
 async function tasks(req, res) {
@@ -675,7 +745,7 @@ async function tasks(req, res) {
 
   if (action === "list") {
     const snap = await db.collection("tasks").where("status", "==", "active").limit(100).get();
-    return res.json({
+    return res.status(200).json({
       success: true,
       tasks: snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
     });
@@ -693,7 +763,7 @@ async function tasks(req, res) {
       if (!userSnap.exists) throw new Error("USER_NOT_FOUND");
       const u = userSnap.data();
 
-      const isAdmin = uid === String(CONFIG.ADMIN_ID || "");
+      const isAdmin = uid === String(CONFIG.ADMIN_ID);
 
       if (!isAdmin && Number(u.balance || 0) < CONFIG.TASK_CREATE_COST) {
         throw new Error("INSUFFICIENT_POINTS");
@@ -721,10 +791,7 @@ async function tasks(req, res) {
       });
     });
 
-    return res.json({
-      success: true,
-      taskId: taskRef.id
-    });
+    return res.status(200).json({ success: true, taskId: taskRef.id });
   }
 
   if (action === "complete") {
@@ -785,17 +852,14 @@ async function tasks(req, res) {
       });
     });
 
-    return res.json({
-      success: true,
-      reward
-    });
+    return res.status(200).json({ success: true, reward });
   }
 
   throw new Error("UNKNOWN_ACTION");
 }
 
 // =====================================================
-// WITHDRAW
+// WITHDRAW (10,000 PTS = 0.10 USDT) + PROOF BROADCAST
 // =====================================================
 
 async function withdraw(req, res) {
@@ -804,11 +868,11 @@ async function withdraw(req, res) {
   const address = String(req.body?.address || "").trim();
 
   if (!ethers.isAddress(address)) throw new Error("INVALID_ADDRESS");
-
   const destination = ethers.getAddress(address);
+
   const minPoints = Number(CONFIG.WITHDRAW_MIN_POINTS);
   const pointsPerUSDT = Number(CONFIG.POINTS_PER_USDT);
-  const amount = minPoints / pointsPerUSDT;
+  const amount = minPoints / pointsPerUSDT; // 0.10 USDT
 
   const userRef = db.collection("users").doc(uid);
   const withdrawalRef = db.collection("withdrawals").doc();
@@ -847,7 +911,17 @@ async function withdraw(req, res) {
       paidAt: FieldValue.serverTimestamp()
     });
 
-    return res.json({
+    // Send direct notification and broadcast to @birr_gram
+    notifyWithdrawalSuccess(uid, amount.toFixed(2), payment.txHash);
+    broadcastPaymentProof({
+      type: "withdraw",
+      userId: uid,
+      amountUSDT: Number(amount.toFixed(2)),
+      txHash: payment.txHash,
+      address: destination
+    });
+
+    return res.status(200).json({
       success: true,
       amount: Number(amount.toFixed(8)),
       points: minPoints,
@@ -872,7 +946,7 @@ async function withdraw(req, res) {
 }
 
 // =====================================================
-// TELEGRAM WEBHOOK
+// TELEGRAM BOT WEBHOOK
 // =====================================================
 
 async function telegram(req, res) {
@@ -885,7 +959,7 @@ async function telegram(req, res) {
     if (webAppUrl) {
       await sendMessage(
         chatId,
-        "🔥 <b>Welcome to USDT Hub!</b>\n\nEarn rewards from ads, tasks, referrals, and play live Aviator.",
+        "🔥 <b>Welcome to USDT Hub!</b>\n\nEarn rewards from daily ads, community tasks, referrals, and live Aviator.",
         {
           reply_markup: {
             inline_keyboard: [
@@ -893,6 +967,12 @@ async function telegram(req, res) {
                 {
                   text: "🚀 OPEN USDT HUB",
                   web_app: { url: webAppUrl }
+                }
+              ],
+              [
+                {
+                  text: "📢 Payment Proofs",
+                  url: "https://t.me/birr_gram"
                 }
               ]
             ]
@@ -902,45 +982,59 @@ async function telegram(req, res) {
     }
   }
 
-  return res.json({ success: true });
+  return res.status(200).json({ success: true });
 }
 
 // =====================================================
-// MAIN ROUTER
+// MASTER HANDLER
 // =====================================================
 
 export default async function handler(req, res) {
+  res.setHeader("Content-Type", "application/json");
+
   try {
     const path = getPath(req);
 
-    if (path === "/api/index" || path === "/api") return health(req, res);
-    if (path === "/api/payout-info") {
-      if (req.method !== "GET") return res.status(405).json({ success: false, error: "Method not allowed" });
-      return payoutInfo(req, res);
+    // Support both direct path calls and endpoint queries
+    const endpoint = req.query?.endpoint || req.body?.endpoint || "";
+
+    if (path === "/api/index" || path === "/api" || path === "/") {
+      if (!endpoint && req.method === "GET") {
+        return res.status(200).json({ success: true, message: "USDT Hub API Online" });
+      }
     }
-    if (path === "/api/telegram") {
-      if (req.method !== "POST") return res.status(405).json({ success: false, error: "Method not allowed" });
+
+    if (path === "/api/payout-info" || endpoint === "payout-info") {
+      const info = await getPayoutWalletInfo();
+      return res.status(200).json({ success: true, ...info });
+    }
+
+    if (path === "/api/telegram" || endpoint === "telegram") {
       return telegram(req, res);
     }
 
-    if (req.method !== "POST") {
-      return res.status(405).json({ success: false, error: "Method not allowed" });
-    }
+    // Handlers for all actions
+    if (path === "/api/user" || endpoint === "user") return userHandler(req, res);
+    if (path === "/api/claim-streak" || endpoint === "claim-streak") return claimStreak(req, res);
+    if (path === "/api/verify-membership" || endpoint === "verify-membership") return verifyMembership(req, res);
+    if (path === "/api/claim-welcome" || endpoint === "claim-welcome") return claimWelcome(req, res);
+    if (path === "/api/ads" || endpoint === "ads") return ads(req, res);
+    if (path === "/api/games" || endpoint === "games") return games(req, res);
+    if (path === "/api/deposit" || endpoint === "deposit") return deposit(req, res);
+    if (path === "/api/promo" || endpoint === "promo") return promo(req, res);
+    if (path === "/api/referral" || endpoint === "referral") return referral(req, res);
+    if (path === "/api/tasks" || endpoint === "tasks") return tasks(req, res);
+    if (path === "/api/withdraw" || endpoint === "withdraw") return withdraw(req, res);
 
-    if (path === "/api/user") return userHandler(req, res);
-    if (path === "/api/verify-membership") return verifyMembership(req, res);
-    if (path === "/api/claim-welcome") return claimWelcome(req, res);
-    if (path === "/api/ads") return ads(req, res);
-    if (path === "/api/games") return games(req, res);
-    if (path === "/api/deposit") return deposit(req, res);
-    if (path === "/api/promo") return promo(req, res);
-    if (path === "/api/referral") return referral(req, res);
-    if (path === "/api/tasks") return tasks(req, res);
-    if (path === "/api/withdraw") return withdraw(req, res);
-
-    return res.status(404).json({ success: false, error: "API route not found", path });
+    return res.status(404).json({
+      success: false,
+      error: `API route not found: ${path}`
+    });
   } catch (error) {
     console.error("USDT HUB API ERROR:", error);
-    return res.status(500).json({ success: false, error: error?.message || String(error) });
+    return res.status(200).json({
+      success: false,
+      error: error?.message || String(error)
+    });
   }
 }
