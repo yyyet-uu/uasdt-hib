@@ -1,8 +1,9 @@
 "use strict";
 
 const crypto = require("crypto");
+const admin = require("firebase-admin");
 
-// Configuration
+// Environment Variables
 const BOT_TOKEN = process.env.BOT_TOKEN || "";
 const BOT_USERNAME = process.env.BOT_USERNAME || "Ussdt_hub_bot";
 const ADMIN_TELEGRAM_ID = String(process.env.ADMIN_TELEGRAM_ID || "514560");
@@ -19,126 +20,173 @@ const REQUIRED_CHANNELS = [
 
 const STREAK_REWARDS = [50, 75, 100, 150, 200, 300, 500];
 
-// Safe Lazy-Loaded Firebase
-let db = null;
-function getDb() {
-  if (db) return db;
+// Safe Firebase Initialization
+if (!admin.apps.length) {
   try {
-    const admin = require("firebase-admin");
-    if (!admin.apps.length) {
-      if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-        let sa = process.env.FIREBASE_SERVICE_ACCOUNT;
-        if (typeof sa === "string") sa = JSON.parse(sa);
-        admin.initializeApp({ credential: admin.credential.cert(sa) });
-      } else if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
-        admin.initializeApp({
-          credential: admin.credential.cert({
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
-          })
-        });
-      } else {
-        admin.initializeApp();
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+      let sa = process.env.FIREBASE_SERVICE_ACCOUNT;
+      if (typeof sa === "string") {
+        sa = JSON.parse(sa);
       }
+      admin.initializeApp({
+        credential: admin.credential.cert(sa)
+      });
+    } else if (
+      process.env.FIREBASE_PROJECT_ID &&
+      process.env.FIREBASE_CLIENT_EMAIL &&
+      process.env.FIREBASE_PRIVATE_KEY
+    ) {
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
+        })
+      });
+    } else {
+      admin.initializeApp();
     }
-    db = admin.firestore();
-    db.settings({ ignoreUndefinedProperties: true });
-    return db;
   } catch (err) {
-    console.error("Firebase load failed:", err.message);
-    return null;
+    console.error("Firebase init error:", err.message);
   }
 }
 
-function parseUser(req) {
-  let initData = req.headers["x-telegram-init-data"] || "";
-  let body = req.body || {};
-  if (typeof body === "string") {
-    try { body = JSON.parse(body); } catch {}
-  }
-  if (!initData && body.initData) initData = body.initData;
+let db = null;
+try {
+  db = admin.firestore();
+  db.settings({ ignoreUndefinedProperties: true });
+} catch (e) {
+  console.error("Firestore setup error:", e.message);
+}
 
+// User extractor
+function parseTelegramUser(initData, bodyUser) {
   if (initData) {
     try {
       const params = new URLSearchParams(initData);
-      const u = params.get("user");
-      if (u) return JSON.parse(u);
+      const userRaw = params.get("user");
+      if (userRaw) return JSON.parse(userRaw);
     } catch {}
   }
-  if (body.user && body.user.id) return body.user;
-  return { id: "514560", first_name: "Admin" };
+  if (bodyUser && bodyUser.id) return bodyUser;
+  return null;
 }
 
-async function sendBsc(to, amt) {
-  if (!PAYOUT_PRIVATE_KEY) return "0x" + crypto.randomBytes(32).toString("hex");
+// Optional On-chain Transfer helper
+async function sendBscUsdt(recipientAddress, amountUsdt) {
+  if (!PAYOUT_PRIVATE_KEY) {
+    return "0x" + crypto.randomBytes(32).toString("hex");
+  }
   try {
     const { ethers } = require("ethers");
     const provider = new ethers.JsonRpcProvider(BSC_RPC_URL);
     const wallet = new ethers.Wallet(PAYOUT_PRIVATE_KEY, provider);
-    const abi = ["function transfer(address to, uint256 amount) returns (bool)", "function decimals() view returns (uint8)"];
-    const contract = new ethers.Contract(USDT_BEP20_CONTRACT, abi, wallet);
-    const decimals = await contract.decimals();
-    const tx = await contract.transfer(to, ethers.parseUnits(amt.toString(), decimals));
-    const rec = await tx.wait(1);
-    return rec.hash;
+    const abi = [
+      "function transfer(address to, uint256 amount) returns (bool)",
+      "function decimals() view returns (uint8)"
+    ];
+    const usdtContract = new ethers.Contract(USDT_BEP20_CONTRACT, abi, wallet);
+    const decimals = await usdtContract.decimals();
+    const amountParsed = ethers.parseUnits(amountUsdt.toString(), decimals);
+    const tx = await usdtContract.transfer(recipientAddress, amountParsed);
+    const receipt = await tx.wait(1);
+    return receipt.hash;
   } catch {
     return "0x" + crypto.randomBytes(32).toString("hex");
   }
 }
 
+// ============================================================
+// MAIN VERCEL HANDLER
+// ============================================================
 module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS,POST");
+  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS,PATCH,DELETE,POST,PUT");
   res.setHeader("Access-Control-Allow-Headers", "*");
-  res.setHeader("Content-Type", "application/json");
 
-  if (req.method === "OPTIONS") return res.status(200).send("{}");
-
-  let body = req.body || {};
-  if (typeof body === "string") {
-    try { body = JSON.parse(body); } catch { body = {}; }
+  if (req.method === "OPTIONS") {
+    return res.status(200).json({ ok: true });
   }
 
-  const endpoint = req.query.endpoint || body.endpoint || (req.url || "").split("?")[0].replace(/^\/api\/?/, "") || "user";
-  const user = parseUser(req);
-  const userId = String(user.id);
-  const firestore = getDb();
+  let body = {};
+  if (typeof req.body === "string") {
+    try { body = JSON.parse(req.body); } catch { body = {}; }
+  } else if (req.body) {
+    body = req.body;
+  }
+
+  const initData = req.headers["x-telegram-init-data"] || body.initData || "";
+  const tgUser = parseTelegramUser(initData, body.user);
+
+  const urlPath = req.url || "";
+  const endpoint =
+    req.query.endpoint ||
+    body.endpoint ||
+    urlPath.split("?")[0].replace(/^\/api\/?/, "");
+
+  if (!tgUser) {
+    return res.status(200).json({ success: true, name: "USDT Hub", status: "Online" });
+  }
+
+  const userId = String(tgUser.id);
+  const userRef = db ? db.collection("users").doc(userId) : null;
 
   try {
-    // 1. USER
+    // 1. GET / CREATE USER
     if (endpoint === "user") {
-      let docData = {
-        telegramId: userId,
-        firstName: user.first_name || "User",
-        balance: 0,
-        adsWatched: 0,
-        monetagToday: 0,
-        hilltopToday: 0,
-        tasksCompleted: 0,
-        referrals: 0,
-        referralPoints: 0,
-        channelsVerified: true,
-        welcomeBonusClaimed: true,
-        vipTier: "Bronze",
-        streakDay: 0,
-        botUsername: BOT_USERNAME
-      };
+      const startParam = body.startParam || "";
+      let userData = null;
 
-      if (firestore) {
-        const ref = firestore.collection("users").doc(userId);
-        const snap = await ref.get();
-        if (snap.exists) {
-          docData = { ...docData, ...snap.data() };
-        } else {
-          await ref.set(docData);
+      if (userRef) {
+        const userDoc = await userRef.get();
+        if (userDoc.exists) {
+          userData = userDoc.data();
         }
       }
-      return res.status(200).json({ success: true, user: docData });
+
+      if (!userData) {
+        let referrerId = null;
+        if (startParam && startParam.startsWith("ref_")) {
+          const r = startParam.replace("ref_", "").trim();
+          if (r && r !== userId) referrerId = r;
+        }
+
+        userData = {
+          telegramId: userId,
+          firstName: tgUser.first_name || "User",
+          lastName: tgUser.last_name || "",
+          username: tgUser.username || "",
+          balance: 0,
+          adsWatched: 0,
+          monetagToday: 0,
+          hilltopToday: 0,
+          lastAdDate: "",
+          tasksCompleted: 0,
+          referrals: 0,
+          referralPoints: 0,
+          referrerId,
+          channelsVerified: false,
+          welcomeBonusClaimed: false,
+          vipTier: "Bronze",
+          streakDay: 0,
+          lastStreakDate: "",
+          aviatorWins: 0,
+          botUsername: BOT_USERNAME,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        if (userRef) {
+          await userRef.set(userData);
+        }
+      }
+
+      userData.botUsername = BOT_USERNAME;
+      return res.status(200).json({ success: true, user: userData });
     }
 
-    // 2. ADS (MONETAG + HILLTOP)
+    // 2. ADS TRACKING (MONETAG + HILLTOPADS)
     if (endpoint === "ads") {
       const provider = body.provider || "monetag";
       const todayStr = new Date().toISOString().slice(0, 10);
@@ -147,64 +195,82 @@ module.exports = async function handler(req, res) {
       let adsWatched = 1;
       let balance = 75;
 
-      if (firestore) {
-        const ref = firestore.collection("users").doc(userId);
-        const snap = await ref.get();
-        const d = snap.data() || {};
+      if (userRef) {
+        const userDoc = await userRef.get();
+        const d = userDoc.data() || {};
 
-        monetagToday = d.lastAdDate === todayStr ? (d.monetagToday || 0) : 0;
-        hilltopToday = d.lastAdDate === todayStr ? (d.hilltopToday || 0) : 0;
+        monetagToday = d.lastAdDate === todayStr ? Number(d.monetagToday || 0) : 0;
+        hilltopToday = d.lastAdDate === todayStr ? Number(d.hilltopToday || 0) : 0;
 
         if (provider === "monetag") {
-          if (monetagToday >= 25) return res.status(200).json({ success: false, error: "Monetag daily limit (25) reached." });
+          if (monetagToday >= 25) {
+            return res.status(200).json({ success: false, error: "Daily Monetag limit (25) reached." });
+          }
           monetagToday += 1;
         } else if (provider === "hilltop") {
-          if (hilltopToday >= 15) return res.status(200).json({ success: false, error: "Hilltop daily limit (15) reached." });
+          if (hilltopToday >= 15) {
+            return res.status(200).json({ success: false, error: "Daily HilltopAds limit (15) reached." });
+          }
           hilltopToday += 1;
         }
 
-        adsWatched = (d.adsWatched || 0) + 1;
-        balance = (d.balance || 0) + 75;
+        adsWatched = Number(d.adsWatched || 0) + 1;
+        balance = Number(d.balance || 0) + 75;
 
-        await ref.set({
+        await userRef.update({
           balance,
           adsWatched,
           monetagToday,
           hilltopToday,
           lastAdDate: todayStr,
           updatedAt: new Date().toISOString()
-        }, { merge: true });
+        });
       }
 
-      return res.status(200).json({ success: true, reward: 75, totalAds: adsWatched, monetagToday, hilltopToday, balance });
+      return res.status(200).json({
+        success: true,
+        reward: 75,
+        totalAds: adsWatched,
+        monetagToday,
+        hilltopToday,
+        balance
+      });
     }
 
-    // 3. STREAK
+    // 3. DAILY STREAK
     if (endpoint === "claim-streak") {
       const todayStr = new Date().toISOString().slice(0, 10);
       let streakDay = 1;
-      let reward = 50;
-      let balance = 50;
+      let reward = STREAK_REWARDS[0];
+      let balance = reward;
 
-      if (firestore) {
-        const ref = firestore.collection("users").doc(userId);
-        const snap = await ref.get();
-        const d = snap.data() || {};
-        if (d.lastStreakDate === todayStr) return res.status(200).json({ success: false, error: "Streak already claimed today!" });
+      if (userRef) {
+        const userDoc = await userRef.get();
+        const d = userDoc.data() || {};
+
+        if (d.lastStreakDate === todayStr) {
+          return res.status(200).json({ success: false, error: "STREAK_ALREADY_CLAIMED_TODAY" });
+        }
 
         streakDay = (d.streakDay || 0) >= 7 ? 1 : (d.streakDay || 0) + 1;
         reward = STREAK_REWARDS[streakDay - 1] || 50;
-        balance = (d.balance || 0) + reward;
+        balance = Number(d.balance || 0) + reward;
 
-        await ref.set({ balance, streakDay, lastStreakDate: todayStr }, { merge: true });
+        await userRef.update({
+          balance,
+          streakDay,
+          lastStreakDate: todayStr,
+          updatedAt: new Date().toISOString()
+        });
       }
+
       return res.status(200).json({ success: true, streakDay, reward, balance });
     }
 
-    // 4. VERIFY CHANNELS
+    // 4. VERIFY MEMBERSHIP
     if (endpoint === "verify-membership") {
-      if (firestore) {
-        await firestore.collection("users").doc(userId).set({ channelsVerified: true }, { merge: true });
+      if (userRef) {
+        await userRef.update({ channelsVerified: true });
       }
       return res.status(200).json({ success: true, joined: true });
     }
@@ -212,33 +278,37 @@ module.exports = async function handler(req, res) {
     // 5. WELCOME BONUS
     if (endpoint === "claim-welcome") {
       const address = String(body.address || "").trim();
-      const txHash = await sendBsc(address, "0.01");
-      if (firestore) {
-        await firestore.collection("users").doc(userId).set({ welcomeBonusClaimed: true, bep20Address: address }, { merge: true });
+      const txHash = await sendBscUsdt(address, "0.01");
+      if (userRef) {
+        await userRef.update({ welcomeBonusClaimed: true, bep20Address: address });
       }
       return res.status(200).json({ success: true, txHash });
     }
 
-    // 6. GAMES / AVIATOR
+    // 6. SYNCHRONIZED AVIATOR
     if (endpoint === "games") {
       if (body.action === "aviator_bet") {
         const bet = Math.floor(Number(body.bet || 0));
-        if (firestore) {
-          const ref = firestore.collection("users").doc(userId);
-          const snap = await ref.get();
-          const d = snap.data() || {};
-          if ((d.balance || 0) < bet) return res.status(200).json({ success: false, error: "Insufficient balance." });
-          await ref.set({ balance: (d.balance || 0) - bet }, { merge: true });
+        if (userRef) {
+          const userDoc = await userRef.get();
+          const d = userDoc.data() || {};
+          if (Number(d.balance || 0) < bet) {
+            return res.status(200).json({ success: false, error: "Insufficient balance." });
+          }
+          await userRef.update({ balance: Number(d.balance || 0) - bet });
         }
         return res.status(200).json({ success: true, bet });
       }
+
       if (body.action === "aviator_cashout") {
         const payout = 150;
-        if (firestore) {
-          const ref = firestore.collection("users").doc(userId);
-          const snap = await ref.get();
-          const d = snap.data() || {};
-          await ref.set({ balance: (d.balance || 0) + payout, aviatorWins: (d.aviatorWins || 0) + 1 }, { merge: true });
+        if (userRef) {
+          const userDoc = await userRef.get();
+          const d = userDoc.data() || {};
+          await userRef.update({
+            balance: Number(d.balance || 0) + payout,
+            aviatorWins: Number(d.aviatorWins || 0) + 1
+          });
         }
         return res.status(200).json({ success: true, multiplier: 1.5, payout });
       }
@@ -256,17 +326,19 @@ module.exports = async function handler(req, res) {
         });
       }
       if (body.action === "complete") {
-        if (firestore) {
-          const ref = firestore.collection("users").doc(userId);
-          const snap = await ref.get();
-          const d = snap.data() || {};
-          await ref.set({ balance: (d.balance || 0) + 150, tasksCompleted: (d.tasksCompleted || 0) + 1 }, { merge: true });
+        if (userRef) {
+          const userDoc = await userRef.get();
+          const d = userDoc.data() || {};
+          await userRef.update({
+            balance: Number(d.balance || 0) + 150,
+            tasksCompleted: Number(d.tasksCompleted || 0) + 1
+          });
         }
         return res.status(200).json({ success: true, reward: 150 });
       }
     }
 
-    // 8. REFERRALS & LEADERBOARD
+    // 8. REFERRALS
     if (endpoint === "referral") {
       return res.status(200).json({
         success: true,
@@ -281,13 +353,14 @@ module.exports = async function handler(req, res) {
     // 9. WITHDRAW
     if (endpoint === "withdraw") {
       const address = String(body.address || "").trim();
-      if (firestore) {
-        const ref = firestore.collection("users").doc(userId);
-        const snap = await ref.get();
-        const d = snap.data() || {};
-        if ((d.balance || 0) < 10000) return res.status(200).json({ success: false, error: "Minimum withdrawal is 10,000 PTS ($0.10)." });
-        const txHash = await sendBsc(address, "0.10");
-        await ref.set({ balance: (d.balance || 0) - 10000 }, { merge: true });
+      if (userRef) {
+        const userDoc = await userRef.get();
+        const d = userDoc.data() || {};
+        if (Number(d.balance || 0) < 10000) {
+          return res.status(200).json({ success: false, error: "Minimum withdrawal is 10,000 PTS ($0.10)." });
+        }
+        const txHash = await sendBscUsdt(address, "0.10");
+        await userRef.update({ balance: Number(d.balance || 0) - 10000 });
         return res.status(200).json({ success: true, amount: "0.10", points: 10000, txHash });
       }
       return res.status(200).json({ success: true, amount: "0.10", points: 10000 });
@@ -295,6 +368,7 @@ module.exports = async function handler(req, res) {
 
     return res.status(200).json({ success: true });
   } catch (err) {
+    console.error("Handler error:", err);
     return res.status(200).json({ success: false, error: err.message || "Internal error" });
   }
 };
