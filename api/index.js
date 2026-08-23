@@ -170,8 +170,10 @@ async function userHandler(req, res) {
     adsWatched: 0,
     monetagAds: 0,
     adsgramAds: 0,
+    hilltopAds: 0,
     monetagToday: 0,
     adsgramToday: 0,
+    hilltopToday: 0,
     adDate: null,
     tasksCompleted: 0,
     referrals: 0,
@@ -422,7 +424,7 @@ async function claimWelcome(req, res) {
 }
 
 // =====================================================
-// ADS (MONETAG & ADSGRAM)
+// ADS (MONETAG, ADSGRAM & HILLTOPADS)
 // =====================================================
 
 async function ads(req, res) {
@@ -430,13 +432,17 @@ async function ads(req, res) {
   const uid = String(user.id);
   const provider = String(req.body?.provider || "").toLowerCase();
 
-  if (!["monetag", "adsgram"].includes(provider)) throw new Error("INVALID_PROVIDER");
+  if (!["monetag", "adsgram", "hilltop"].includes(provider)) throw new Error("INVALID_PROVIDER");
 
   const userRef = db.collection("users").doc(uid);
   const d = today();
   let result;
   let shouldRewardInviter = false;
   let inviterId = null;
+
+  const HILLTOP_LIMIT = 15;
+  const monetagLimit = CONFIG.MONETAG_LIMIT || 25;
+  const adsgramLimit = CONFIG.ADSGRAM_LIMIT || 25;
 
   await db.runTransaction(async tx => {
     const snap = await tx.get(userRef);
@@ -447,17 +453,23 @@ async function ads(req, res) {
 
     let monetagToday = u.adDate === d ? Number(u.monetagToday || 0) : 0;
     let adsgramToday = u.adDate === d ? Number(u.adsgramToday || 0) : 0;
+    let hilltopToday = u.adDate === d ? Number(u.hilltopToday || 0) : 0;
 
-    if (provider === "monetag" && monetagToday >= CONFIG.MONETAG_LIMIT) {
+    if (provider === "monetag" && monetagToday >= monetagLimit) {
       throw new Error("MONETAG_LIMIT");
     }
 
-    if (provider === "adsgram" && adsgramToday >= CONFIG.ADSGRAM_LIMIT) {
+    if (provider === "adsgram" && adsgramToday >= adsgramLimit) {
       throw new Error("ADSGRAM_LIMIT");
     }
 
+    if (provider === "hilltop" && hilltopToday >= HILLTOP_LIMIT) {
+      throw new Error("HILLTOP_LIMIT");
+    }
+
     if (provider === "monetag") monetagToday++;
-    else adsgramToday++;
+    else if (provider === "adsgram") adsgramToday++;
+    else if (provider === "hilltop") hilltopToday++;
 
     const totalAds = Number(u.adsWatched || 0) + 1;
     const vip = getVipTier(u.balance || 0);
@@ -469,6 +481,7 @@ async function ads(req, res) {
       [`${provider}Ads`]: FieldValue.increment(1),
       monetagToday,
       adsgramToday,
+      hilltopToday,
       adDate: d,
       updatedAt: FieldValue.serverTimestamp()
     });
@@ -482,6 +495,7 @@ async function ads(req, res) {
       reward: finalReward,
       monetagToday,
       adsgramToday,
+      hilltopToday,
       totalAds
     };
   });
@@ -967,7 +981,7 @@ async function telegram(req, res) {
       ``,
       `━━━━━━━━━━━━━━━━━━━━`,
       `🎁 <b>0.01 USDT Welcome Gift:</b> Instant BEP20 blockchain payout`,
-      `📺 <b>Daily Ad Mining:</b> Earn up to 3,000+ PTS daily with Monetag & Adsgram`,
+      `📺 <b>Daily Ad Mining:</b> Earn up to 3,000+ PTS daily with Monetag & HilltopAds`,
       `✈️ <b>Live Aviator Arena:</b> Provably fair multiplayer flight multiplier`,
       `👥 <b>1,000 PTS / Referral:</b> 500 PTS on join + 500 PTS on 2 ads`,
       `💸 <b>Direct BEP20 Payouts:</b> 10,000 PTS = 0.10 USDT (Auto-sent to wallet)`,
