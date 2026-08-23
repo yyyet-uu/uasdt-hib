@@ -21,7 +21,7 @@
     :root{
       --bg:#050b15;--card:rgba(14,27,48,.88);--card2:rgba(18,34,58,.94);
       --line:rgba(255,255,255,.08);--text:#f5f8ff;--muted:#8fa1bd;
-      --blue:#3b82f6;--green:#22c55e;--red:#ef4444;--yellow:#facc15;--purple:#8b5cf6;
+      --blue:#3b82f6;--green:#22c55e;--red:#ef4444;--yellow:#facc15;--purple:#8b5cf6;--orange:#f97316;
       --shadow:0 20px 60px rgba(0,0,0,.45);
     }
     html,body{
@@ -309,7 +309,7 @@
     <section id="page-tasks" class="page">
       <div class="section-title">📺 Mining Ads (75 PTS / ad)</div>
 
-      <!-- Monetag Ad Box -->
+      <!-- Monetag Ad Box (25 Daily) -->
       <div class="ad-card">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
@@ -319,7 +319,20 @@
           <button id="monetagBtn" style="padding:10px 16px;border-radius:12px;background:#2563eb;font-weight:900" onclick="watchAd('monetag')">WATCH</button>
         </div>
         <div class="progress-bar-bg"><div id="monetagFill" class="progress-fill" style="width:0%"></div></div>
-        <div style="font-size:11px;color:var(--muted)">Milestones: 2 ads = 150 PTS • 3 ads = 225 PTS</div>
+        <div style="font-size:11px;color:var(--muted)">Earn 75 PTS per ad • 25 ads daily</div>
+      </div>
+
+      <!-- HilltopAds Direct Mining Box (15 Daily) -->
+      <div class="ad-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:900">⚡ HilltopAds Direct Mining</div>
+            <div id="hilltopCount" style="color:var(--muted);font-size:11px">0 / 15 today</div>
+          </div>
+          <button id="hilltopBtn" style="padding:10px 16px;border-radius:12px;background:#f97316;font-weight:900" onclick="watchAd('hilltop')">WATCH</button>
+        </div>
+        <div class="progress-bar-bg"><div id="hilltopFill" class="progress-fill" style="width:0%;background:linear-gradient(90deg,#ea580c,#f97316)"></div></div>
+        <div style="font-size:11px;color:var(--muted)">Earn 75 PTS per link visit • 15 ads daily</div>
       </div>
 
       <div class="section-title">
@@ -447,6 +460,8 @@
 
 <script>
 "use strict";
+
+const HILLTOP_DIRECT_URL = "https://sorrowfulpsychology.com/bS3hVo0.Pz3-p-v/bxmRVTJJZYDd0/3/MyzSQS2XOMTuIk5eLLT-cbz/N/DcYN5/MjzZMm";
 
 const tg = window.Telegram?.WebApp;
 if (tg) {
@@ -613,9 +628,15 @@ function updateUserUI() {
   const botName = currentUser.botUsername || "Ussdt_hub_bot";
   $("refLink").textContent = `https://t.me/${botName}?startapp=ref_${currentUser.telegramId}`;
 
+  // Monetag Progress
   const ml = Number(currentUser.monetagToday || 0);
   $("monetagCount").textContent = `${ml} / 25 today`;
   $("monetagFill").style.width = Math.min(100, (ml / 25) * 100) + "%";
+
+  // HilltopAds Progress
+  const hl = Number(currentUser.hilltopToday || 0);
+  $("hilltopCount").textContent = `${hl} / 15 today`;
+  $("hilltopFill").style.width = Math.min(100, (hl / 15) * 100) + "%";
 
   const streak = Number(currentUser.streakDay || 0);
   const nodes = $("streakTrack").children;
@@ -691,20 +712,33 @@ async function claimWelcome() {
   }
 }
 
-async function watchAd(provider = "monetag") {
+// Watch Ads (Monetag & HilltopAds)
+async function watchAd(provider) {
   triggerHaptic("medium");
-  const btn = $("monetagBtn");
+  const btn = $(provider === "hilltop" ? "hilltopBtn" : "monetagBtn");
   btn.disabled = true;
 
   try {
-    if (typeof window.show_11601754 === "function") {
-      await window.show_11601754();
+    if (provider === "monetag") {
+      if (typeof window.show_11601754 === "function") {
+        await window.show_11601754();
+      }
+    } else if (provider === "hilltop") {
+      try {
+        if (tg?.openLink) tg.openLink(HILLTOP_DIRECT_URL);
+        else window.open(HILLTOP_DIRECT_URL, "_blank");
+      } catch {
+        window.open(HILLTOP_DIRECT_URL, "_blank");
+      }
+      showToast("⏳ Verifying ad visit... please wait 6s", "info");
+      await new Promise(r => setTimeout(r, 6000));
     }
 
-    const res = await apiRequest("ads", { provider: "monetag" });
+    const res = await apiRequest("ads", { provider });
     currentUser.balance = Number(currentUser.balance || 0) + Number(res.reward || 0);
     currentUser.adsWatched = res.totalAds;
-    currentUser.monetagToday = res.monetagToday;
+    if (res.monetagToday !== undefined) currentUser.monetagToday = res.monetagToday;
+    if (res.hilltopToday !== undefined) currentUser.hilltopToday = res.hilltopToday;
 
     updateUserUI();
     triggerHaptic("success");
