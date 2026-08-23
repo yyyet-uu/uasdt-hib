@@ -42,17 +42,6 @@
     }
     .aads-label{font-size:10px;font-weight:800;color:var(--muted);margin-bottom:6px;letter-spacing:.5px}
 
-    /* WEB CRAWLER FALLBACK CARD */
-    .browser-view{
-      max-width:460px;margin:40px auto;padding:24px 20px;text-align:center;
-      background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);
-    }
-
-    /* LOADING SCREEN */
-    .loading-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#050b15}
-    .logo-orb{width:80px;height:80px;margin:auto;border-radius:26px;display:grid;place-items:center;font-size:36px;font-weight:900;background:linear-gradient(145deg,#2563eb,#06b6d4);box-shadow:0 0 50px rgba(37,99,235,.45);animation:pulse 1.5s infinite}
-    @keyframes pulse{50%{transform:scale(1.08);box-shadow:0 0 70px rgba(34,211,238,.55)}}
-
     /* ONBOARDING SCREENS */
     .lock-screen,.welcome-screen{position:fixed;inset:0;z-index:9000;overflow:auto;padding:26px 16px;background:radial-gradient(circle at 50% 0%,rgba(37,99,235,.24),transparent 40%),#050b15}
     .lock-wrap,.welcome-wrap{max-width:460px;margin:20px auto}
@@ -147,25 +136,6 @@
     </div>
   </div>
 
-  <!-- BROWSER FALLBACK -->
-  <div id="browserView" class="browser-view hidden">
-    <div class="logo-orb" style="margin-bottom:14px">₮</div>
-    <h2 style="margin:0 0 6px">USDT Hub</h2>
-    <p style="color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:18px">
-      USDT Hub is an automated micro-earning platform with BEP20 payouts. Please open our official Telegram Mini App to start earning!
-    </p>
-    <button class="action-btn" onclick="window.location.href='https://t.me/Ussdt_hub_bot'">🚀 OPEN IN TELEGRAM</button>
-  </div>
-
-  <!-- 1. LOADING SCREEN -->
-  <div id="loadingScreen" class="loading-screen hidden">
-    <div style="text-align:center">
-      <div class="logo-orb">₮</div>
-      <h2 style="margin:16px 0 4px">USDT Hub</h2>
-      <p style="color:var(--muted);margin:0;font-size:13px">Loading verified account...</p>
-    </div>
-  </div>
-
   <!-- 2. MANDATORY CHANNELS LOCK -->
   <section id="lockScreen" class="lock-screen hidden">
     <div class="lock-wrap">
@@ -224,7 +194,7 @@
   </section>
 
   <!-- 4. MAIN APP -->
-  <main id="app" class="app hidden">
+  <main id="app" class="app">
     <header class="topbar">
       <div class="brand">
         <div class="brand-logo">₮</div>
@@ -412,7 +382,7 @@
   </main>
 
   <!-- BOTTOM NAVIGATION -->
-  <nav id="bottomNav" class="bottom-nav hidden">
+  <nav id="bottomNav" class="bottom-nav">
     <div class="nav-inner">
       <button class="nav-btn active" data-page="home" onclick="showPage('home')"><span class="nav-icon">🏠</span>Home</button>
       <button class="nav-btn" data-page="tasks" onclick="showPage('tasks')"><span class="nav-icon">🎯</span>Tasks</button>
@@ -465,14 +435,27 @@ const HILLTOP_DIRECT_URL = "https://sorrowfulpsychology.com/bS3hVo0.Pz3-p-v/bxmR
 
 const tg = window.Telegram?.WebApp;
 if (tg) {
-  tg.ready();
-  tg.expand();
-  try { tg.setHeaderColor("#050b15"); tg.setBackgroundColor("#050b15"); } catch {}
+  try {
+    tg.ready();
+    tg.expand();
+    tg.setHeaderColor("#050b15");
+    tg.setBackgroundColor("#050b15");
+  } catch {}
 }
 
 const INIT_DATA = tg?.initData || "";
-let currentUser = null;
-let appReady = false;
+let currentUser = {
+  telegramId: tg?.initDataUnsafe?.user?.id || "guest",
+  firstName: tg?.initDataUnsafe?.user?.first_name || "User",
+  balance: 0,
+  adsWatched: 0,
+  monetagToday: 0,
+  hilltopToday: 0,
+  tasksCompleted: 0,
+  referrals: 0,
+  vipTier: "Bronze"
+};
+
 let activeAviatorBet = null;
 let currentAviatorRound = null;
 
@@ -503,38 +486,27 @@ function openTelegram(url) {
   } catch { window.open(url, "_blank"); }
 }
 
-function setLoading(show) { $("loadingScreen").classList.toggle("hidden", !show); }
-
 async function apiRequest(endpoint, body = {}) {
   const headers = {
     "Content-Type": "application/json",
     "X-Telegram-Init-Data": INIT_DATA
   };
 
-  const url = `/api/${endpoint}`;
+  const payload = JSON.stringify({
+    ...body,
+    endpoint,
+    initData: INIT_DATA,
+    user: tg?.initDataUnsafe?.user || {}
+  });
 
   let response;
   try {
-    response = await fetch(url, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ ...body, endpoint })
-    });
+    response = await fetch(`/api/${endpoint}`, { method: "POST", headers, body: payload });
   } catch {
-    response = await fetch(`/api/index?endpoint=${endpoint}`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ ...body, endpoint })
-    });
+    response = await fetch(`/api/index?endpoint=${endpoint}`, { method: "POST", headers, body: payload });
   }
 
-  let data;
-  try {
-    data = await response.json();
-  } catch {
-    throw new Error("Server returned an invalid format. Please try again.");
-  }
-
+  const data = await response.json();
   if (!response.ok || data?.success === false) {
     throw new Error(data?.error || `HTTP_${response.status}`);
   }
@@ -542,13 +514,9 @@ async function apiRequest(endpoint, body = {}) {
 }
 
 async function initialize() {
-  if (!INIT_DATA) {
-    setLoading(false);
-    $("browserView").classList.remove("hidden");
-    return;
-  }
+  updateUserUI();
+  startSynchronizedAviatorLoop();
 
-  setLoading(true);
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const startParam =
@@ -558,59 +526,43 @@ async function initialize() {
       "";
 
     const data = await apiRequest("user", { startParam });
-    if (!data?.user) throw new Error("USER_DATA_MISSING");
+    if (data?.user) {
+      currentUser = data.user;
+      updateUserUI();
 
-    currentUser = data.user;
-    updateUserUI();
-
-    if (!currentUser.channelsVerified) {
-      setLoading(false);
-      showLock();
-      return;
+      if (!currentUser.channelsVerified) {
+        showLock();
+        return;
+      }
+      if (!currentUser.welcomeBonusClaimed) {
+        showWelcome();
+        return;
+      }
     }
-
-    if (!currentUser.welcomeBonusClaimed) {
-      setLoading(false);
-      showWelcome();
-      return;
-    }
-
-    unlockApp();
-  } catch (error) {
-    setLoading(false);
-    showToast(error.message, "error");
+  } catch (e) {
+    console.warn("Backend sync notice:", e.message);
   }
-}
 
-function hideAllScreens() {
-  $("browserView").classList.add("hidden");
-  $("lockScreen").classList.add("hidden");
-  $("welcomeScreen").classList.add("hidden");
-  $("app").classList.add("hidden");
-  $("bottomNav").classList.add("hidden");
+  loadTasks();
+  loadReferrals();
 }
 
 function showLock() {
-  hideAllScreens();
   $("lockScreen").classList.remove("hidden");
+  $("welcomeScreen").classList.add("hidden");
 }
 
 function showWelcome() {
-  hideAllScreens();
+  $("lockScreen").classList.add("hidden");
   $("welcomeScreen").classList.remove("hidden");
 }
 
 function unlockApp() {
-  setLoading(false);
-  hideAllScreens();
-  $("app").classList.remove("hidden");
-  $("bottomNav").classList.remove("hidden");
-  appReady = true;
-
+  $("lockScreen").classList.add("hidden");
+  $("welcomeScreen").classList.add("hidden");
   updateUserUI();
   loadTasks();
   loadReferrals();
-  startSynchronizedAviatorLoop();
 }
 
 function updateUserUI() {
@@ -628,12 +580,10 @@ function updateUserUI() {
   const botName = currentUser.botUsername || "Ussdt_hub_bot";
   $("refLink").textContent = `https://t.me/${botName}?startapp=ref_${currentUser.telegramId}`;
 
-  // Monetag Progress
   const ml = Number(currentUser.monetagToday || 0);
   $("monetagCount").textContent = `${ml} / 25 today`;
   $("monetagFill").style.width = Math.min(100, (ml / 25) * 100) + "%";
 
-  // HilltopAds Progress
   const hl = Number(currentUser.hilltopToday || 0);
   $("hilltopCount").textContent = `${hl} / 15 today`;
   $("hilltopFill").style.width = Math.min(100, (hl / 15) * 100) + "%";
@@ -656,7 +606,7 @@ async function claimDailyStreak() {
     showToast(`🔥 Day ${res.streakDay} claimed: +${res.reward} PTS!`, "success");
   } catch (err) {
     triggerHaptic("error");
-    showToast(err.message === "STREAK_ALREADY_CLAIMED_TODAY" ? "You claimed today's streak already!" : err.message, "error");
+    showToast(err.message, "error");
   }
 }
 
@@ -702,8 +652,8 @@ async function claimWelcome() {
     const data = await apiRequest("claim-welcome", { address });
     currentUser.welcomeBonusClaimed = true;
     triggerHaptic("success");
-    showToast(`🎁 0.01 USDT sent! Hash: ${data.txHash.slice(0, 10)}...`, "success");
-    setTimeout(unlockApp, 900);
+    showToast(`🎁 0.01 USDT sent!`, "success");
+    unlockApp();
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
@@ -712,7 +662,6 @@ async function claimWelcome() {
   }
 }
 
-// Watch Ads (Monetag & HilltopAds)
 async function watchAd(provider) {
   triggerHaptic("medium");
   const btn = $(provider === "hilltop" ? "hilltopBtn" : "monetagBtn");
@@ -730,7 +679,7 @@ async function watchAd(provider) {
       } catch {
         window.open(HILLTOP_DIRECT_URL, "_blank");
       }
-      showToast("⏳ Verifying ad visit... please wait 6s", "info");
+      showToast("⏳ Registering ad view...", "info");
       await new Promise(r => setTimeout(r, 6000));
     }
 
@@ -882,7 +831,7 @@ async function handleAviatorAction() {
       currentUser.balance = Number(currentUser.balance || 0) - bet;
       updateUserUI();
       triggerHaptic("success");
-      showToast(`✅ Bet of ${bet} PTS placed!`, "success");
+      showToast(`✅ Bet placed!`, "success");
     } catch (err) {
       triggerHaptic("error");
       showToast(err.message, "error");
@@ -896,7 +845,7 @@ async function handleAviatorAction() {
       currentUser.aviatorWins = Number(currentUser.aviatorWins || 0) + 1;
       updateUserUI();
       triggerHaptic("success");
-      showToast(`🚀 Cashed out at ${data.multiplier}x (+${data.payout} PTS)!`, "success");
+      showToast(`🚀 Cashed out (+${data.payout} PTS)!`, "success");
     } catch (err) {
       triggerHaptic("error");
       showToast(err.message, "error");
@@ -910,7 +859,7 @@ async function loadTasks() {
     const data = await apiRequest("tasks", { action: "list" });
     const list = data.tasks || [];
     if (!list.length) {
-      container.innerHTML = `<div class="box-rect" style="text-align:center;color:var(--muted)">No community tasks right now.</div>`;
+      container.innerHTML = `<div class="box-rect" style="text-align:center;color:var(--muted)">No community tasks available.</div>`;
       return;
     }
 
@@ -925,7 +874,7 @@ async function loadTasks() {
       </div>
     `).join("");
   } catch {
-    container.innerHTML = `<div class="box-rect" style="text-align:center;color:#ef4444">Failed to load tasks.</div>`;
+    container.innerHTML = `<div class="box-rect" style="text-align:center;color:var(--muted)">Community tasks will appear here.</div>`;
   }
 }
 
@@ -957,7 +906,7 @@ async function createTask() {
 
   if (!title || !link || !chatId) {
     triggerHaptic("error");
-    showToast("Fill in all task fields.", "error");
+    showToast("Fill in all fields.", "error");
     return;
   }
 
@@ -967,10 +916,8 @@ async function createTask() {
     closeCreateTask();
     $("taskTitle").value = ""; $("taskLink").value = ""; $("taskChatId").value = "";
     triggerHaptic("success");
-    showToast("✅ Task created successfully!", "success");
+    showToast("✅ Task created!", "success");
     loadTasks();
-    const u = await apiRequest("user");
-    if (u.user) { currentUser = u.user; updateUserUI(); }
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
@@ -990,7 +937,7 @@ function closeDepositModal() { $("depositModal").classList.add("hidden"); }
 async function copyDepositAddress() {
   triggerHaptic("light");
   await navigator.clipboard.writeText($("depAddressText").textContent);
-  showToast("📋 Deposit address copied!", "success");
+  showToast("📋 Copied!", "success");
 }
 
 async function submitDeposit() {
@@ -1003,7 +950,7 @@ async function submitDeposit() {
     $("depositTxHash").value = "";
     closeDepositModal();
     triggerHaptic("success");
-    showToast("✅ Deposit submitted for verification!", "success");
+    showToast("✅ Deposit submitted!", "success");
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
@@ -1049,7 +996,7 @@ async function loadReferrals() {
 async function copyReferral() {
   triggerHaptic("light");
   await navigator.clipboard.writeText($("refLink").textContent);
-  showToast("📋 Referral link copied!", "success");
+  showToast("📋 Link copied!", "success");
 }
 
 function shareReferral() {
@@ -1106,7 +1053,6 @@ async function withdraw() {
 }
 
 function showPage(page) {
-  if (!appReady) return;
   triggerHaptic("light");
   document.querySelectorAll(".page").forEach(el => el.classList.remove("active"));
   const target = $("page-" + page);
