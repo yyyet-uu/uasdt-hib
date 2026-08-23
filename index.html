@@ -13,9 +13,6 @@
   <!-- Monetag Direct SDK -->
   <script src="//libtl.com/sdk.js" data-zone="11601754" data-sdk="show_11601754"></script>
 
-  <!-- Adsgram Official SDK -->
-  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
-
   <style>
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     :root{
@@ -49,7 +46,7 @@
     .channel-icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(59,130,246,.15);font-size:20px}
     .join-btn{padding:10px 16px;border-radius:12px;background:#1689e8;font-weight:800;font-size:12px}
 
-    /* RECTANGLE CONTAINER ARCHITECTURE */
+    /* APP CONTAINER */
     .app{width:100%;max-width:640px;margin:auto;padding:14px 14px 25px}
     .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
     .brand{display:flex;align-items:center;gap:10px}
@@ -84,7 +81,7 @@
     .streak-node{flex:1;min-width:44px;padding:8px 4px;background:#09182b;border:1px solid var(--line);border-radius:12px;text-align:center;font-size:10px}
     .streak-node.active{border-color:#facc15;background:rgba(250,204,21,.15);color:#facc15;font-weight:800}
 
-    /* ADS SYSTEM & PROGRESS */
+    /* ADS SYSTEM & SPONSORS */
     .ad-card{padding:16px;border-radius:20px;background:#09182b;border:1px solid var(--line);margin-bottom:12px}
     .progress-bar-bg{width:100%;height:7px;background:rgba(255,255,255,.08);border-radius:10px;margin:10px 0;overflow:hidden}
     .progress-fill{height:100%;background:linear-gradient(90deg,#2563eb,#06b6d4);border-radius:10px;transition:width .3s}
@@ -123,7 +120,7 @@
 
 <body>
 
-  <!-- LOADING SCREEN -->
+  <!-- 1. LOADING SCREEN -->
   <div id="loadingScreen" class="loading-screen">
     <div style="text-align:center">
       <div class="logo-orb">₮</div>
@@ -132,7 +129,7 @@
     </div>
   </div>
 
-  <!-- MANDATORY CHANNELS LOCK -->
+  <!-- 2. MANDATORY CHANNELS LOCK -->
   <section id="lockScreen" class="lock-screen hidden">
     <div class="lock-wrap">
       <div class="lock-logo">🔒</div>
@@ -172,7 +169,7 @@
     </div>
   </section>
 
-  <!-- WELCOME BONUS SCREEN -->
+  <!-- 3. WELCOME BONUS -->
   <section id="welcomeScreen" class="welcome-screen hidden">
     <div class="welcome-wrap">
       <div class="welcome-icon">🎁</div>
@@ -189,7 +186,7 @@
     </div>
   </section>
 
-  <!-- MAIN APP (5-PAGE ARCHITECTURE) -->
+  <!-- 4. MAIN APP -->
   <main id="app" class="app hidden">
     <header class="topbar">
       <div class="brand">
@@ -209,7 +206,6 @@
 
     <!-- PAGE 1: HOME -->
     <section id="page-home" class="page active">
-      <!-- Rectangle 1: Balance & Withdraw -->
       <div class="box-rect balance-box">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
@@ -221,7 +217,7 @@
         </div>
       </div>
 
-      <!-- Rectangle 2: 7-Day Login Streak -->
+      <!-- 7-Day Login Streak -->
       <div class="box-rect">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div style="font-weight:900;font-size:14px">🔥 7-Day Login Streak</div>
@@ -238,7 +234,7 @@
         </div>
       </div>
 
-      <!-- Rectangle 3: Progress & Stats -->
+      <!-- Activity Stats -->
       <div class="box-rect">
         <div style="font-weight:900;margin-bottom:12px">📊 Your Activity Overview</div>
         <div class="stats-grid">
@@ -261,7 +257,17 @@
         </div>
       </div>
 
-      <!-- Rectangle 4: Direct Referral Share -->
+      <!-- A-ADS EMBEDDED BANNER -->
+      <div class="box-rect" style="padding:10px;text-align:center">
+        <div style="font-size:11px;font-weight:800;color:var(--muted);margin-bottom:6px">⚡ SPONSORED CRYPTO NETWORK</div>
+        <!-- BEGIN AADS AD UNIT 2453118 -->
+        <div id="frame" style="width: 100%;margin: auto;position: relative; z-index: 100;">
+          <iframe data-aa='2453118' src='//acceptable.a-ads.com/2453118/?size=Adaptive' style='border:0px; padding:0; width:100%; min-height:80px; overflow:hidden; background-color: transparent;'></iframe>
+        </div>
+        <!-- END AADS AD UNIT 2453118 -->
+      </div>
+
+      <!-- Direct Share -->
       <div class="box-rect" style="text-align:center">
         <div style="font-weight:900;font-size:15px">👥 Refer Friends • Earn 1,000 PTS ($0.01)</div>
         <div style="font-size:12px;color:var(--muted);margin:4px 0 14px">Get 500 PTS on channel join + 500 PTS when referral watches 2 ads.</div>
@@ -274,7 +280,7 @@
 
     <!-- PAGE 2: TASKS & ADS -->
     <section id="page-tasks" class="page">
-      <div class="section-title">📺 Watch Ads (75 PTS / ad)</div>
+      <div class="section-title">📺 Mining Ads (75 PTS / ad)</div>
 
       <!-- Monetag Ad Box -->
       <div class="ad-card">
@@ -289,17 +295,10 @@
         <div style="font-size:11px;color:var(--muted)">Milestones: 2 ads = 150 PTS • 3 ads = 225 PTS</div>
       </div>
 
-      <!-- Adsgram Video Ad Box -->
-      <div class="ad-card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-weight:900">Adsgram Video Ads</div>
-            <div id="adsgramCount" style="color:var(--muted);font-size:11px">0 / 15 today</div>
-          </div>
-          <button id="adsgramBtn" style="padding:10px 16px;border-radius:12px;background:#2563eb;font-weight:900" onclick="watchAd('adsgram')">WATCH</button>
-        </div>
-        <div class="progress-bar-bg"><div id="adsgramFill" class="progress-fill" style="width:0%"></div></div>
-        <div style="font-size:11px;color:var(--muted)">Interactive: Press and interact with ads for credit</div>
+      <!-- A-Ads Interactive Unit Inside Tasks -->
+      <div class="ad-card" style="text-align:center;padding:12px">
+        <div style="font-weight:900;font-size:13px;margin-bottom:6px">🌐 A-Ads Verified Sponsor</div>
+        <iframe data-aa='2453118' src='//acceptable.a-ads.com/2453118/?size=Adaptive' style='border:0px; padding:0; width:100%; min-height:80px; overflow:hidden; background-color: transparent;'></iframe>
       </div>
 
       <div class="section-title">
@@ -309,7 +308,7 @@
       <div id="tasksList"></div>
     </section>
 
-    <!-- PAGE 3: GAMES (PROMO CODES + LIVE SYNCHRONIZED AVIATOR) -->
+    <!-- PAGE 3: GAMES (PROMO + AVIATOR) -->
     <section id="page-games" class="page">
       <div class="section-title">🎁 Redeem Promo Code (200 PTS)</div>
       <div class="box-rect" style="display:flex;gap:8px">
@@ -493,7 +492,7 @@ function openTelegram(url) {
 
 function setLoading(show) { $("loadingScreen").classList.toggle("hidden", !show); }
 
-// Resilient API requester preventing 404 & JSON parse crashes
+// Resilient API requester
 async function apiRequest(endpoint, body = {}) {
   const headers = {
     "Content-Type": "application/json",
@@ -620,11 +619,8 @@ function updateUserUI() {
   $("refLink").textContent = `https://t.me/${botName}?startapp=ref_${currentUser.telegramId}`;
 
   const ml = Number(currentUser.monetagToday || 0);
-  const al = Number(currentUser.adsgramToday || 0);
   $("monetagCount").textContent = `${ml} / 25 today`;
-  $("adsgramCount").textContent = `${al} / 15 today`;
   $("monetagFill").style.width = Math.min(100, (ml / 25) * 100) + "%";
-  $("adsgramFill").style.width = Math.min(100, (al / 15) * 100) + "%";
 
   const streak = Number(currentUser.streakDay || 0);
   const nodes = $("streakTrack").children;
@@ -707,34 +703,22 @@ async function claimWelcome() {
 }
 
 // ==========================================
-// ADS (MONETAG & ADSGRAM)
+// ADS (MONETAG INTERSTITIAL & REWARDS)
 // ==========================================
-async function watchAd(provider) {
+async function watchAd(provider = "monetag") {
   triggerHaptic("medium");
-  const btn = provider === "monetag" ? $("monetagBtn") : $("adsgramBtn");
+  const btn = $("monetagBtn");
   btn.disabled = true;
 
   try {
-    if (provider === "monetag") {
-      if (typeof window.show_11601754 === "function") {
-        await window.show_11601754();
-      } else {
-        throw new Error("Monetag SDK is loading. Please retry.");
-      }
-    } else if (provider === "adsgram") {
-      if (window.Adsgram) {
-        const AdController = window.Adsgram.init({ blockId: "43948" });
-        await AdController.show();
-      } else {
-        throw new Error("Adsgram SDK is loading. Please retry.");
-      }
+    if (typeof window.show_11601754 === "function") {
+      await window.show_11601754();
     }
 
-    const res = await apiRequest("ads", { provider });
+    const res = await apiRequest("ads", { provider: "monetag" });
     currentUser.balance = Number(currentUser.balance || 0) + Number(res.reward || 0);
     currentUser.adsWatched = res.totalAds;
-    if (provider === "monetag") currentUser.monetagToday = res.monetagToday;
-    else currentUser.adsgramToday = res.adsgramToday;
+    currentUser.monetagToday = res.monetagToday;
 
     updateUserUI();
     triggerHaptic("success");
