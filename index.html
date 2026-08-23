@@ -7,9 +7,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>USDT Hub</title>
 
-  <!-- HilltopAds Verification Meta Tag -->
-  <meta name="af52b5a5b2ffaa8c13b4f13f9b439a5d64f06c03" content="af52b5a5b2ffaa8c13b4f13f9b439a5d64f06c03" />
-
   <!-- Telegram Mini App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
 
@@ -21,7 +18,7 @@
     :root{
       --bg:#050b15;--card:rgba(14,27,48,.88);--card2:rgba(18,34,58,.94);
       --line:rgba(255,255,255,.08);--text:#f5f8ff;--muted:#8fa1bd;
-      --blue:#3b82f6;--green:#22c55e;--red:#ef4444;--yellow:#facc15;--purple:#8b5cf6;--orange:#f97316;
+      --blue:#3b82f6;--green:#22c55e;--red:#ef4444;--yellow:#facc15;--purple:#8b5cf6;
       --shadow:0 20px 60px rgba(0,0,0,.45);
     }
     html,body{
@@ -34,13 +31,24 @@
     button{border:0;cursor:pointer;color:white}
     .hidden{display:none!important}
 
-    /* PUBLIC BANNER SLOTS */
+    /* PUBLIC BANNER SLOTS (Fully Visible to A-Ads Bot) */
     .aads-wrapper{
       width:100%;max-width:480px;margin:8px auto;padding:6px;
       background:rgba(14,27,48,.6);border:1px solid var(--line);
       border-radius:16px;text-align:center;position:relative;z-index:10;
     }
     .aads-label{font-size:10px;font-weight:800;color:var(--muted);margin-bottom:6px;letter-spacing:.5px}
+
+    /* WEB CRAWLER FALLBACK CARD */
+    .browser-view{
+      max-width:460px;margin:40px auto;padding:24px 20px;text-align:center;
+      background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);
+    }
+
+    /* LOADING SCREEN */
+    .loading-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#050b15}
+    .logo-orb{width:80px;height:80px;margin:auto;border-radius:26px;display:grid;place-items:center;font-size:36px;font-weight:900;background:linear-gradient(145deg,#2563eb,#06b6d4);box-shadow:0 0 50px rgba(37,99,235,.45);animation:pulse 1.5s infinite}
+    @keyframes pulse{50%{transform:scale(1.08);box-shadow:0 0 70px rgba(34,211,238,.55)}}
 
     /* ONBOARDING SCREENS */
     .lock-screen,.welcome-screen{position:fixed;inset:0;z-index:9000;overflow:auto;padding:26px 16px;background:radial-gradient(circle at 50% 0%,rgba(37,99,235,.24),transparent 40%),#050b15}
@@ -126,13 +134,32 @@
 
 <body>
 
-  <!-- ALWAYS-VISIBLE A-ADS BANNER -->
+  <!-- ALWAYS-VISIBLE A-ADS BANNER (For Web Crawlers & Users) -->
   <div class="aads-wrapper">
     <div class="aads-label">⚡ SPONSORED CRYPTO NETWORK</div>
     <div id="frame" style="width:100%;position:relative;display:flex;justify-content:center;min-height:90px">
       <!-- BEGIN AADS AD UNIT 2453118 -->
       <iframe data-aa='2453118' src='//acceptable.a-ads.com/2453118/?size=Adaptive' style='border:0px;padding:0;width:100%;min-height:90px;height:90px;overflow:hidden;background-color:transparent;display:block;'></iframe>
       <!-- END AADS AD UNIT 2453118 -->
+    </div>
+  </div>
+
+  <!-- BROWSER FALLBACK (Shown when opened outside Telegram) -->
+  <div id="browserView" class="browser-view hidden">
+    <div class="logo-orb" style="margin-bottom:14px">₮</div>
+    <h2 style="margin:0 0 6px">USDT Hub</h2>
+    <p style="color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:18px">
+      USDT Hub is an automated micro-earning platform with BEP20 payouts. Please open our official Telegram Mini App to start earning!
+    </p>
+    <button class="action-btn" onclick="window.location.href='https://t.me/Ussdt_hub_bot'">🚀 OPEN IN TELEGRAM</button>
+  </div>
+
+  <!-- 1. LOADING SCREEN -->
+  <div id="loadingScreen" class="loading-screen hidden">
+    <div style="text-align:center">
+      <div class="logo-orb">₮</div>
+      <h2 style="margin:16px 0 4px">USDT Hub</h2>
+      <p style="color:var(--muted);margin:0;font-size:13px">Loading verified account...</p>
     </div>
   </div>
 
@@ -194,7 +221,7 @@
   </section>
 
   <!-- 4. MAIN APP -->
-  <main id="app" class="app">
+  <main id="app" class="app hidden">
     <header class="topbar">
       <div class="brand">
         <div class="brand-logo">₮</div>
@@ -279,7 +306,7 @@
     <section id="page-tasks" class="page">
       <div class="section-title">📺 Mining Ads (75 PTS / ad)</div>
 
-      <!-- Monetag Ad Box (25 Daily) -->
+      <!-- Monetag Ad Box -->
       <div class="ad-card">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
@@ -289,20 +316,7 @@
           <button id="monetagBtn" style="padding:10px 16px;border-radius:12px;background:#2563eb;font-weight:900" onclick="watchAd('monetag')">WATCH</button>
         </div>
         <div class="progress-bar-bg"><div id="monetagFill" class="progress-fill" style="width:0%"></div></div>
-        <div style="font-size:11px;color:var(--muted)">Earn 75 PTS per ad • 25 ads daily</div>
-      </div>
-
-      <!-- HilltopAds Direct Mining Box (15 Daily) -->
-      <div class="ad-card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-weight:900">⚡ HilltopAds Direct Mining</div>
-            <div id="hilltopCount" style="color:var(--muted);font-size:11px">0 / 15 today</div>
-          </div>
-          <button id="hilltopBtn" style="padding:10px 16px;border-radius:12px;background:#f97316;font-weight:900" onclick="watchAd('hilltop')">WATCH</button>
-        </div>
-        <div class="progress-bar-bg"><div id="hilltopFill" class="progress-fill" style="width:0%;background:linear-gradient(90deg,#ea580c,#f97316)"></div></div>
-        <div style="font-size:11px;color:var(--muted)">Earn 75 PTS per link visit • 15 ads daily</div>
+        <div style="font-size:11px;color:var(--muted)">Milestones: 2 ads = 150 PTS • 3 ads = 225 PTS</div>
       </div>
 
       <div class="section-title">
@@ -312,7 +326,7 @@
       <div id="tasksList"></div>
     </section>
 
-    <!-- PAGE 3: GAMES -->
+    <!-- PAGE 3: GAMES (PROMO + AVIATOR) -->
     <section id="page-games" class="page">
       <div class="section-title">🎁 Redeem Promo Code (200 PTS)</div>
       <div class="box-rect" style="display:flex;gap:8px">
@@ -345,6 +359,13 @@
           <button id="aviatorBtn" class="action-btn" onclick="handleAviatorAction()">PLACE BET</button>
         </div>
       </div>
+
+      <div class="box-rect" style="margin-top:12px">
+        <div style="font-weight:900">How Live Aviator Works</div>
+        <div style="color:var(--muted);font-size:12px;line-height:1.55;margin-top:6px">
+          All users share the same provably fair flight. You have <b>5 seconds</b> before each round to bet. Cash out before the plane flies away to secure your points.
+        </div>
+      </div>
     </section>
 
     <!-- PAGE 4: REFERRALS -->
@@ -356,6 +377,15 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <button class="action-btn purple" onclick="copyReferral()">📋 COPY</button>
           <button class="action-btn" onclick="shareReferral()">🚀 DIRECT SHARE</button>
+        </div>
+      </div>
+
+      <div class="box-rect">
+        <div style="font-weight:900;margin-bottom:8px">📜 Rules & Rewards</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">
+          • <b>Join Channels:</b> Earn <b>+500 PTS</b> when your referral verifies channels.<br>
+          • <b>Watch 2 Ads:</b> Earn <b>+500 PTS</b> when your referral watches 2 ads.<br>
+          • <i>Total: 1,000 PTS ($0.01 USDT) per active user.</i>
         </div>
       </div>
 
@@ -378,11 +408,18 @@
         <input id="withdrawAddress" class="input" style="margin-top:6px" placeholder="0x... BSC address" autocomplete="off">
         <button id="withdrawBtn" class="action-btn green" onclick="withdraw()">💸 WITHDRAW 0.10 USDT</button>
       </div>
+
+      <div class="box-rect">
+        <div style="font-weight:900;margin-bottom:6px">📢 Payment Proofs</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.55">
+          All payouts are broadcast automatically to our official proof channel: <a href="javascript:openTelegram('https://t.me/birr_gram')" style="color:#60a5fa;text-decoration:none;font-weight:800">@birr_gram</a>.
+        </div>
+      </div>
     </section>
   </main>
 
   <!-- BOTTOM NAVIGATION -->
-  <nav id="bottomNav" class="bottom-nav">
+  <nav id="bottomNav" class="bottom-nav hidden">
     <div class="nav-inner">
       <button class="nav-btn active" data-page="home" onclick="showPage('home')"><span class="nav-icon">🏠</span>Home</button>
       <button class="nav-btn" data-page="tasks" onclick="showPage('tasks')"><span class="nav-icon">🎯</span>Tasks</button>
@@ -431,31 +468,16 @@
 <script>
 "use strict";
 
-const HILLTOP_DIRECT_URL = "https://sorrowfulpsychology.com/bS3hVo0.Pz3-p-v/bxmRVTJJZYDd0/3/MyzSQS2XOMTuIk5eLLT-cbz/N/DcYN5/MjzZMm";
-
 const tg = window.Telegram?.WebApp;
 if (tg) {
-  try {
-    tg.ready();
-    tg.expand();
-    tg.setHeaderColor("#050b15");
-    tg.setBackgroundColor("#050b15");
-  } catch {}
+  tg.ready();
+  tg.expand();
+  try { tg.setHeaderColor("#050b15"); tg.setBackgroundColor("#050b15"); } catch {}
 }
 
 const INIT_DATA = tg?.initData || "";
-let currentUser = {
-  telegramId: tg?.initDataUnsafe?.user?.id || "guest",
-  firstName: tg?.initDataUnsafe?.user?.first_name || "User",
-  balance: 0,
-  adsWatched: 0,
-  monetagToday: 0,
-  hilltopToday: 0,
-  tasksCompleted: 0,
-  referrals: 0,
-  vipTier: "Bronze"
-};
-
+let currentUser = null;
+let appReady = false;
 let activeAviatorBet = null;
 let currentAviatorRound = null;
 
@@ -486,37 +508,57 @@ function openTelegram(url) {
   } catch { window.open(url, "_blank"); }
 }
 
+function setLoading(show) { $("loadingScreen").classList.toggle("hidden", !show); }
+
+// Resilient API requester
 async function apiRequest(endpoint, body = {}) {
   const headers = {
     "Content-Type": "application/json",
     "X-Telegram-Init-Data": INIT_DATA
   };
 
-  const payload = JSON.stringify({
-    ...body,
-    endpoint,
-    initData: INIT_DATA,
-    user: tg?.initDataUnsafe?.user || {}
-  });
+  const url = `/api/${endpoint}`;
 
   let response;
   try {
-    response = await fetch(`/api/${endpoint}`, { method: "POST", headers, body: payload });
+    response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ ...body, endpoint })
+    });
   } catch {
-    response = await fetch(`/api/index?endpoint=${endpoint}`, { method: "POST", headers, body: payload });
+    response = await fetch(`/api/index?endpoint=${endpoint}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ ...body, endpoint })
+    });
   }
 
-  const data = await response.json();
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error("Server returned an invalid format. Please try again.");
+  }
+
   if (!response.ok || data?.success === false) {
     throw new Error(data?.error || `HTTP_${response.status}`);
   }
   return data;
 }
 
+// ==========================================
+// APP INITIALIZATION & LIFECYCLE
+// ==========================================
 async function initialize() {
-  updateUserUI();
-  startSynchronizedAviatorLoop();
+  // If visited in standard web browser (e.g. A-Ads Crawler Bot), show fallback and keep banner active
+  if (!INIT_DATA) {
+    setLoading(false);
+    $("browserView").classList.remove("hidden");
+    return;
+  }
 
+  setLoading(true);
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const startParam =
@@ -526,43 +568,59 @@ async function initialize() {
       "";
 
     const data = await apiRequest("user", { startParam });
-    if (data?.user) {
-      currentUser = data.user;
-      updateUserUI();
+    if (!data?.user) throw new Error("USER_DATA_MISSING");
 
-      if (!currentUser.channelsVerified) {
-        showLock();
-        return;
-      }
-      if (!currentUser.welcomeBonusClaimed) {
-        showWelcome();
-        return;
-      }
+    currentUser = data.user;
+    updateUserUI();
+
+    if (!currentUser.channelsVerified) {
+      setLoading(false);
+      showLock();
+      return;
     }
-  } catch (e) {
-    console.warn("Backend sync notice:", e.message);
-  }
 
-  loadTasks();
-  loadReferrals();
+    if (!currentUser.welcomeBonusClaimed) {
+      setLoading(false);
+      showWelcome();
+      return;
+    }
+
+    unlockApp();
+  } catch (error) {
+    setLoading(false);
+    showToast(error.message, "error");
+  }
+}
+
+function hideAllScreens() {
+  $("browserView").classList.add("hidden");
+  $("lockScreen").classList.add("hidden");
+  $("welcomeScreen").classList.add("hidden");
+  $("app").classList.add("hidden");
+  $("bottomNav").classList.add("hidden");
 }
 
 function showLock() {
+  hideAllScreens();
   $("lockScreen").classList.remove("hidden");
-  $("welcomeScreen").classList.add("hidden");
 }
 
 function showWelcome() {
-  $("lockScreen").classList.add("hidden");
+  hideAllScreens();
   $("welcomeScreen").classList.remove("hidden");
 }
 
 function unlockApp() {
-  $("lockScreen").classList.add("hidden");
-  $("welcomeScreen").classList.add("hidden");
+  setLoading(false);
+  hideAllScreens();
+  $("app").classList.remove("hidden");
+  $("bottomNav").classList.remove("hidden");
+  appReady = true;
+
   updateUserUI();
   loadTasks();
   loadReferrals();
+  startSynchronizedAviatorLoop();
 }
 
 function updateUserUI() {
@@ -584,10 +642,6 @@ function updateUserUI() {
   $("monetagCount").textContent = `${ml} / 25 today`;
   $("monetagFill").style.width = Math.min(100, (ml / 25) * 100) + "%";
 
-  const hl = Number(currentUser.hilltopToday || 0);
-  $("hilltopCount").textContent = `${hl} / 15 today`;
-  $("hilltopFill").style.width = Math.min(100, (hl / 15) * 100) + "%";
-
   const streak = Number(currentUser.streakDay || 0);
   const nodes = $("streakTrack").children;
   for (let i = 0; i < nodes.length; i++) {
@@ -595,6 +649,9 @@ function updateUserUI() {
   }
 }
 
+// ==========================================
+// 7-DAY LOGIN STREAK CLAIM
+// ==========================================
 async function claimDailyStreak() {
   triggerHaptic("light");
   try {
@@ -606,10 +663,13 @@ async function claimDailyStreak() {
     showToast(`🔥 Day ${res.streakDay} claimed: +${res.reward} PTS!`, "success");
   } catch (err) {
     triggerHaptic("error");
-    showToast(err.message, "error");
+    showToast(err.message === "STREAK_ALREADY_CLAIMED_TODAY" ? "You claimed today's streak already!" : err.message, "error");
   }
 }
 
+// ==========================================
+// CHANNEL VERIFY & WELCOME BONUS
+// ==========================================
 async function verifyChannels() {
   triggerHaptic("light");
   const btn = $("verifyBtn");
@@ -652,8 +712,8 @@ async function claimWelcome() {
     const data = await apiRequest("claim-welcome", { address });
     currentUser.welcomeBonusClaimed = true;
     triggerHaptic("success");
-    showToast(`🎁 0.01 USDT sent!`, "success");
-    unlockApp();
+    showToast(`🎁 0.01 USDT sent! Hash: ${data.txHash.slice(0, 10)}...`, "success");
+    setTimeout(unlockApp, 900);
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
@@ -662,32 +722,23 @@ async function claimWelcome() {
   }
 }
 
-async function watchAd(provider) {
+// ==========================================
+// ADS (MONETAG INTERSTITIAL & REWARDS)
+// ==========================================
+async function watchAd(provider = "monetag") {
   triggerHaptic("medium");
-  const btn = $(provider === "hilltop" ? "hilltopBtn" : "monetagBtn");
+  const btn = $("monetagBtn");
   btn.disabled = true;
 
   try {
-    if (provider === "monetag") {
-      if (typeof window.show_11601754 === "function") {
-        await window.show_11601754();
-      }
-    } else if (provider === "hilltop") {
-      try {
-        if (tg?.openLink) tg.openLink(HILLTOP_DIRECT_URL);
-        else window.open(HILLTOP_DIRECT_URL, "_blank");
-      } catch {
-        window.open(HILLTOP_DIRECT_URL, "_blank");
-      }
-      showToast("⏳ Registering ad view...", "info");
-      await new Promise(r => setTimeout(r, 6000));
+    if (typeof window.show_11601754 === "function") {
+      await window.show_11601754();
     }
 
-    const res = await apiRequest("ads", { provider });
+    const res = await apiRequest("ads", { provider: "monetag" });
     currentUser.balance = Number(currentUser.balance || 0) + Number(res.reward || 0);
     currentUser.adsWatched = res.totalAds;
-    if (res.monetagToday !== undefined) currentUser.monetagToday = res.monetagToday;
-    if (res.hilltopToday !== undefined) currentUser.hilltopToday = res.hilltopToday;
+    currentUser.monetagToday = res.monetagToday;
 
     updateUserUI();
     triggerHaptic("success");
@@ -700,6 +751,9 @@ async function watchAd(provider) {
   }
 }
 
+// ==========================================
+// SYNCHRONIZED LIVE AVIATOR ENGINE
+// ==========================================
 function getClientLiveRound(timestamp = Date.now()) {
   const epochSeconds = Math.floor(timestamp / 1000);
   const roundIndex = Math.floor(epochSeconds / 16);
@@ -831,7 +885,7 @@ async function handleAviatorAction() {
       currentUser.balance = Number(currentUser.balance || 0) - bet;
       updateUserUI();
       triggerHaptic("success");
-      showToast(`✅ Bet placed!`, "success");
+      showToast(`✅ Bet of ${bet} PTS placed!`, "success");
     } catch (err) {
       triggerHaptic("error");
       showToast(err.message, "error");
@@ -845,7 +899,7 @@ async function handleAviatorAction() {
       currentUser.aviatorWins = Number(currentUser.aviatorWins || 0) + 1;
       updateUserUI();
       triggerHaptic("success");
-      showToast(`🚀 Cashed out (+${data.payout} PTS)!`, "success");
+      showToast(`🚀 Cashed out at ${data.multiplier}x (+${data.payout} PTS)!`, "success");
     } catch (err) {
       triggerHaptic("error");
       showToast(err.message, "error");
@@ -853,13 +907,16 @@ async function handleAviatorAction() {
   }
 }
 
+// ==========================================
+// TASKS & DEPOSIT
+// ==========================================
 async function loadTasks() {
   const container = $("tasksList");
   try {
     const data = await apiRequest("tasks", { action: "list" });
     const list = data.tasks || [];
     if (!list.length) {
-      container.innerHTML = `<div class="box-rect" style="text-align:center;color:var(--muted)">No community tasks available.</div>`;
+      container.innerHTML = `<div class="box-rect" style="text-align:center;color:var(--muted)">No community tasks right now.</div>`;
       return;
     }
 
@@ -874,7 +931,7 @@ async function loadTasks() {
       </div>
     `).join("");
   } catch {
-    container.innerHTML = `<div class="box-rect" style="text-align:center;color:var(--muted)">Community tasks will appear here.</div>`;
+    container.innerHTML = `<div class="box-rect" style="text-align:center;color:#ef4444">Failed to load tasks.</div>`;
   }
 }
 
@@ -906,7 +963,7 @@ async function createTask() {
 
   if (!title || !link || !chatId) {
     triggerHaptic("error");
-    showToast("Fill in all fields.", "error");
+    showToast("Fill in all task fields.", "error");
     return;
   }
 
@@ -916,8 +973,10 @@ async function createTask() {
     closeCreateTask();
     $("taskTitle").value = ""; $("taskLink").value = ""; $("taskChatId").value = "";
     triggerHaptic("success");
-    showToast("✅ Task created!", "success");
+    showToast("✅ Task created successfully!", "success");
     loadTasks();
+    const u = await apiRequest("user");
+    if (u.user) { currentUser = u.user; updateUserUI(); }
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
@@ -937,7 +996,7 @@ function closeDepositModal() { $("depositModal").classList.add("hidden"); }
 async function copyDepositAddress() {
   triggerHaptic("light");
   await navigator.clipboard.writeText($("depAddressText").textContent);
-  showToast("📋 Copied!", "success");
+  showToast("📋 Deposit address copied!", "success");
 }
 
 async function submitDeposit() {
@@ -950,13 +1009,16 @@ async function submitDeposit() {
     $("depositTxHash").value = "";
     closeDepositModal();
     triggerHaptic("success");
-    showToast("✅ Deposit submitted!", "success");
+    showToast("✅ Deposit submitted for verification!", "success");
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
   }
 }
 
+// ==========================================
+// REFERRAL & LEADERBOARD
+// ==========================================
 async function loadReferrals() {
   try {
     const [refData, leadData] = await Promise.all([
@@ -996,7 +1058,7 @@ async function loadReferrals() {
 async function copyReferral() {
   triggerHaptic("light");
   await navigator.clipboard.writeText($("refLink").textContent);
-  showToast("📋 Link copied!", "success");
+  showToast("📋 Referral link copied!", "success");
 }
 
 function shareReferral() {
@@ -1024,6 +1086,9 @@ async function claimPromo() {
   }
 }
 
+// ==========================================
+// WITHDRAW
+// ==========================================
 async function withdraw() {
   const address = $("withdrawAddress").value.trim();
   if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
@@ -1053,6 +1118,7 @@ async function withdraw() {
 }
 
 function showPage(page) {
+  if (!appReady) return;
   triggerHaptic("light");
   document.querySelectorAll(".page").forEach(el => el.classList.remove("active"));
   const target = $("page-" + page);
