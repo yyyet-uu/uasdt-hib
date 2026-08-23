@@ -7,6 +7,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>USDT Hub</title>
 
+  <!-- HilltopAds Verification Meta Tag -->
+  <meta name="af52b5a5b2ffaa8c13b4f13f9b439a5d64f06c03" content="af52b5a5b2ffaa8c13b4f13f9b439a5d64f06c03" />
+
   <!-- Telegram Mini App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
 
@@ -31,7 +34,7 @@
     button{border:0;cursor:pointer;color:white}
     .hidden{display:none!important}
 
-    /* PUBLIC BANNER SLOTS (Fully Visible to A-Ads Bot) */
+    /* PUBLIC BANNER SLOTS */
     .aads-wrapper{
       width:100%;max-width:480px;margin:8px auto;padding:6px;
       background:rgba(14,27,48,.6);border:1px solid var(--line);
@@ -134,7 +137,7 @@
 
 <body>
 
-  <!-- ALWAYS-VISIBLE A-ADS BANNER (For Web Crawlers & Users) -->
+  <!-- ALWAYS-VISIBLE A-ADS BANNER -->
   <div class="aads-wrapper">
     <div class="aads-label">⚡ SPONSORED CRYPTO NETWORK</div>
     <div id="frame" style="width:100%;position:relative;display:flex;justify-content:center;min-height:90px">
@@ -144,7 +147,7 @@
     </div>
   </div>
 
-  <!-- BROWSER FALLBACK (Shown when opened outside Telegram) -->
+  <!-- BROWSER FALLBACK -->
   <div id="browserView" class="browser-view hidden">
     <div class="logo-orb" style="margin-bottom:14px">₮</div>
     <h2 style="margin:0 0 6px">USDT Hub</h2>
@@ -326,7 +329,7 @@
       <div id="tasksList"></div>
     </section>
 
-    <!-- PAGE 3: GAMES (PROMO + AVIATOR) -->
+    <!-- PAGE 3: GAMES -->
     <section id="page-games" class="page">
       <div class="section-title">🎁 Redeem Promo Code (200 PTS)</div>
       <div class="box-rect" style="display:flex;gap:8px">
@@ -359,13 +362,6 @@
           <button id="aviatorBtn" class="action-btn" onclick="handleAviatorAction()">PLACE BET</button>
         </div>
       </div>
-
-      <div class="box-rect" style="margin-top:12px">
-        <div style="font-weight:900">How Live Aviator Works</div>
-        <div style="color:var(--muted);font-size:12px;line-height:1.55;margin-top:6px">
-          All users share the same provably fair flight. You have <b>5 seconds</b> before each round to bet. Cash out before the plane flies away to secure your points.
-        </div>
-      </div>
     </section>
 
     <!-- PAGE 4: REFERRALS -->
@@ -377,15 +373,6 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <button class="action-btn purple" onclick="copyReferral()">📋 COPY</button>
           <button class="action-btn" onclick="shareReferral()">🚀 DIRECT SHARE</button>
-        </div>
-      </div>
-
-      <div class="box-rect">
-        <div style="font-weight:900;margin-bottom:8px">📜 Rules & Rewards</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.6">
-          • <b>Join Channels:</b> Earn <b>+500 PTS</b> when your referral verifies channels.<br>
-          • <b>Watch 2 Ads:</b> Earn <b>+500 PTS</b> when your referral watches 2 ads.<br>
-          • <i>Total: 1,000 PTS ($0.01 USDT) per active user.</i>
         </div>
       </div>
 
@@ -407,13 +394,6 @@
         <label style="font-size:11px;color:var(--muted);font-weight:700">DESTINATION BEP20 ADDRESS</label>
         <input id="withdrawAddress" class="input" style="margin-top:6px" placeholder="0x... BSC address" autocomplete="off">
         <button id="withdrawBtn" class="action-btn green" onclick="withdraw()">💸 WITHDRAW 0.10 USDT</button>
-      </div>
-
-      <div class="box-rect">
-        <div style="font-weight:900;margin-bottom:6px">📢 Payment Proofs</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.55">
-          All payouts are broadcast automatically to our official proof channel: <a href="javascript:openTelegram('https://t.me/birr_gram')" style="color:#60a5fa;text-decoration:none;font-weight:800">@birr_gram</a>.
-        </div>
       </div>
     </section>
   </main>
@@ -510,7 +490,6 @@ function openTelegram(url) {
 
 function setLoading(show) { $("loadingScreen").classList.toggle("hidden", !show); }
 
-// Resilient API requester
 async function apiRequest(endpoint, body = {}) {
   const headers = {
     "Content-Type": "application/json",
@@ -547,11 +526,7 @@ async function apiRequest(endpoint, body = {}) {
   return data;
 }
 
-// ==========================================
-// APP INITIALIZATION & LIFECYCLE
-// ==========================================
 async function initialize() {
-  // If visited in standard web browser (e.g. A-Ads Crawler Bot), show fallback and keep banner active
   if (!INIT_DATA) {
     setLoading(false);
     $("browserView").classList.remove("hidden");
@@ -649,9 +624,6 @@ function updateUserUI() {
   }
 }
 
-// ==========================================
-// 7-DAY LOGIN STREAK CLAIM
-// ==========================================
 async function claimDailyStreak() {
   triggerHaptic("light");
   try {
@@ -667,9 +639,6 @@ async function claimDailyStreak() {
   }
 }
 
-// ==========================================
-// CHANNEL VERIFY & WELCOME BONUS
-// ==========================================
 async function verifyChannels() {
   triggerHaptic("light");
   const btn = $("verifyBtn");
@@ -722,9 +691,6 @@ async function claimWelcome() {
   }
 }
 
-// ==========================================
-// ADS (MONETAG INTERSTITIAL & REWARDS)
-// ==========================================
 async function watchAd(provider = "monetag") {
   triggerHaptic("medium");
   const btn = $("monetagBtn");
@@ -751,9 +717,6 @@ async function watchAd(provider = "monetag") {
   }
 }
 
-// ==========================================
-// SYNCHRONIZED LIVE AVIATOR ENGINE
-// ==========================================
 function getClientLiveRound(timestamp = Date.now()) {
   const epochSeconds = Math.floor(timestamp / 1000);
   const roundIndex = Math.floor(epochSeconds / 16);
@@ -907,9 +870,6 @@ async function handleAviatorAction() {
   }
 }
 
-// ==========================================
-// TASKS & DEPOSIT
-// ==========================================
 async function loadTasks() {
   const container = $("tasksList");
   try {
@@ -1016,9 +976,6 @@ async function submitDeposit() {
   }
 }
 
-// ==========================================
-// REFERRAL & LEADERBOARD
-// ==========================================
 async function loadReferrals() {
   try {
     const [refData, leadData] = await Promise.all([
@@ -1086,9 +1043,6 @@ async function claimPromo() {
   }
 }
 
-// ==========================================
-// WITHDRAW
-// ==========================================
 async function withdraw() {
   const address = $("withdrawAddress").value.trim();
   if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
