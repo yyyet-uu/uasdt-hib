@@ -56,7 +56,7 @@ function getVipTier(totalPts = 0) {
 }
 
 // =====================================================
-// BALANCED LIVE AVIATOR ENGINE (16s Smooth Cycle, Lower Win Rate)
+// DYNAMIC LIVE AVIATOR ENGINE (10s Cycle, 62% Win Model + Rare 5x-30x)
 // =====================================================
 
 function calculateRoundCrash(roundIndex) {
@@ -66,34 +66,35 @@ function calculateRoundCrash(roundIndex) {
     .digest("hex");
 
   const rand = parseInt(hash.slice(0, 8), 16) / 0xffffffff;
-  const cycle = roundIndex % 5;
+  const cycle = roundIndex % 6;
 
-  // Controlled win-rate: ~50% early crashes under 1.25x, balanced mid runs, occasional spikes
-  if (cycle === 0) {
-    if (rand < 0.52) return Number((1.01 + rand * 0.23).toFixed(2)); // 1.01x - 1.24x
-    if (rand < 0.88) return Number((1.25 + (rand - 0.52) * 2.8).toFixed(2)); // 1.25x - 2.25x
-    return Number((2.40 + (rand - 0.88) * 15.0).toFixed(2)); // 2.40x - 4.20x
+  if (cycle === 0 || cycle === 4) {
+    if (rand < 0.28) return 1.05 + Number((rand * 0.35).toFixed(2));
+    if (rand < 0.70) return 1.50 + Number((rand * 2.8).toFixed(2));
+    if (rand < 0.90) return 4.50 + Number((rand * 5.0).toFixed(2));
+    return 10.00 + Number((rand * 15.0).toFixed(2));
   } else if (cycle === 1 || cycle === 3) {
-    if (rand < 0.48) return Number((1.00 + rand * 0.25).toFixed(2)); // 1.00x - 1.25x
-    if (rand < 0.84) return Number((1.26 + (rand - 0.48) * 3.2).toFixed(2)); // 1.26x - 2.41x
-    if (rand < 0.96) return Number((3.00 + (rand - 0.84) * 25.0).toFixed(2)); // 3.00x - 6.00x
-    return Number((7.00 + (rand - 0.96) * 120.0).toFixed(2)); // 7.00x - 11.80x
+    if (rand < 0.35) return 1.02 + Number((rand * 0.28).toFixed(2));
+    if (rand < 0.85) return 1.40 + Number((rand * 2.2).toFixed(2));
+    if (rand < 0.96) return 5.00 + Number((rand * 5.5).toFixed(2));
+    return 15.00 + Number((rand * 12.0).toFixed(2));
   } else {
-    if (rand < 0.54) return Number((1.02 + rand * 0.20).toFixed(2)); // 1.02x - 1.22x
-    if (rand < 0.86) return Number((1.24 + (rand - 0.54) * 2.6).toFixed(2)); // 1.24x - 2.07x
-    return Number((2.20 + (rand - 0.86) * 35.0).toFixed(2)); // 2.20x - 7.10x
+    if (rand < 0.18) return 1.01 + Number((rand * 0.20).toFixed(2));
+    if (rand < 0.65) return 1.60 + Number((rand * 3.0).toFixed(2));
+    if (rand < 0.88) return 4.00 + Number((rand * 6.0).toFixed(2));
+    return 12.00 + Number((rand * 18.0).toFixed(2));
   }
 }
 
 function getLiveAviatorState(timestamp = Date.now()) {
   const epochMs = timestamp;
-  const roundDuration = 16000; // Slower 16s Total Cycle
+  const roundDuration = 10000;
   const roundIndex = Math.floor(epochMs / roundDuration);
   const msInRound = epochMs % roundDuration;
 
   const crashMultiplier = calculateRoundCrash(roundIndex);
-  const flyTimeMs = Math.min(8500, Math.max(2200, Math.log(crashMultiplier + 1) * 3600)); // Slower smooth flight
-  const bettingDuration = 5000; // 5s relaxed betting window
+  const flyTimeMs = Math.min(5500, Math.max(1400, Math.log(crashMultiplier + 1) * 2600));
+  const bettingDuration = 3500;
 
   let phase;
   let currentMultiplier = 1.00;
@@ -105,7 +106,7 @@ function getLiveAviatorState(timestamp = Date.now()) {
     const progress = (msInRound - bettingDuration) / flyTimeMs;
     currentMultiplier = Math.min(
       crashMultiplier,
-      Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.75))
+      Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.6))
     );
   } else {
     phase = "CRASHED";
@@ -195,6 +196,7 @@ async function userHandler(req, res) {
     appUnlocked: false,
     streakDay: 0,
     lastStreakDate: null,
+    lastWheelDate: null,
     aviatorGames: 0,
     aviatorWins: 0,
     withdrawals: 0,
@@ -293,6 +295,52 @@ async function claimStreak(req, res) {
     success: true,
     streakDay: newStreak,
     reward: streakReward
+  });
+}
+
+// =====================================================
+// DAILY FORTUNE WHEEL (24h COOLDOWN)
+// =====================================================
+
+async function spinWheel(req, res) {
+  const { user } = getUser(req);
+  const uid = String(user.id);
+  const userRef = db.collection("users").doc(uid);
+  const dToday = today();
+
+  const wheelPrizes = [50, 100, 150, 200, 300, 500, 1000, 2500];
+  const selectedReward = wheelPrizes[Math.floor(Math.random() * wheelPrizes.length)];
+  const prizeIndex = wheelPrizes.indexOf(selectedReward);
+
+  await db.runTransaction(async tx => {
+    const snap = await tx.get(userRef);
+    if (!snap.exists) throw new Error("USER_NOT_FOUND");
+    const u = snap.data();
+
+    if (u.lastWheelDate === dToday) {
+      throw new Error("WHEEL_ALREADY_SPUN_TODAY");
+    }
+
+    tx.update(userRef, {
+      balance: FieldValue.increment(selectedReward),
+      lastWheelDate: dToday,
+      updatedAt: FieldValue.serverTimestamp()
+    });
+
+    const logRef = db.collection("transactions").doc();
+    tx.set(logRef, {
+      userId: uid,
+      type: "fortune_wheel",
+      amount: selectedReward,
+      title: "Fortune Wheel Spin",
+      createdAt: FieldValue.serverTimestamp()
+    });
+  });
+
+  return res.status(200).json({
+    success: true,
+    reward: selectedReward,
+    prizeIndex
   });
 }
 
@@ -1147,6 +1195,7 @@ export default async function handler(req, res) {
 
     if (path === "/api/user" || endpoint === "user") return userHandler(req, res);
     if (path === "/api/claim-streak" || endpoint === "claim-streak") return claimStreak(req, res);
+    if (path === "/api/spin-wheel" || endpoint === "spin-wheel") return spinWheel(req, res);
     if (path === "/api/verify-membership" || endpoint === "verify-membership") return verifyMembership(req, res);
     if (path === "/api/claim-welcome" || endpoint === "claim-welcome") return claimWelcome(req, res);
     if (path === "/api/ads" || endpoint === "ads") return ads(req, res);
