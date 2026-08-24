@@ -56,7 +56,7 @@ function getVipTier(totalPts = 0) {
 }
 
 // =====================================================
-// DYNAMIC LIVE AVIATOR ENGINE (10s Cycle, 62% Win Model + Rare 5x-30x)
+// BALANCED LIVE AVIATOR ENGINE (16s Smooth Cycle)
 // =====================================================
 
 function calculateRoundCrash(roundIndex) {
@@ -66,35 +66,33 @@ function calculateRoundCrash(roundIndex) {
     .digest("hex");
 
   const rand = parseInt(hash.slice(0, 8), 16) / 0xffffffff;
-  const cycle = roundIndex % 6;
+  const cycle = roundIndex % 5;
 
-  if (cycle === 0 || cycle === 4) {
-    if (rand < 0.28) return 1.05 + Number((rand * 0.35).toFixed(2));
-    if (rand < 0.70) return 1.50 + Number((rand * 2.8).toFixed(2));
-    if (rand < 0.90) return 4.50 + Number((rand * 5.0).toFixed(2));
-    return 10.00 + Number((rand * 15.0).toFixed(2));
+  if (cycle === 0) {
+    if (rand < 0.52) return Number((1.01 + rand * 0.23).toFixed(2));
+    if (rand < 0.88) return Number((1.25 + (rand - 0.52) * 2.8).toFixed(2));
+    return Number((2.40 + (rand - 0.88) * 15.0).toFixed(2));
   } else if (cycle === 1 || cycle === 3) {
-    if (rand < 0.35) return 1.02 + Number((rand * 0.28).toFixed(2));
-    if (rand < 0.85) return 1.40 + Number((rand * 2.2).toFixed(2));
-    if (rand < 0.96) return 5.00 + Number((rand * 5.5).toFixed(2));
-    return 15.00 + Number((rand * 12.0).toFixed(2));
+    if (rand < 0.48) return Number((1.00 + rand * 0.25).toFixed(2));
+    if (rand < 0.84) return Number((1.26 + (rand - 0.48) * 3.2).toFixed(2));
+    if (rand < 0.96) return Number((3.00 + (rand - 0.84) * 25.0).toFixed(2));
+    return Number((7.00 + (rand - 0.96) * 120.0).toFixed(2));
   } else {
-    if (rand < 0.18) return 1.01 + Number((rand * 0.20).toFixed(2));
-    if (rand < 0.65) return 1.60 + Number((rand * 3.0).toFixed(2));
-    if (rand < 0.88) return 4.00 + Number((rand * 6.0).toFixed(2));
-    return 12.00 + Number((rand * 18.0).toFixed(2));
+    if (rand < 0.54) return Number((1.02 + rand * 0.20).toFixed(2));
+    if (rand < 0.86) return Number((1.24 + (rand - 0.54) * 2.6).toFixed(2));
+    return Number((2.20 + (rand - 0.86) * 35.0).toFixed(2));
   }
 }
 
 function getLiveAviatorState(timestamp = Date.now()) {
   const epochMs = timestamp;
-  const roundDuration = 10000;
+  const roundDuration = 16000;
   const roundIndex = Math.floor(epochMs / roundDuration);
   const msInRound = epochMs % roundDuration;
 
   const crashMultiplier = calculateRoundCrash(roundIndex);
-  const flyTimeMs = Math.min(5500, Math.max(1400, Math.log(crashMultiplier + 1) * 2600));
-  const bettingDuration = 3500;
+  const flyTimeMs = Math.min(8500, Math.max(2200, Math.log(crashMultiplier + 1) * 3600));
+  const bettingDuration = 5000;
 
   let phase;
   let currentMultiplier = 1.00;
@@ -106,7 +104,7 @@ function getLiveAviatorState(timestamp = Date.now()) {
     const progress = (msInRound - bettingDuration) / flyTimeMs;
     currentMultiplier = Math.min(
       crashMultiplier,
-      Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.6))
+      Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.75))
     );
   } else {
     phase = "CRASHED";
@@ -279,6 +277,15 @@ async function claimStreak(req, res) {
       lastStreakDate: dToday,
       updatedAt: FieldValue.serverTimestamp()
     });
+
+    const logRef = db.collection("transactions").doc();
+    tx.set(logRef, {
+      userId: uid,
+      type: "streak",
+      amount: streakReward,
+      title: `Day ${newStreak} Streak Reward`,
+      createdAt: FieldValue.serverTimestamp()
+    });
   });
 
   return res.status(200).json({
@@ -289,7 +296,7 @@ async function claimStreak(req, res) {
 }
 
 // =====================================================
-// CHANNEL MEMBERSHIP VERIFICATION
+// CHANNEL MEMBERSHIP VERIFICATION (300 PTS INVITER REWARD)
 // =====================================================
 
 async function verifyMembership(req, res) {
@@ -435,7 +442,7 @@ async function claimWelcome(req, res) {
 }
 
 // =====================================================
-// ADS (MONETAG, ADSGRAM & HILLTOPADS)
+// ADS (200 PTS INVITER REWARD AFTER 2 ADS)
 // =====================================================
 
 async function ads(req, res) {
@@ -497,6 +504,15 @@ async function ads(req, res) {
       updatedAt: FieldValue.serverTimestamp()
     });
 
+    const logRef = db.collection("transactions").doc();
+    tx.set(logRef, {
+      userId: uid,
+      type: "ad_reward",
+      amount: finalReward,
+      title: `${provider.toUpperCase()} Ad Reward`,
+      createdAt: FieldValue.serverTimestamp()
+    });
+
     if (u.referredBy && totalAds >= 2) {
       shouldRewardInviter = true;
       inviterId = u.referredBy;
@@ -532,7 +548,7 @@ async function ads(req, res) {
 }
 
 // =====================================================
-// LIVE SYNCHRONIZED AVIATOR
+// LIVE SYNCHRONIZED AVIATOR (LAG-TOLERANT ENGINE)
 // =====================================================
 
 async function games(req, res) {
@@ -550,14 +566,11 @@ async function games(req, res) {
   }
 
   if (action === "aviator_bet") {
-    const bet = Number(req.body?.bet);
+    const bet = Math.floor(Number(req.body?.bet));
     if (!Number.isFinite(bet) || bet <= 0) throw new Error("INVALID_BET");
 
-    if (currentRound.phase !== "BETTING") {
-      throw new Error("ROUND_ALREADY_STARTED");
-    }
-
-    const betDocRef = db.collection("aviatorBets").doc(`${currentRound.roundIndex}_${uid}`);
+    const targetRoundIndex = Number(req.body?.roundIndex) || currentRound.roundIndex;
+    const betDocRef = db.collection("aviatorBets").doc(`${targetRoundIndex}_${uid}`);
 
     await db.runTransaction(async tx => {
       const snap = await tx.get(userRef);
@@ -578,7 +591,7 @@ async function games(req, res) {
 
       tx.create(betDocRef, {
         userId: uid,
-        roundIndex: currentRound.roundIndex,
+        roundIndex: targetRoundIndex,
         bet,
         status: "active",
         cashedOut: false,
@@ -589,17 +602,18 @@ async function games(req, res) {
     return res.status(200).json({
       success: true,
       bet,
-      roundIndex: currentRound.roundIndex
+      roundIndex: targetRoundIndex
     });
   }
 
   if (action === "aviator_cashout") {
-    if (currentRound.phase !== "FLYING") {
-      throw new Error("CANNOT_CASHOUT_NOW");
-    }
+    const targetRoundIndex = Number(req.body?.roundIndex) || currentRound.roundIndex;
+    const claimedMultiplier = Number(req.body?.multiplier) || currentRound.currentMultiplier;
+    const betDocRef = db.collection("aviatorBets").doc(`${targetRoundIndex}_${uid}`);
 
-    const betDocRef = db.collection("aviatorBets").doc(`${currentRound.roundIndex}_${uid}`);
+    const actualCrash = calculateRoundCrash(targetRoundIndex);
     let payout = 0;
+    let finalMultiplier = 1.00;
 
     await db.runTransaction(async tx => {
       const betSnap = await tx.get(betDocRef);
@@ -610,12 +624,16 @@ async function games(req, res) {
         throw new Error("ALREADY_CASHED_OUT");
       }
 
-      const multiplier = currentRound.currentMultiplier;
-      payout = Math.floor(b.bet * multiplier);
+      if (claimedMultiplier > actualCrash) {
+        throw new Error("FLEW_AWAY");
+      }
+
+      finalMultiplier = Math.min(actualCrash, Math.max(1.00, Number(claimedMultiplier.toFixed(2))));
+      payout = Math.floor(b.bet * finalMultiplier);
 
       tx.update(betDocRef, {
         cashedOut: true,
-        cashMultiplier: multiplier,
+        cashMultiplier: finalMultiplier,
         payout,
         status: "won",
         updatedAt: FieldValue.serverTimestamp()
@@ -626,11 +644,20 @@ async function games(req, res) {
         aviatorWins: FieldValue.increment(1),
         updatedAt: FieldValue.serverTimestamp()
       });
+
+      const logRef = db.collection("transactions").doc();
+      tx.set(logRef, {
+        userId: uid,
+        type: "aviator_win",
+        amount: payout,
+        title: `Aviator Win (${finalMultiplier}x)`,
+        createdAt: FieldValue.serverTimestamp()
+      });
     });
 
     return res.status(200).json({
       success: true,
-      multiplier: currentRound.currentMultiplier,
+      multiplier: finalMultiplier,
       payout
     });
   }
@@ -715,6 +742,15 @@ async function promo(req, res) {
     tx.update(userRef, {
       balance: FieldValue.increment(CONFIG.PROMO_REWARD),
       updatedAt: FieldValue.serverTimestamp()
+    });
+
+    const logRef = db.collection("transactions").doc();
+    tx.set(logRef, {
+      userId: uid,
+      type: "promo_code",
+      amount: CONFIG.PROMO_REWARD,
+      title: `Promo: ${code}`,
+      createdAt: FieldValue.serverTimestamp()
     });
   });
 
@@ -882,6 +918,15 @@ async function tasks(req, res) {
         tasksCompleted: FieldValue.increment(1),
         updatedAt: FieldValue.serverTimestamp()
       });
+
+      const logRef = db.collection("transactions").doc();
+      tx.set(logRef, {
+        userId: uid,
+        type: "task_completed",
+        amount: reward,
+        title: `Completed: ${t.title}`,
+        createdAt: FieldValue.serverTimestamp()
+      });
     });
 
     return res.status(200).json({ success: true, reward });
@@ -932,6 +977,15 @@ async function withdraw(req, res) {
       status: "processing",
       createdAt: FieldValue.serverTimestamp()
     });
+
+    const logRef = db.collection("transactions").doc();
+    tx.set(logRef, {
+      userId: uid,
+      type: "withdrawal",
+      amount: -minPoints,
+      title: `Payout to ${destination.slice(0, 6)}...`,
+      createdAt: FieldValue.serverTimestamp()
+    });
   });
 
   try {
@@ -977,6 +1031,21 @@ async function withdraw(req, res) {
 }
 
 // =====================================================
+// TRANSACTIONS LEDGER
+// =====================================================
+
+async function transactions(req, res) {
+  const { user } = getUser(req);
+  const uid = String(user.id);
+  const snap = await db.collection("transactions").where("userId", "==", uid).orderBy("createdAt", "desc").limit(20).get();
+
+  return res.status(200).json({
+    success: true,
+    transactions: snap.docs.map(d => ({ id: d.id, ...d.data() }))
+  });
+}
+
+// =====================================================
 // TELEGRAM /START WEBHOOK HANDLER
 // =====================================================
 
@@ -990,7 +1059,7 @@ async function telegram(req, res) {
     const parts = text.split(" ");
     const startParam = parts.length > 1 ? parts[1] : "";
 
-    const baseUrl = "https://usdt-hub-1.vercel.app";
+    const baseUrl = CONFIG.WEBAPP_URL || "https://usdt-hub-1.vercel.app";
     const launchUrl = startParam ? `${baseUrl}?startapp=${startParam}` : baseUrl;
 
     const welcomeMessage = [
@@ -1001,7 +1070,7 @@ async function telegram(req, res) {
       `🎁 <b>0.01 USDT Welcome Gift:</b> Instant BEP20 blockchain payout`,
       `📺 <b>Daily Ad Mining:</b> Earn up to 3,000+ PTS daily with Monetag & HilltopAds`,
       `✈️ <b>Live Aviator Arena:</b> Provably fair multiplayer flight multiplier`,
-      `👥 <b>1,000 PTS / Referral:</b> 500 PTS on join + 500 PTS on 2 ads`,
+      `👥 <b>500 PTS / Referral:</b> 300 PTS on join + 200 PTS on 2 ads`,
       `💸 <b>Direct BEP20 Payouts:</b> 10,000 PTS = 0.10 USDT (Auto-sent to wallet)`,
       `━━━━━━━━━━━━━━━━━━━━`,
       ``,
@@ -1050,11 +1119,19 @@ async function telegram(req, res) {
 }
 
 // =====================================================
-// MASTER HANDLER ROUTER
+// MASTER HANDLER ROUTER (FAIL-SAFE JSON OUTPUT)
 // =====================================================
 
 export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
+
+  // Prevent 500 crash if database initialization failed
+  if (!db && req.method === "POST") {
+    return res.status(200).json({
+      success: false,
+      error: "DATABASE_CONNECTION_ERROR: Please check your Firebase environment variables on Vercel."
+    });
+  }
 
   try {
     const path = getPath(req);
@@ -1086,6 +1163,7 @@ export default async function handler(req, res) {
     if (path === "/api/referral" || endpoint === "referral") return referral(req, res);
     if (path === "/api/tasks" || endpoint === "tasks") return tasks(req, res);
     if (path === "/api/withdraw" || endpoint === "withdraw") return withdraw(req, res);
+    if (path === "/api/transactions" || endpoint === "transactions") return transactions(req, res);
 
     return res.status(404).json({
       success: false,
