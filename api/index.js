@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import { ethers } from "ethers";
 import { db, FieldValue } from "../lib/firebase.js";
 import { validateInitData, getInitData } from "../lib/auth.js";
 import {
@@ -321,11 +320,11 @@ async function claimWelcome(req, res) {
   const uid = String(user.id);
   const address = String(req.body?.address || "").trim();
 
-  if (!ethers.isAddress(address)) throw new Error("INVALID_ADDRESS");
-  const normalized = ethers.getAddress(address);
+  if (!address.startsWith("0x") || address.length !== 42) throw new Error("INVALID_ADDRESS");
+  const normalized = address.toLowerCase();
 
   const userRef = db.collection("users").doc(uid);
-  const addressRef = db.collection("welcomeClaims").doc(normalized.toLowerCase());
+  const addressRef = db.collection("welcomeClaims").doc(normalized);
   const payoutRef = db.collection("payouts").doc();
 
   await db.runTransaction(async tx => {
@@ -847,8 +846,8 @@ async function withdraw(req, res) {
   const uid = String(user.id);
   const address = String(req.body?.address || "").trim();
 
-  if (!ethers.isAddress(address)) throw new Error("INVALID_ADDRESS");
-  const destination = ethers.getAddress(address);
+  if (!address.startsWith("0x") || address.length !== 42) throw new Error("INVALID_ADDRESS");
+  const destination = address.toLowerCase();
 
   const minPoints = Number(CONFIG.WITHDRAW_MIN_POINTS);
   const pointsPerUSDT = Number(CONFIG.POINTS_PER_USDT);
