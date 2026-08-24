@@ -92,22 +92,8 @@
     .progress-bar-bg{width:100%;height:7px;background:rgba(255,255,255,.08);border-radius:10px;margin:10px 0;overflow:hidden}
     .progress-fill{height:100%;background:linear-gradient(90deg,#2563eb,#06b6d4);border-radius:10px;transition:width .3s}
 
-    .aviator{position:relative;overflow:hidden;min-height:380px;border-radius:24px;background:radial-gradient(circle at 50% 45%,rgba(239,68,68,.12),transparent 30%),linear-gradient(180deg,#071323,#030914);border:1px solid rgba(255,255,255,.08)}
-    .ribbon-track{display:flex;gap:6px;overflow-x:hidden;padding:10px 12px;background:rgba(0,0,0,.35);border-bottom:1px solid var(--line)}
-    .ribbon-pill{padding:3px 8px;border-radius:10px;font-size:10px;font-weight:800;background:#0f223a;color:#93c5fd}
-    .ribbon-pill.high{background:rgba(139,92,246,.25);color:#c084fc;border:1px solid rgba(168,85,247,.3)}
-    .ribbon-pill.crash{background:rgba(239,68,68,.15);color:#f87171}
-    .aviator-screen{position:absolute;inset:50px 12px 125px;border-radius:18px;background:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:28px 28px;display:grid;place-items:center}
-    .multiplier{font-size:52px;font-weight:950;letter-spacing:-3px;z-index:2}
-    .multiplier.crashed{color:#ef4444;text-shadow:0 0 25px rgba(239,68,68,.4)}
-    .multiplier.flying{color:#fff;text-shadow:0 0 30px rgba(255,255,255,.3)}
-    .multiplier.betting{color:#facc15}
-    .plane{position:absolute;left:10%;bottom:14%;font-size:32px;z-index:3;transition:all .1s linear}
-    .aviator-status{position:absolute;left:0;right:0;bottom:90px;text-align:center;color:var(--muted);font-size:12px;z-index:4}
-    .aviator-controls{position:absolute;bottom:10px;left:10px;right:10px;z-index:5}
-
     .bottom-nav{position:fixed;z-index:1000;bottom:0;left:0;right:0;padding:6px 4px calc(6px + env(safe-area-inset-bottom));background:rgba(4,10,20,.96);backdrop-filter:blur(20px);border-top:1px solid var(--line);display:flex;justify-content:center}
-    .nav-inner{width:100%;max-width:640px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+    .nav-inner{width:100%;max-width:640px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
     .nav-btn{padding:7px 2px;border-radius:12px;background:transparent;color:#72849f;font-size:10px;font-weight:800}
     .nav-btn.active{color:#60a5fa;background:rgba(59,130,246,.10)}
     .nav-icon{font-size:18px;display:block;margin-bottom:2px}
@@ -208,7 +194,7 @@
         <div class="brand-logo">₮</div>
         <div>
           <div style="font-size:17px;font-weight:900">USDT Hub</div>
-          <div style="font-size:11px;color:var(--muted)">Earn • Play • Withdraw</div>
+          <div style="font-size:11px;color:var(--muted)">Earn • Mine • Withdraw</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
@@ -219,6 +205,7 @@
       </div>
     </header>
 
+    <!-- PAGE 1: HOME -->
     <section id="page-home" class="page active">
       <div class="box-rect balance-box">
         <div style="display:flex;justify-content:space-between;align-items:center">
@@ -247,6 +234,12 @@
         </div>
       </div>
 
+      <div class="section-title">🎁 Redeem Promo Code (200 PTS)</div>
+      <div class="box-rect" style="display:flex;gap:8px">
+        <input id="promoCode" class="input" style="margin-bottom:0" placeholder="ENTER PROMO CODE" autocomplete="off">
+        <button class="action-btn green" style="width:auto;padding:0 18px" onclick="claimPromo()">CLAIM</button>
+      </div>
+
       <div class="box-rect">
         <div style="font-weight:900;margin-bottom:12px">📊 Your Activity Overview</div>
         <div class="stats-grid">
@@ -263,22 +256,14 @@
             <div id="refCount" style="font-size:19px;font-weight:900;margin-top:4px">0</div>
           </div>
           <div class="stat-tile">
-            <div style="font-size:11px;color:var(--muted)">Aviator Wins</div>
-            <div id="winCount" style="font-size:19px;font-weight:900;margin-top:4px">0</div>
+            <div style="font-size:11px;color:var(--muted)">VIP Status</div>
+            <div id="vipStatusBox" style="font-size:15px;font-weight:900;margin-top:4px;color:#facc15">Bronze</div>
           </div>
-        </div>
-      </div>
-
-      <div class="box-rect" style="text-align:center">
-        <div style="font-weight:900;font-size:15px">👥 Refer Friends • Earn 500 PTS</div>
-        <div style="font-size:12px;color:var(--muted);margin:4px 0 14px">Get 300 PTS on channel join + 200 PTS when referral watches 2 ads.</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <button class="action-btn purple" onclick="copyReferral()">📋 COPY LINK</button>
-          <button class="action-btn" onclick="shareReferral()">🚀 DIRECT SHARE</button>
         </div>
       </div>
     </section>
 
+    <!-- PAGE 2: TASKS & ADS -->
     <section id="page-tasks" class="page">
       <div class="section-title">📺 Mining Ads (75 PTS / ad)</div>
 
@@ -291,7 +276,6 @@
           <button id="monetagBtn" style="padding:10px 16px;border-radius:12px;background:#2563eb;font-weight:900" onclick="watchAd('monetag')">WATCH</button>
         </div>
         <div class="progress-bar-bg"><div id="monetagFill" class="progress-fill" style="width:0%"></div></div>
-        <div style="font-size:11px;color:var(--muted)">Milestones: 2 ads = 150 PTS • 3 ads = 225 PTS</div>
       </div>
 
       <div class="ad-card">
@@ -303,7 +287,6 @@
           <button id="hilltopBtn" style="padding:10px 16px;border-radius:12px;background:#f97316;font-weight:900" onclick="watchAd('hilltop')">WATCH</button>
         </div>
         <div class="progress-bar-bg"><div id="hilltopFill" class="progress-fill" style="width:0%;background:linear-gradient(90deg,#ea580c,#f97316)"></div></div>
-        <div style="font-size:11px;color:var(--muted)">Earn 75 PTS per link visit • 15 ads daily</div>
       </div>
 
       <div class="section-title">
@@ -313,40 +296,7 @@
       <div id="tasksList"></div>
     </section>
 
-    <section id="page-games" class="page">
-      <div class="section-title">🎁 Redeem Promo Code (200 PTS)</div>
-      <div class="box-rect" style="display:flex;gap:8px">
-        <input id="promoCode" class="input" style="margin-bottom:0" placeholder="ENTER PROMO CODE" autocomplete="off">
-        <button class="action-btn green" style="width:auto;padding:0 18px" onclick="claimPromo()">CLAIM</button>
-      </div>
-
-      <div class="section-title">✈️ Live Synchronized Aviator</div>
-      <div class="aviator">
-        <div class="ribbon-track" id="aviatorRibbon">
-          <div class="ribbon-pill high">3.40x</div>
-          <div class="ribbon-pill crash">1.12x</div>
-          <div class="ribbon-pill">1.85x</div>
-          <div class="ribbon-pill high">7.20x</div>
-          <div class="ribbon-pill crash">1.05x</div>
-        </div>
-
-        <div class="aviator-screen">
-          <div id="aviatorMultiplier" class="multiplier">1.00x</div>
-          <div id="aviatorPlane" class="plane">✈️</div>
-        </div>
-
-        <div id="aviatorStatus" class="aviator-status">Connecting to live round...</div>
-
-        <div class="aviator-controls">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-            <input id="aviatorBet" class="input" style="margin-bottom:0" type="number" min="1" placeholder="Bet PTS">
-            <input id="autoCashoutVal" class="input" style="margin-bottom:0" type="number" step="0.1" min="1.1" placeholder="Auto Cash (e.g. 2.0)">
-          </div>
-          <button id="aviatorBtn" class="action-btn" onclick="handleAviatorAction()">PLACE BET</button>
-        </div>
-      </div>
-    </section>
-
+    <!-- PAGE 3: REFERRALS -->
     <section id="page-referrals" class="page">
       <div class="section-title">👥 Referral Center</div>
       <div class="box-rect" style="text-align:center">
@@ -374,6 +324,7 @@
       <div id="referralList" class="box-rect">No referrals yet.</div>
     </section>
 
+    <!-- PAGE 4: WITHDRAW -->
     <section id="page-withdraw" class="page">
       <div class="section-title">💸 Automated BEP20 Withdrawal</div>
       <div class="box-rect">
@@ -395,11 +346,11 @@
     </section>
   </main>
 
+  <!-- BOTTOM NAVIGATION (4 Tabs) -->
   <nav id="bottomNav" class="bottom-nav hidden">
     <div class="nav-inner">
       <button class="nav-btn active" data-page="home" onclick="showPage('home')"><span class="nav-icon">🏠</span>Home</button>
       <button class="nav-btn" data-page="tasks" onclick="showPage('tasks')"><span class="nav-icon">🎯</span>Tasks</button>
-      <button class="nav-btn" data-page="games" onclick="showPage('games')"><span class="nav-icon">✈️</span>Games</button>
       <button class="nav-btn" data-page="referrals" onclick="showPage('referrals')"><span class="nav-icon">👥</span>Referral</button>
       <button class="nav-btn" data-page="withdraw" onclick="showPage('withdraw')"><span class="nav-icon">💸</span>Withdraw</button>
     </div>
@@ -453,8 +404,6 @@ if (tg) {
 const INIT_DATA = tg?.initData || "";
 let currentUser = null;
 let appReady = false;
-let activeAviatorBet = null;
-let currentAviatorRound = null;
 
 function $(id) { return document.getElementById(id); }
 
@@ -491,27 +440,13 @@ async function apiRequest(endpoint, body = {}) {
     "X-Telegram-Init-Data": INIT_DATA
   };
 
-  let response;
-  try {
-    response = await fetch(`/api/${endpoint}`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ ...body, endpoint })
-    });
-  } catch {
-    response = await fetch(`/api/index?endpoint=${endpoint}`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ ...body, endpoint })
-    });
-  }
+  const response = await fetch(`/api/index?endpoint=${endpoint}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ ...body, endpoint })
+  });
 
-  let data;
-  try {
-    data = await response.json();
-  } catch {
-    throw new Error("Server communication error. Please try again.");
-  }
+  const data = await response.json();
 
   if (!response.ok || data?.success === false) {
     throw new Error(data?.error || `HTTP_${response.status}`);
@@ -587,7 +522,6 @@ function unlockApp() {
   updateUserUI();
   loadTasks();
   loadReferrals();
-  startSynchronizedAviatorLoop();
 }
 
 function updateUserUI() {
@@ -599,8 +533,8 @@ function updateUserUI() {
   $("adsCount").textContent = currentUser.adsWatched || 0;
   $("taskCount").textContent = currentUser.tasksCompleted || 0;
   $("refCount").textContent = currentUser.referrals || 0;
-  $("winCount").textContent = currentUser.aviatorWins || 0;
   $("vipBadge").textContent = currentUser.vipTier || "Bronze";
+  $("vipStatusBox").textContent = currentUser.vipTier || "Bronze";
 
   const botName = currentUser.botUsername || "Ussdt_hub_bot";
   $("refLink").textContent = `https://t.me/${botName}?startapp=ref_${currentUser.telegramId}`;
@@ -722,205 +656,6 @@ async function watchAd(provider = "monetag") {
     showToast(err.message, "error");
   } finally {
     btn.disabled = false;
-  }
-}
-
-function getClientLiveRound(timestamp = Date.now()) {
-  const roundDuration = 16000;
-  const roundIndex = Math.floor(timestamp / roundDuration);
-  const msInRound = timestamp % roundDuration;
-
-  function computeCrash(idx) {
-    const seed = (idx * 9301 + 49297) % 233280;
-    const rand = seed / 233280;
-    const cycle = idx % 5;
-
-    let mult;
-    if (cycle === 0) {
-      if (rand < 0.52) mult = 1.01 + rand * 0.23;
-      else if (rand < 0.88) mult = 1.25 + (rand - 0.52) * 2.8;
-      else mult = 2.40 + (rand - 0.88) * 15.0;
-    } else if (cycle === 1 || cycle === 3) {
-      if (rand < 0.48) mult = 1.00 + rand * 0.25;
-      else if (rand < 0.84) mult = 1.26 + (rand - 0.48) * 3.2;
-      else if (rand < 0.96) mult = 3.00 + (rand - 0.84) * 25.0;
-      else mult = 7.00 + (rand - 0.96) * 120.0;
-    } else {
-      if (rand < 0.54) mult = 1.02 + rand * 0.20;
-      else if (rand < 0.86) mult = 1.24 + (rand - 0.54) * 2.6;
-      else mult = 2.20 + (rand - 0.86) * 35.0;
-    }
-    return Math.round(mult * 100) / 100;
-  }
-
-  const crashMultiplier = computeCrash(roundIndex);
-  const flyTimeMs = Math.min(8500, Math.max(2200, Math.log(crashMultiplier + 1) * 3600));
-  const bettingDuration = 5000;
-
-  let phase;
-  let currentMultiplier = 1.00;
-
-  if (msInRound < bettingDuration) {
-    phase = "BETTING";
-  } else if (msInRound < bettingDuration + flyTimeMs) {
-    phase = "FLYING";
-    const progress = (msInRound - bettingDuration) / flyTimeMs;
-    currentMultiplier = Math.min(crashMultiplier, Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.75)));
-  } else {
-    phase = "CRASHED";
-    currentMultiplier = crashMultiplier;
-  }
-
-  const history = [];
-  for (let i = 1; i <= 6; i++) {
-    history.push(computeCrash(roundIndex - i));
-  }
-
-  return { roundIndex, phase, crashMultiplier, currentMultiplier, msInRound, flyTimeMs, history };
-}
-
-function updateRibbonHistory(history) {
-  const ribbon = $("aviatorRibbon");
-  if (!ribbon || !history || !history.length) return;
-  ribbon.innerHTML = history.map(val => {
-    let cls = "ribbon-pill";
-    if (val >= 2.0) cls += " high";
-    else if (val < 1.25) cls += " crash";
-    return `<div class="${cls}">${val.toFixed(2)}x</div>`;
-  }).join("");
-}
-
-let lastRenderedRound = null;
-
-function startSynchronizedAviatorLoop() {
-  const multEl = $("aviatorMultiplier");
-  const planeEl = $("aviatorPlane");
-  const statusEl = $("aviatorStatus");
-  const btn = $("aviatorBtn");
-
-  function frame() {
-    const round = getClientLiveRound(Date.now());
-    currentAviatorRound = round;
-
-    if (lastRenderedRound !== round.roundIndex) {
-      lastRenderedRound = round.roundIndex;
-      updateRibbonHistory(round.history);
-    }
-
-    if (activeAviatorBet && activeAviatorBet.roundIndex !== round.roundIndex) {
-      activeAviatorBet = null;
-    }
-
-    if (round.phase === "BETTING") {
-      const countdown = Math.max(1, Math.ceil((5000 - round.msInRound) / 1000));
-      multEl.textContent = `${countdown}s`;
-      multEl.className = "multiplier betting";
-      planeEl.style.left = "10%";
-      planeEl.style.bottom = "14%";
-      statusEl.textContent = `⏳ Flight in ${countdown}s (Betting Open)`;
-
-      if (activeAviatorBet) {
-        btn.disabled = true;
-        btn.textContent = `BET: ${activeAviatorBet.bet} PTS`;
-        btn.className = "action-btn";
-      } else {
-        btn.disabled = false;
-        btn.textContent = "PLACE BET";
-        btn.className = "action-btn";
-      }
-    } else if (round.phase === "FLYING") {
-      multEl.textContent = round.currentMultiplier.toFixed(2) + "x";
-      multEl.className = "multiplier flying";
-
-      const progress = (round.msInRound - 5000) / round.flyTimeMs;
-      planeEl.style.left = (10 + progress * 72) + "%";
-      planeEl.style.bottom = (14 + progress * 58) + "%";
-      statusEl.textContent = "✈️ Flying live...";
-
-      const autoVal = Number($("autoCashoutVal").value || 0);
-      if (autoVal > 1.0 && round.currentMultiplier >= autoVal && activeAviatorBet && !activeAviatorBet.cashedOut) {
-        handleAviatorAction();
-      }
-
-      if (activeAviatorBet && !activeAviatorBet.cashedOut) {
-        btn.disabled = false;
-        const currentWin = Math.floor(activeAviatorBet.bet * round.currentMultiplier);
-        btn.textContent = `CASH OUT (+${currentWin} PTS)`;
-        btn.className = "action-btn green";
-      } else {
-        btn.disabled = true;
-        btn.textContent = "FLYING...";
-        btn.className = "action-btn";
-      }
-    } else {
-      multEl.textContent = round.crashMultiplier.toFixed(2) + "x";
-      multEl.className = "multiplier crashed";
-      planeEl.style.left = "85%";
-      planeEl.style.bottom = "75%";
-      statusEl.textContent = "💥 FLEW AWAY!";
-
-      if (activeAviatorBet && !activeAviatorBet.cashedOut) {
-        btn.disabled = true;
-        btn.textContent = "CRASHED";
-        btn.className = "action-btn orange";
-      }
-    }
-
-    requestAnimationFrame(frame);
-  }
-
-  requestAnimationFrame(frame);
-}
-
-async function handleAviatorAction() {
-  const round = currentAviatorRound;
-  if (!round) return;
-
-  if (round.phase === "BETTING") {
-    const bet = Number($("aviatorBet").value);
-    if (!bet || bet <= 0) {
-      triggerHaptic("error");
-      showToast("Enter a valid bet.", "error");
-      return;
-    }
-
-    triggerHaptic("medium");
-    try {
-      await apiRequest("games", {
-        action: "aviator_bet",
-        bet,
-        roundIndex: round.roundIndex
-      });
-      activeAviatorBet = { roundIndex: round.roundIndex, bet, cashedOut: false };
-      currentUser.balance = Number(currentUser.balance || 0) - bet;
-      updateUserUI();
-      triggerHaptic("success");
-      showToast(`✅ Bet of ${bet} PTS placed!`, "success");
-    } catch (err) {
-      triggerHaptic("error");
-      showToast(err.message, "error");
-    }
-  } else if (round.phase === "FLYING" && activeAviatorBet && !activeAviatorBet.cashedOut) {
-    triggerHaptic("impact");
-    const multToClaim = round.currentMultiplier;
-    const betRound = activeAviatorBet.roundIndex;
-
-    try {
-      const data = await apiRequest("games", {
-        action: "aviator_cashout",
-        roundIndex: betRound,
-        multiplier: multToClaim
-      });
-      activeAviatorBet.cashedOut = true;
-      currentUser.balance = Number(currentUser.balance || 0) + Number(data.payout || 0);
-      currentUser.aviatorWins = Number(currentUser.aviatorWins || 0) + 1;
-      updateUserUI();
-      triggerHaptic("success");
-      showToast(`🚀 Cashed out at ${data.multiplier}x (+${data.payout} PTS)!`, "success");
-    } catch (err) {
-      triggerHaptic("error");
-      showToast(err.message === "FLEW_AWAY" ? "💥 Plane flew away before cashout!" : err.message, "error");
-    }
   }
 }
 
