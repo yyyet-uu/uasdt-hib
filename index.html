@@ -379,7 +379,7 @@
       <div class="box-rect" style="margin-top:12px">
         <div style="font-weight:900">How Live Aviator Works</div>
         <div style="color:var(--muted);font-size:12px;line-height:1.55;margin-top:6px">
-          All users share the same provably fair flight. You have <b>5 seconds</b> before each round to bet. Cash out before the plane flies away to secure your points.
+          All users share the same fast 10-second flight. You have <b>3.5 seconds</b> before each round to bet. Cash out before the plane flies away to secure your points.
         </div>
       </div>
     </section>
@@ -569,7 +569,6 @@ async function apiRequest(endpoint, body = {}) {
 // APP INITIALIZATION & LIFECYCLE
 // ==========================================
 async function initialize() {
-  // If visited in standard web browser (e.g. A-Ads Crawler Bot), show fallback and keep banner active
   if (!INIT_DATA) {
     setLoading(false);
     $("browserView").classList.remove("hidden");
@@ -788,27 +787,41 @@ async function watchAd(provider = "monetag") {
 }
 
 // ==========================================
-// SYNCHRONIZED LIVE AVIATOR ENGINE
+// FAST LIVE AVIATOR ENGINE & CLIENT
 // ==========================================
 function getClientLiveRound(timestamp = Date.now()) {
-  const epochSeconds = Math.floor(timestamp / 1000);
-  const roundIndex = Math.floor(epochSeconds / 16);
-  const msInRound = timestamp % 16000;
+  const roundDuration = 10000; // 10s Fast Cycle
+  const roundIndex = Math.floor(timestamp / roundDuration);
+  const msInRound = timestamp % roundDuration;
 
-  const seed = (roundIndex * 9301 + 49297) % 233280;
-  const rand = seed / 233280;
-  let crashMultiplier;
+  function computeCrash(idx) {
+    const seed = (idx * 9301 + 49297) % 233280;
+    const rand = seed / 233280;
+    const cycle = idx % 6;
 
-  if (rand < 0.045) crashMultiplier = 1.00;
-  else if (rand < 0.55) crashMultiplier = 1.01 + rand * 0.45;
-  else if (rand < 0.80) crashMultiplier = 1.25 + (rand - 0.55) * 2.8;
-  else if (rand < 0.93) crashMultiplier = 1.95 + (rand - 0.80) * 8.0;
-  else if (rand < 0.985) crashMultiplier = 3.00 + (rand - 0.93) * 35.0;
-  else crashMultiplier = 8.00 + (rand - 0.985) * 120.0;
+    let mult;
+    if (cycle === 0 || cycle === 4) {
+      if (rand < 0.28) mult = 1.05 + rand * 0.35;
+      else if (rand < 0.70) mult = 1.50 + rand * 2.8;
+      else if (rand < 0.90) mult = 4.50 + rand * 5.0;
+      else mult = 10.00 + rand * 15.0; // 10x - 25x
+    } else if (cycle === 1 || cycle === 3) {
+      if (rand < 0.35) mult = 1.02 + rand * 0.28;
+      else if (rand < 0.85) mult = 1.40 + rand * 2.2;
+      else if (rand < 0.96) mult = 5.00 + rand * 5.5;
+      else mult = 15.00 + rand * 12.0; // 15x - 27x
+    } else {
+      if (rand < 0.18) mult = 1.01 + rand * 0.20;
+      else if (rand < 0.65) mult = 1.60 + rand * 3.0;
+      else if (rand < 0.88) mult = 4.00 + rand * 6.0;
+      else mult = 12.00 + rand * 18.0; // 12x - 30x
+    }
+    return Math.round(mult * 100) / 100;
+  }
 
-  crashMultiplier = Math.round(crashMultiplier * 100) / 100;
-  const flyTimeMs = Math.min(8500, Math.max(1600, Math.log(crashMultiplier + 1) * 3600));
-  const bettingDuration = 5000;
+  const crashMultiplier = computeCrash(roundIndex);
+  const flyTimeMs = Math.min(5500, Math.max(1400, Math.log(crashMultiplier + 1) * 2600));
+  const bettingDuration = 3500; // 3.5s betting window
 
   let phase;
   let currentMultiplier = 1.00;
@@ -818,14 +831,32 @@ function getClientLiveRound(timestamp = Date.now()) {
   } else if (msInRound < bettingDuration + flyTimeMs) {
     phase = "FLYING";
     const progress = (msInRound - bettingDuration) / flyTimeMs;
-    currentMultiplier = Math.min(crashMultiplier, Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.75)));
+    currentMultiplier = Math.min(crashMultiplier, Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.6)));
   } else {
     phase = "CRASHED";
     currentMultiplier = crashMultiplier;
   }
 
-  return { roundIndex, phase, crashMultiplier, currentMultiplier, msInRound, flyTimeMs };
+  const history = [];
+  for (let i = 1; i <= 6; i++) {
+    history.push(computeCrash(roundIndex - i));
+  }
+
+  return { roundIndex, phase, crashMultiplier, currentMultiplier, msInRound, flyTimeMs, history };
 }
+
+function updateRibbonHistory(history) {
+  const ribbon = $("aviatorRibbon");
+  if (!ribbon || !history || !history.length) return;
+  ribbon.innerHTML = history.map(val => {
+    let cls = "ribbon-pill";
+    if (val >= 2.0) cls += " high";
+    else if (val < 1.25) cls += " crash";
+    return `<div class="${cls}">${val.toFixed(2)}x</div>`;
+  }).join("");
+}
+
+let lastRenderedRound = null;
 
 function startSynchronizedAviatorLoop() {
   const multEl = $("aviatorMultiplier");
@@ -837,17 +868,22 @@ function startSynchronizedAviatorLoop() {
     const round = getClientLiveRound(Date.now());
     currentAviatorRound = round;
 
+    if (lastRenderedRound !== round.roundIndex) {
+      lastRenderedRound = round.roundIndex;
+      updateRibbonHistory(round.history);
+    }
+
     if (activeAviatorBet && activeAviatorBet.roundIndex !== round.roundIndex) {
       activeAviatorBet = null;
     }
 
     if (round.phase === "BETTING") {
-      const countdown = Math.max(1, Math.ceil((5000 - round.msInRound) / 1000));
+      const countdown = Math.max(1, Math.ceil((3500 - round.msInRound) / 1000));
       multEl.textContent = `${countdown}s`;
       multEl.className = "multiplier betting";
       planeEl.style.left = "10%";
       planeEl.style.bottom = "14%";
-      statusEl.textContent = `⏳ Next round in ${countdown}s (Betting Open)`;
+      statusEl.textContent = `⏳ Flight in ${countdown}s (Betting Open)`;
 
       if (activeAviatorBet) {
         btn.disabled = true;
@@ -862,7 +898,7 @@ function startSynchronizedAviatorLoop() {
       multEl.textContent = round.currentMultiplier.toFixed(2) + "x";
       multEl.className = "multiplier flying";
 
-      const progress = (round.msInRound - 5000) / round.flyTimeMs;
+      const progress = (round.msInRound - 3500) / round.flyTimeMs;
       planeEl.style.left = (10 + progress * 72) + "%";
       planeEl.style.bottom = (14 + progress * 58) + "%";
       statusEl.textContent = "✈️ Flying live...";
@@ -879,7 +915,7 @@ function startSynchronizedAviatorLoop() {
         btn.className = "action-btn green";
       } else {
         btn.disabled = true;
-        btn.textContent = "ROUND IN PROGRESS";
+        btn.textContent = "FLYING...";
         btn.className = "action-btn";
       }
     } else {
