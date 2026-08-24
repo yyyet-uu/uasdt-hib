@@ -56,7 +56,7 @@ function getVipTier(totalPts = 0) {
 }
 
 // =====================================================
-// DYNAMIC LIVE AVIATOR ENGINE (10s Cycle, 62% Win Model + Rare 5x-30x)
+// BALANCED LIVE AVIATOR ENGINE (16s Smooth Cycle, Lower Win Rate)
 // =====================================================
 
 function calculateRoundCrash(roundIndex) {
@@ -66,35 +66,33 @@ function calculateRoundCrash(roundIndex) {
     .digest("hex");
 
   const rand = parseInt(hash.slice(0, 8), 16) / 0xffffffff;
-  const cycle = roundIndex % 6;
+  const cycle = roundIndex % 5;
 
-  if (cycle === 0 || cycle === 4) {
-    if (rand < 0.28) return 1.05 + Number((rand * 0.35).toFixed(2));
-    if (rand < 0.70) return 1.50 + Number((rand * 2.8).toFixed(2));
-    if (rand < 0.90) return 4.50 + Number((rand * 5.0).toFixed(2));
-    return 10.00 + Number((rand * 15.0).toFixed(2));
+  if (cycle === 0) {
+    if (rand < 0.52) return Number((1.01 + rand * 0.23).toFixed(2));
+    if (rand < 0.88) return Number((1.25 + (rand - 0.52) * 2.8).toFixed(2));
+    return Number((2.40 + (rand - 0.88) * 15.0).toFixed(2));
   } else if (cycle === 1 || cycle === 3) {
-    if (rand < 0.35) return 1.02 + Number((rand * 0.28).toFixed(2));
-    if (rand < 0.85) return 1.40 + Number((rand * 2.2).toFixed(2));
-    if (rand < 0.96) return 5.00 + Number((rand * 5.5).toFixed(2));
-    return 15.00 + Number((rand * 12.0).toFixed(2));
+    if (rand < 0.48) return Number((1.00 + rand * 0.25).toFixed(2));
+    if (rand < 0.84) return Number((1.26 + (rand - 0.48) * 3.2).toFixed(2));
+    if (rand < 0.96) return Number((3.00 + (rand - 0.84) * 25.0).toFixed(2));
+    return Number((7.00 + (rand - 0.96) * 120.0).toFixed(2));
   } else {
-    if (rand < 0.18) return 1.01 + Number((rand * 0.20).toFixed(2));
-    if (rand < 0.65) return 1.60 + Number((rand * 3.0).toFixed(2));
-    if (rand < 0.88) return 4.00 + Number((rand * 6.0).toFixed(2));
-    return 12.00 + Number((rand * 18.0).toFixed(2));
+    if (rand < 0.54) return Number((1.02 + rand * 0.20).toFixed(2));
+    if (rand < 0.86) return Number((1.24 + (rand - 0.54) * 2.6).toFixed(2));
+    return Number((2.20 + (rand - 0.86) * 35.0).toFixed(2));
   }
 }
 
 function getLiveAviatorState(timestamp = Date.now()) {
   const epochMs = timestamp;
-  const roundDuration = 10000;
+  const roundDuration = 16000;
   const roundIndex = Math.floor(epochMs / roundDuration);
   const msInRound = epochMs % roundDuration;
 
   const crashMultiplier = calculateRoundCrash(roundIndex);
-  const flyTimeMs = Math.min(5500, Math.max(1400, Math.log(crashMultiplier + 1) * 2600));
-  const bettingDuration = 3500;
+  const flyTimeMs = Math.min(8500, Math.max(2200, Math.log(crashMultiplier + 1) * 3600));
+  const bettingDuration = 5000;
 
   let phase;
   let currentMultiplier = 1.00;
@@ -106,7 +104,7 @@ function getLiveAviatorState(timestamp = Date.now()) {
     const progress = (msInRound - bettingDuration) / flyTimeMs;
     currentMultiplier = Math.min(
       crashMultiplier,
-      Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.6))
+      Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.75))
     );
   } else {
     phase = "CRASHED";
@@ -298,7 +296,7 @@ async function claimStreak(req, res) {
 }
 
 // =====================================================
-// CHANNEL MEMBERSHIP VERIFICATION
+// CHANNEL MEMBERSHIP VERIFICATION (300 PTS INVITER REWARD)
 // =====================================================
 
 async function verifyMembership(req, res) {
@@ -444,7 +442,7 @@ async function claimWelcome(req, res) {
 }
 
 // =====================================================
-// ADS (MONETAG, ADSGRAM & HILLTOPADS)
+// ADS (200 PTS INVITER REWARD AFTER 2 ADS)
 // =====================================================
 
 async function ads(req, res) {
@@ -1072,7 +1070,7 @@ async function telegram(req, res) {
       `🎁 <b>0.01 USDT Welcome Gift:</b> Instant BEP20 blockchain payout`,
       `📺 <b>Daily Ad Mining:</b> Earn up to 3,000+ PTS daily with Monetag & HilltopAds`,
       `✈️ <b>Live Aviator Arena:</b> Provably fair multiplayer flight multiplier`,
-      `👥 <b>1,000 PTS / Referral:</b> 500 PTS on join + 500 PTS on 2 ads`,
+      `👥 <b>500 PTS / Referral:</b> 300 PTS on join + 200 PTS on 2 ads`,
       `💸 <b>Direct BEP20 Payouts:</b> 10,000 PTS = 0.10 USDT (Auto-sent to wallet)`,
       `━━━━━━━━━━━━━━━━━━━━`,
       ``,
