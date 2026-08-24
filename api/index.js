@@ -10,7 +10,6 @@ import {
   notifyWithdrawalSuccess,
   notifyWelcomeBonus
 } from "../lib/telegram.js";
-import { sendUSDT, getPayoutWalletInfo } from "../lib/payout.js";
 import { CONFIG } from "../lib/config.js";
 
 function getPath(req) {
@@ -364,6 +363,8 @@ async function claimWelcome(req, res) {
   });
 
   try {
+    // Dynamic import inside function to avoid cold-start crash
+    const { sendUSDT } = await import("../lib/payout.js");
     const payment = await sendUSDT(normalized, CONFIG.WELCOME_USDT);
 
     await payoutRef.update({
@@ -846,9 +847,8 @@ async function withdraw(req, res) {
   const uid = String(user.id);
   const address = String(req.body?.address || "").trim();
 
-  const { ethers } = await import("ethers");
-  if (!ethers.isAddress(address)) throw new Error("INVALID_ADDRESS");
-  const destination = ethers.getAddress(address);
+  if (!address.startsWith("0x") || address.length !== 42) throw new Error("INVALID_ADDRESS");
+  const destination = address.toLowerCase();
 
   const minPoints = Number(CONFIG.WITHDRAW_MIN_POINTS);
   const pointsPerUSDT = Number(CONFIG.POINTS_PER_USDT);
@@ -883,6 +883,7 @@ async function withdraw(req, res) {
   });
 
   try {
+    const { sendUSDT } = await import("../lib/payout.js");
     const payment = await sendUSDT(destination, Number(amount.toFixed(8)));
 
     await withdrawalRef.update({
@@ -1018,7 +1019,7 @@ export default async function handler(req, res) {
     if (path === "/api/user" || endpoint === "user") return userHandler(req, res);
     if (path === "/api/claim-streak" || endpoint === "claim-streak") return claimStreak(req, res);
     if (path === "/api/verify-membership" || endpoint === "verify-membership") return verifyMembership(req, res);
-    if (path === "/api/claim-welcome" || endpoint === "claim-welcome") return claimWelcome(req, res);
+    if (path === /api\/claim-welcome/ || endpoint === "claim-welcome") return claimWelcome(req, res);
     if (path === "/api/ads" || endpoint === "ads") return ads(req, res);
     if (path === "/api/games" || endpoint === "games") return games(req, res);
     if (path === "/api/deposit" || endpoint === "deposit") return deposit(req, res);
