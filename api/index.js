@@ -68,31 +68,32 @@ function calculateRoundCrash(roundIndex) {
   const rand = parseInt(hash.slice(0, 8), 16) / 0xffffffff;
   const cycle = roundIndex % 5;
 
+  // Controlled win-rate: ~50% early crashes under 1.25x, balanced mid runs, occasional spikes
   if (cycle === 0) {
-    if (rand < 0.52) return Number((1.01 + rand * 0.23).toFixed(2));
-    if (rand < 0.88) return Number((1.25 + (rand - 0.52) * 2.8).toFixed(2));
-    return Number((2.40 + (rand - 0.88) * 15.0).toFixed(2));
+    if (rand < 0.52) return Number((1.01 + rand * 0.23).toFixed(2)); // 1.01x - 1.24x
+    if (rand < 0.88) return Number((1.25 + (rand - 0.52) * 2.8).toFixed(2)); // 1.25x - 2.25x
+    return Number((2.40 + (rand - 0.88) * 15.0).toFixed(2)); // 2.40x - 4.20x
   } else if (cycle === 1 || cycle === 3) {
-    if (rand < 0.48) return Number((1.00 + rand * 0.25).toFixed(2));
-    if (rand < 0.84) return Number((1.26 + (rand - 0.48) * 3.2).toFixed(2));
-    if (rand < 0.96) return Number((3.00 + (rand - 0.84) * 25.0).toFixed(2));
-    return Number((7.00 + (rand - 0.96) * 120.0).toFixed(2));
+    if (rand < 0.48) return Number((1.00 + rand * 0.25).toFixed(2)); // 1.00x - 1.25x
+    if (rand < 0.84) return Number((1.26 + (rand - 0.48) * 3.2).toFixed(2)); // 1.26x - 2.41x
+    if (rand < 0.96) return Number((3.00 + (rand - 0.84) * 25.0).toFixed(2)); // 3.00x - 6.00x
+    return Number((7.00 + (rand - 0.96) * 120.0).toFixed(2)); // 7.00x - 11.80x
   } else {
-    if (rand < 0.54) return Number((1.02 + rand * 0.20).toFixed(2));
-    if (rand < 0.86) return Number((1.24 + (rand - 0.54) * 2.6).toFixed(2));
-    return Number((2.20 + (rand - 0.86) * 35.0).toFixed(2));
+    if (rand < 0.54) return Number((1.02 + rand * 0.20).toFixed(2)); // 1.02x - 1.22x
+    if (rand < 0.86) return Number((1.24 + (rand - 0.54) * 2.6).toFixed(2)); // 1.24x - 2.07x
+    return Number((2.20 + (rand - 0.86) * 35.0).toFixed(2)); // 2.20x - 7.10x
   }
 }
 
 function getLiveAviatorState(timestamp = Date.now()) {
   const epochMs = timestamp;
-  const roundDuration = 16000;
+  const roundDuration = 16000; // Slower 16s Total Cycle
   const roundIndex = Math.floor(epochMs / roundDuration);
   const msInRound = epochMs % roundDuration;
 
   const crashMultiplier = calculateRoundCrash(roundIndex);
-  const flyTimeMs = Math.min(8500, Math.max(2200, Math.log(crashMultiplier + 1) * 3600));
-  const bettingDuration = 5000;
+  const flyTimeMs = Math.min(8500, Math.max(2200, Math.log(crashMultiplier + 1) * 3600)); // Slower smooth flight
+  const bettingDuration = 5000; // 5s relaxed betting window
 
   let phase;
   let currentMultiplier = 1.00;
@@ -296,7 +297,7 @@ async function claimStreak(req, res) {
 }
 
 // =====================================================
-// CHANNEL MEMBERSHIP VERIFICATION (300 PTS INVITER REWARD)
+// CHANNEL MEMBERSHIP VERIFICATION
 // =====================================================
 
 async function verifyMembership(req, res) {
@@ -442,7 +443,7 @@ async function claimWelcome(req, res) {
 }
 
 // =====================================================
-// ADS (200 PTS INVITER REWARD AFTER 2 ADS)
+// ADS (MONETAG, ADSGRAM & HILLTOPADS)
 // =====================================================
 
 async function ads(req, res) {
@@ -1070,7 +1071,7 @@ async function telegram(req, res) {
       `🎁 <b>0.01 USDT Welcome Gift:</b> Instant BEP20 blockchain payout`,
       `📺 <b>Daily Ad Mining:</b> Earn up to 3,000+ PTS daily with Monetag & HilltopAds`,
       `✈️ <b>Live Aviator Arena:</b> Provably fair multiplayer flight multiplier`,
-      `👥 <b>500 PTS / Referral:</b> 300 PTS on join + 200 PTS on 2 ads`,
+      `👥 <b>1,000 PTS / Referral:</b> 500 PTS on join + 500 PTS on 2 ads`,
       `💸 <b>Direct BEP20 Payouts:</b> 10,000 PTS = 0.10 USDT (Auto-sent to wallet)`,
       `━━━━━━━━━━━━━━━━━━━━`,
       ``,
