@@ -574,7 +574,8 @@ async function games(req, res) {
         throw new Error("ALREADY_CASHED_OUT");
       }
 
-      if (claimedMultiplier > actualCrash) {
+      // Lag tolerance buffer added here
+      if (claimedMultiplier > (actualCrash + 0.15)) {
         throw new Error("FLEW_AWAY");
       }
 
@@ -847,8 +848,8 @@ async function withdraw(req, res) {
   const uid = String(user.id);
   const address = String(req.body?.address || "").trim();
 
-  if (!address.startsWith("0x") || address.length !== 42) throw new Error("INVALID_ADDRESS");
-  const destination = address.toLowerCase();
+  if (!ethers.isAddress(address)) throw new Error("INVALID_ADDRESS");
+  const destination = ethers.getAddress(address);
 
   const minPoints = Number(CONFIG.WITHDRAW_MIN_POINTS);
   const pointsPerUSDT = Number(CONFIG.POINTS_PER_USDT);
