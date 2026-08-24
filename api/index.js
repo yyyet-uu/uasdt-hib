@@ -68,34 +68,33 @@ function calculateRoundCrash(roundIndex) {
   const rand = parseInt(hash.slice(0, 8), 16) / 0xffffffff;
   const cycle = roundIndex % 6;
 
-  // Dynamic distribution: ~62% rounds survive past 1.40x + rare 5x, 10x, 15x-30x
   if (cycle === 0 || cycle === 4) {
     if (rand < 0.28) return 1.05 + Number((rand * 0.35).toFixed(2));
-    if (rand < 0.70) return 1.50 + Number((rand * 2.8).toFixed(2)); // 1.50x - 3.46x
-    if (rand < 0.90) return 4.50 + Number((rand * 5.0).toFixed(2)); // 4.50x - 9.00x
-    return 10.00 + Number((rand * 15.0).toFixed(2));               // 10.00x - 25.00x (Rare)
+    if (rand < 0.70) return 1.50 + Number((rand * 2.8).toFixed(2));
+    if (rand < 0.90) return 4.50 + Number((rand * 5.0).toFixed(2));
+    return 10.00 + Number((rand * 15.0).toFixed(2));
   } else if (cycle === 1 || cycle === 3) {
     if (rand < 0.35) return 1.02 + Number((rand * 0.28).toFixed(2));
-    if (rand < 0.85) return 1.40 + Number((rand * 2.2).toFixed(2)); // 1.40x - 3.27x
-    if (rand < 0.96) return 5.00 + Number((rand * 5.5).toFixed(2)); // 5.00x - 10.28x
-    return 15.00 + Number((rand * 12.0).toFixed(2));               // 15.00x - 27.00x (Very Rare)
+    if (rand < 0.85) return 1.40 + Number((rand * 2.2).toFixed(2));
+    if (rand < 0.96) return 5.00 + Number((rand * 5.5).toFixed(2));
+    return 15.00 + Number((rand * 12.0).toFixed(2));
   } else {
     if (rand < 0.18) return 1.01 + Number((rand * 0.20).toFixed(2));
-    if (rand < 0.65) return 1.60 + Number((rand * 3.0).toFixed(2)); // 1.60x - 3.55x
-    if (rand < 0.88) return 4.00 + Number((rand * 6.0).toFixed(2)); // 4.00x - 9.28x
-    return 12.00 + Number((rand * 18.0).toFixed(2));               // 12.00x - 30.00x (Rare)
+    if (rand < 0.65) return 1.60 + Number((rand * 3.0).toFixed(2));
+    if (rand < 0.88) return 4.00 + Number((rand * 6.0).toFixed(2));
+    return 12.00 + Number((rand * 18.0).toFixed(2));
   }
 }
 
 function getLiveAviatorState(timestamp = Date.now()) {
   const epochMs = timestamp;
-  const roundDuration = 10000; // 10s Fast Cycle
+  const roundDuration = 10000;
   const roundIndex = Math.floor(epochMs / roundDuration);
   const msInRound = epochMs % roundDuration;
 
   const crashMultiplier = calculateRoundCrash(roundIndex);
   const flyTimeMs = Math.min(5500, Math.max(1400, Math.log(crashMultiplier + 1) * 2600));
-  const bettingDuration = 3500; // 3.5s betting window
+  const bettingDuration = 3500;
 
   let phase;
   let currentMultiplier = 1.00;
@@ -452,7 +451,7 @@ async function ads(req, res) {
   let shouldRewardInviter = false;
   let inviterId = null;
 
-  const HILLTOP_LIMIT = 15;
+  const HILLTOP_LIMIT = CONFIG.HILLTOP_LIMIT || 15;
   const monetagLimit = CONFIG.MONETAG_LIMIT || 25;
   const adsgramLimit = CONFIG.ADSGRAM_LIMIT || 25;
 
@@ -761,7 +760,7 @@ async function referral(req, res) {
 }
 
 // =====================================================
-// TASKS (100,000 PTS OR FREE FOR ADMIN)
+// TASKS (FILTERING COMPLETED TASKS PER USER)
 // =====================================================
 
 async function tasks(req, res) {
@@ -770,10 +769,17 @@ async function tasks(req, res) {
   const action = String(req.body?.action || "").toLowerCase();
 
   if (action === "list") {
-    const snap = await db.collection("tasks").where("status", "==", "active").limit(100).get();
+    const tasksSnap = await db.collection("tasks").where("status", "==", "active").limit(100).get();
+    const completedSnap = await db.collection("taskCompletions").where("userId", "==", uid).get();
+    const completedTaskIds = new Set(completedSnap.docs.map(doc => doc.data().taskId));
+
+    const availableTasks = tasksSnap.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(task => !completedTaskIds.has(task.id));
+
     return res.status(200).json({
       success: true,
-      tasks: snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      tasks: availableTasks
     });
   }
 
@@ -971,7 +977,7 @@ async function withdraw(req, res) {
 }
 
 // =====================================================
-// ATTRACTIVE TELEGRAM /START WEBHOOK HANDLER
+// TELEGRAM /START WEBHOOK HANDLER
 // =====================================================
 
 async function telegram(req, res) {
@@ -984,7 +990,7 @@ async function telegram(req, res) {
     const parts = text.split(" ");
     const startParam = parts.length > 1 ? parts[1] : "";
 
-    const baseUrl = CONFIG.WEBAPP_URL;
+    const baseUrl = "https://usdt-hub-1.vercel.app";
     const launchUrl = startParam ? `${baseUrl}?startapp=${startParam}` : baseUrl;
 
     const welcomeMessage = [
