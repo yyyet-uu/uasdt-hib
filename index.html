@@ -125,10 +125,6 @@
     .quick-bets{display:flex;gap:4px;margin-bottom:6px}
     .quick-bet-btn{flex:1;padding:6px;background:#102238;border-radius:8px;font-size:10px;font-weight:800;border:1px solid var(--line)}
 
-    /* FORTUNE WHEEL */
-    .wheel-box{text-align:center;position:relative;margin:12px auto;width:180px;height:180px;border-radius:50%;border:4px solid #facc15;background:conic-gradient(#2563eb 0deg 45deg,#7c3aed 45deg 90deg,#16a34a 90deg 135deg,#ea580c 135deg 180deg,#2563eb 180deg 225deg,#7c3aed 225deg 270deg,#16a34a 270deg 315deg,#ea580c 315deg 360deg);transition:transform 3s cubic-bezier(.17,.67,.12,.99)}
-    .wheel-pointer{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:20px;z-index:10}
-
     /* BOTTOM NAVIGATION */
     .bottom-nav{position:fixed;z-index:1000;bottom:0;left:0;right:0;padding:6px 4px calc(6px + env(safe-area-inset-bottom));background:rgba(4,10,20,.96);backdrop-filter:blur(20px);border-top:1px solid var(--line);display:flex;justify-content:center}
     .nav-inner{width:100%;max-width:640px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
@@ -276,14 +272,6 @@
           <span id="vipTierName">Bronze (1.0x)</span>
         </div>
         <div class="progress-bar-bg" style="margin:4px 0 0"><div id="vipProgressFill" class="progress-fill" style="width:15%"></div></div>
-      </div>
-
-      <!-- Daily Fortune Wheel -->
-      <div class="box-rect" style="text-align:center">
-        <div style="font-weight:900;font-size:14px">🎡 Daily Fortune Wheel (Free Spin)</div>
-        <div class="wheel-pointer">▼</div>
-        <div id="wheelBox" class="wheel-box"></div>
-        <button id="spinBtn" class="action-btn purple" style="width:auto;padding:8px 24px" onclick="spinFortuneWheel()">SPIN WHEEL</button>
       </div>
 
       <!-- 7-Day Login Streak -->
@@ -770,36 +758,6 @@ async function claimDailyStreak() {
 }
 
 // ==========================================
-// FORTUNE WHEEL
-// ==========================================
-async function spinFortuneWheel() {
-  triggerHaptic("medium");
-  const btn = $("spinBtn");
-  btn.disabled = true;
-  try {
-    const res = await apiRequest("spin-wheel");
-    const wheel = $("wheelBox");
-    const degrees = 1440 + (res.prizeIndex * 45);
-    wheel.style.transform = `rotate(${degrees}deg)`;
-    playTone(330, "sawtooth", 0.3);
-
-    setTimeout(() => {
-      currentUser.balance = Number(currentUser.balance || 0) + Number(res.reward || 0);
-      updateUserUI();
-      triggerHaptic("success");
-      playTone(523, "sine", 0.35);
-      showToast(`🎉 You won +${res.reward} PTS!`, "success");
-      loadTransactions();
-      btn.disabled = false;
-    }, 3200);
-  } catch (err) {
-    triggerHaptic("error");
-    showToast(err.message === "WHEEL_ALREADY_SPUN_TODAY" ? "Spin available once every 24 hours!" : err.message, "error");
-    btn.disabled = false;
-  }
-}
-
-// ==========================================
 // CHANNEL VERIFY & WELCOME BONUS
 // ==========================================
 async function verifyChannels() {
@@ -1154,7 +1112,6 @@ async function completeTask(taskId, link) {
     triggerHaptic("success");
     showToast(`🎯 +${data.reward} PTS rewarded!`, "success");
     
-    // Automatically removes task card
     await loadTasks();
     loadTransactions();
   } catch (err) {
