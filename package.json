@@ -1,13 +1,11 @@
+
 {
   "name": "usdt-hub",
   "version": "1.0.0",
-  "private": true,
   "type": "module",
-  "engines": {
-    "node": "22.x"
-  },
+  "main": "api/index.js",
   "dependencies": {
-    "ethers": "^6.15.0",
-    "firebase-admin": "^13.4.0"
+    "ethers": "^6.13.0",
+    "firebase-admin": "^12.0.0"
   }
 }
