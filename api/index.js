@@ -51,74 +51,6 @@ function getVipTier(totalPts = 0) {
   return CONFIG.VIP_TIERS.BRONZE;
 }
 
-function calculateRoundCrash(roundIndex) {
-  const hash = crypto
-    .createHmac("sha256", CONFIG.AVIATOR_SERVER_SECRET || "USDT_HUB_SECRET_KEY_999")
-    .update(String(roundIndex))
-    .digest("hex");
-
-  const rand = parseInt(hash.slice(0, 8), 16) / 0xffffffff;
-  const cycle = roundIndex % 5;
-
-  if (cycle === 0) {
-    if (rand < 0.52) return Number((1.01 + rand * 0.23).toFixed(2));
-    if (rand < 0.88) return Number((1.25 + (rand - 0.52) * 2.8).toFixed(2));
-    return Number((2.40 + (rand - 0.88) * 15.0).toFixed(2));
-  } else if (cycle === 1 || cycle === 3) {
-    if (rand < 0.48) return Number((1.00 + rand * 0.25).toFixed(2));
-    if (rand < 0.84) return Number((1.26 + (rand - 0.48) * 3.2).toFixed(2));
-    if (rand < 0.96) return Number((3.00 + (rand - 0.84) * 25.0).toFixed(2));
-    return Number((7.00 + (rand - 0.96) * 120.0).toFixed(2));
-  } else {
-    if (rand < 0.54) return Number((1.02 + rand * 0.20).toFixed(2));
-    if (rand < 0.86) return Number((1.24 + (rand - 0.54) * 2.6).toFixed(2));
-    return Number((2.20 + (rand - 0.86) * 35.0).toFixed(2));
-  }
-}
-
-function getLiveAviatorState(timestamp = Date.now()) {
-  const epochMs = timestamp;
-  const roundDuration = 16000;
-  const roundIndex = Math.floor(epochMs / roundDuration);
-  const msInRound = epochMs % roundDuration;
-
-  const crashMultiplier = calculateRoundCrash(roundIndex);
-  const flyTimeMs = Math.min(8500, Math.max(2200, Math.log(crashMultiplier + 1) * 3600));
-  const bettingDuration = 5000;
-
-  let phase;
-  let currentMultiplier = 1.00;
-
-  if (msInRound < bettingDuration) {
-    phase = "BETTING";
-  } else if (msInRound < bettingDuration + flyTimeMs) {
-    phase = "FLYING";
-    const progress = (msInRound - bettingDuration) / flyTimeMs;
-    currentMultiplier = Math.min(
-      crashMultiplier,
-      Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.75))
-    );
-  } else {
-    phase = "CRASHED";
-    currentMultiplier = crashMultiplier;
-  }
-
-  const history = [];
-  for (let i = 1; i <= 8; i++) {
-    history.push(calculateRoundCrash(roundIndex - i));
-  }
-
-  return {
-    roundIndex,
-    phase,
-    crashMultiplier: Number(crashMultiplier.toFixed(2)),
-    currentMultiplier: Number(currentMultiplier.toFixed(2)),
-    msInRound,
-    flyTimeMs,
-    history
-  };
-}
-
 async function userHandler(req, res) {
   let { user, startParam } = getUser(req);
   const uid = String(user.id);
@@ -182,8 +114,6 @@ async function userHandler(req, res) {
     appUnlocked: false,
     streakDay: 0,
     lastStreakDate: null,
-    aviatorGames: 0,
-    aviatorWins: 0,
     withdrawals: 0,
     lastWithdrawalId: null,
     referralCode: `ref_${uid}`,
@@ -499,112 +429,6 @@ async function ads(req, res) {
   }
 
   return res.status(200).json({ success: true, ...result });
-}
-
-async function games(req, res) {
-  const { user } = getUser(req);
-  const uid = String(user.id);
-  const action = String(req.body?.action || "").toLowerCase();
-  const userRef = db.collection("users").doc(uid);
-  const currentRound = getLiveAviatorState(Date.now());
-
-  if (action === "aviator_status") {
-    return res.status(200).json({
-      success: true,
-      ...currentRound
-    });
-  }
-
-  if (action === "aviator_bet") {
-    const bet = Math.floor(Number(req.body?.bet));
-    if (!Number.isFinite(bet) || bet <= 0) throw new Error("INVALID_BET");
-
-    const targetRoundIndex = Number(req.body?.roundIndex) || currentRound.roundIndex;
-    const betDocRef = db.collection("aviatorBets").doc(`${targetRoundIndex}_${uid}`);
-
-    await db.runTransaction(async tx => {
-      const snap = await tx.get(userRef);
-      if (!snap.exists) throw new Error("USER_NOT_FOUND");
-      const u = snap.data();
-
-      const existingBet = await tx.get(betDocRef);
-      if (existingBet.exists) throw new Error("BET_ALREADY_PLACED");
-
-      const balance = Number(u.balance || 0);
-      if (balance < bet) throw new Error("INSUFFICIENT_POINTS");
-
-      tx.update(userRef, {
-        balance: FieldValue.increment(-bet),
-        aviatorGames: FieldValue.increment(1),
-        updatedAt: FieldValue.serverTimestamp()
-      });
-
-      tx.create(betDocRef, {
-        userId: uid,
-        roundIndex: targetRoundIndex,
-        bet,
-        status: "active",
-        cashedOut: false,
-        createdAt: FieldValue.serverTimestamp()
-      });
-    });
-
-    return res.status(200).json({
-      success: true,
-      bet,
-      roundIndex: targetRoundIndex
-    });
-  }
-
-  if (action === "aviator_cashout") {
-    const targetRoundIndex = Number(req.body?.roundIndex) || currentRound.roundIndex;
-    const claimedMultiplier = Number(req.body?.multiplier) || currentRound.currentMultiplier;
-    const betDocRef = db.collection("aviatorBets").doc(`${targetRoundIndex}_${uid}`);
-
-    const actualCrash = calculateRoundCrash(targetRoundIndex);
-    let payout = 0;
-    let finalMultiplier = 1.00;
-
-    await db.runTransaction(async tx => {
-      const betSnap = await tx.get(betDocRef);
-      if (!betSnap.exists) throw new Error("NO_ACTIVE_BET");
-
-      const b = betSnap.data();
-      if (b.cashedOut || b.status !== "active") {
-        throw new Error("ALREADY_CASHED_OUT");
-      }
-
-      // Lag tolerance buffer added here
-      if (claimedMultiplier > (actualCrash + 0.15)) {
-        throw new Error("FLEW_AWAY");
-      }
-
-      finalMultiplier = Math.min(actualCrash, Math.max(1.00, Number(claimedMultiplier.toFixed(2))));
-      payout = Math.floor(b.bet * finalMultiplier);
-
-      tx.update(betDocRef, {
-        cashedOut: true,
-        cashMultiplier: finalMultiplier,
-        payout,
-        status: "won",
-        updatedAt: FieldValue.serverTimestamp()
-      });
-
-      tx.update(userRef, {
-        balance: FieldValue.increment(payout),
-        aviatorWins: FieldValue.increment(1),
-        updatedAt: FieldValue.serverTimestamp()
-      });
-    });
-
-    return res.status(200).json({
-      success: true,
-      multiplier: finalMultiplier,
-      payout
-    });
-  }
-
-  throw new Error("UNKNOWN_GAME_ACTION");
 }
 
 async function deposit(req, res) {
@@ -940,12 +764,11 @@ async function telegram(req, res) {
 
     const welcomeMessage = [
       `💎 <b>WELCOME TO USDT HUB, ${firstName.toUpperCase()}!</b> 💎`,
-      `<i>The #1 Automated Micro-Earning & Live Gaming Hub on Telegram.</i>`,
+      `<i>The #1 Automated Micro-Earning Hub on Telegram.</i>`,
       ``,
       `━━━━━━━━━━━━━━━━━━━━`,
       `🎁 <b>0.01 USDT Welcome Gift:</b> Instant BEP20 blockchain payout`,
       `📺 <b>Daily Ad Mining:</b> Earn up to 3,000+ PTS daily with Monetag & HilltopAds`,
-      `✈️ <b>Live Aviator Arena:</b> Provably fair multiplayer flight multiplier`,
       `👥 <b>500 PTS / Referral:</b> 300 PTS on join + 200 PTS on 2 ads`,
       `💸 <b>Direct BEP20 Payouts:</b> 10,000 PTS = 0.10 USDT (Auto-sent to wallet)`,
       `━━━━━━━━━━━━━━━━━━━━`,
@@ -1021,12 +844,11 @@ export default async function handler(req, res) {
     if (path === "/api/verify-membership" || endpoint === "verify-membership") return verifyMembership(req, res);
     if (path === "/api/claim-welcome" || endpoint === "claim-welcome") return claimWelcome(req, res);
     if (path === "/api/ads" || endpoint === "ads") return ads(req, res);
-    if (path === "/api/games" || endpoint === "games") return games(req, res);
     if (path === "/api/deposit" || endpoint === "deposit") return deposit(req, res);
     if (path === "/api/promo" || endpoint === "promo") return promo(req, res);
     if (path === "/api/referral" || endpoint === "referral") return referral(req, res);
     if (path === "/api/tasks" || endpoint === "tasks") return tasks(req, res);
-    if (path === "/api/withdraw" || endpoint === "withdraw") return withdraw(req, res);
+    if (path === "api/withdraw" || path === "/api/withdraw" || endpoint === "withdraw") return withdraw(req, res);
 
     return res.status(404).json({
       success: false,
