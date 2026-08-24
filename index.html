@@ -7,13 +7,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>USDT Hub</title>
 
-  <!-- HilltopAds Verification Meta Tag -->
   <meta name="af52b5a5b2ffaa8c13b4f13f9b439a5d64f06c03" content="af52b5a5b2ffaa8c13b4f13f9b439a5d64f06c03" />
 
-  <!-- Telegram Mini App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
-
-  <!-- Monetag Direct SDK -->
   <script src="//libtl.com/sdk.js" data-zone="11601754" data-sdk="show_11601754"></script>
 
   <style>
@@ -34,11 +30,6 @@
     button{border:0;cursor:pointer;color:white}
     .hidden{display:none!important}
 
-    /* MARKET TICKER BAR */
-    .market-bar{display:flex;justify-content:space-between;align-items:center;background:#091526;border-bottom:1px solid var(--line);padding:4px 12px;font-size:10px;font-weight:800;color:var(--muted)}
-    .ticker-up{color:#4ade80}
-
-    /* PUBLIC BANNER SLOTS */
     .aads-wrapper{
       width:100%;max-width:480px;margin:8px auto;padding:6px;
       background:rgba(14,27,48,.6);border:1px solid var(--line);
@@ -46,18 +37,15 @@
     }
     .aads-label{font-size:10px;font-weight:800;color:var(--muted);margin-bottom:6px;letter-spacing:.5px}
 
-    /* WEB CRAWLER FALLBACK CARD */
     .browser-view{
       max-width:460px;margin:40px auto;padding:24px 20px;text-align:center;
       background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);
     }
 
-    /* LOADING SCREEN */
     .loading-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#050b15}
     .logo-orb{width:80px;height:80px;margin:auto;border-radius:26px;display:grid;place-items:center;font-size:36px;font-weight:900;background:linear-gradient(145deg,#2563eb,#06b6d4);box-shadow:0 0 50px rgba(37,99,235,.45);animation:pulse 1.5s infinite}
     @keyframes pulse{50%{transform:scale(1.08);box-shadow:0 0 70px rgba(34,211,238,.55)}}
 
-    /* ONBOARDING SCREENS */
     .lock-screen,.welcome-screen{position:fixed;inset:0;z-index:9000;overflow:auto;padding:26px 16px;background:radial-gradient(circle at 50% 0%,rgba(37,99,235,.24),transparent 40%),#050b15}
     .lock-wrap,.welcome-wrap{max-width:460px;margin:20px auto}
     .lock-logo,.welcome-icon{width:80px;height:80px;border-radius:24px;display:grid;place-items:center;margin:0 auto 16px;font-size:34px;background:linear-gradient(145deg,#2563eb,#06b6d4);box-shadow:0 25px 70px rgba(37,99,235,.35)}
@@ -67,7 +55,6 @@
     .channel-icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(59,130,246,.15);font-size:20px}
     .join-btn{padding:10px 16px;border-radius:12px;background:#1689e8;font-weight:800;font-size:12px}
 
-    /* APP CONTAINER */
     .app{width:100%;max-width:640px;margin:auto;padding:12px 14px 25px}
     .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
     .brand{display:flex;align-items:center;gap:10px}
@@ -91,23 +78,20 @@
     .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
     .stat-tile{padding:14px;background:#09182b;border:1px solid var(--line);border-radius:16px}
 
-    .action-btn{width:100%;padding:14px;border-radius:14px;font-weight:900;background:linear-gradient(135deg,#2563eb,#3b82f6);transition:transform .1s active}
+    .action-btn{width:100%;padding:14px;border-radius:14px;font-weight:900;background:linear-gradient(135deg,#2563eb,#3b82f6)}
     .action-btn.green{background:linear-gradient(135deg,#16a34a,#22c55e)}
     .action-btn.purple{background:linear-gradient(135deg,#7c3aed,#8b5cf6)}
     .action-btn.orange{background:linear-gradient(135deg,#ea580c,#f97316)}
     .input{width:100%;padding:13px 15px;border-radius:14px;border:1px solid var(--line);background:#071221;color:white;outline:none;margin-bottom:10px}
 
-    /* DAILY STREAK */
     .streak-container{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-top:10px}
     .streak-node{flex:1;min-width:44px;padding:8px 4px;background:#09182b;border:1px solid var(--line);border-radius:12px;text-align:center;font-size:10px}
     .streak-node.active{border-color:#facc15;background:rgba(250,204,21,.15);color:#facc15;font-weight:800}
 
-    /* ADS SYSTEM */
     .ad-card{padding:16px;border-radius:20px;background:#09182b;border:1px solid var(--line);margin-bottom:12px}
     .progress-bar-bg{width:100%;height:7px;background:rgba(255,255,255,.08);border-radius:10px;margin:10px 0;overflow:hidden}
     .progress-fill{height:100%;background:linear-gradient(90deg,#2563eb,#06b6d4);border-radius:10px;transition:width .3s}
 
-    /* LIVE AVIATOR */
     .aviator{position:relative;overflow:hidden;min-height:380px;border-radius:24px;background:radial-gradient(circle at 50% 45%,rgba(239,68,68,.12),transparent 30%),linear-gradient(180deg,#071323,#030914);border:1px solid rgba(255,255,255,.08)}
     .ribbon-track{display:flex;gap:6px;overflow-x:hidden;padding:10px 12px;background:rgba(0,0,0,.35);border-bottom:1px solid var(--line)}
     .ribbon-pill{padding:3px 8px;border-radius:10px;font-size:10px;font-weight:800;background:#0f223a;color:#93c5fd}
@@ -122,17 +106,12 @@
     .aviator-status{position:absolute;left:0;right:0;bottom:90px;text-align:center;color:var(--muted);font-size:12px;z-index:4}
     .aviator-controls{position:absolute;bottom:10px;left:10px;right:10px;z-index:5}
 
-    .quick-bets{display:flex;gap:4px;margin-bottom:6px}
-    .quick-bet-btn{flex:1;padding:6px;background:#102238;border-radius:8px;font-size:10px;font-weight:800;border:1px solid var(--line)}
-
-    /* BOTTOM NAVIGATION */
     .bottom-nav{position:fixed;z-index:1000;bottom:0;left:0;right:0;padding:6px 4px calc(6px + env(safe-area-inset-bottom));background:rgba(4,10,20,.96);backdrop-filter:blur(20px);border-top:1px solid var(--line);display:flex;justify-content:center}
     .nav-inner{width:100%;max-width:640px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
     .nav-btn{padding:7px 2px;border-radius:12px;background:transparent;color:#72849f;font-size:10px;font-weight:800}
     .nav-btn.active{color:#60a5fa;background:rgba(59,130,246,.10)}
     .nav-icon{font-size:18px;display:block;margin-bottom:2px}
 
-    /* TOAST & MODAL */
     .toast{position:fixed;z-index:11000;left:50%;bottom:88px;transform:translate(-50%,20px);width:calc(100% - 30px);max-width:440px;padding:13px;border-radius:14px;background:#102139;border:1px solid var(--line);box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.25s;font-size:13px;text-align:center}
     .toast.show{opacity:1;transform:translate(-50%,0)}
     .toast.success{border-color:rgba(34,197,94,.4)}
@@ -144,14 +123,6 @@
 
 <body>
 
-  <!-- MARKET BAR -->
-  <div class="market-bar">
-    <span>💎 BNB/USDT: <b class="ticker-up">$584.20</b></span>
-    <span>⚡ BTC/USDT: <b class="ticker-up">$64,310.00</b></span>
-    <button onclick="toggleAudio()" style="background:transparent;padding:2px 6px;font-size:11px" id="soundToggle">🔊 Audio: ON</button>
-  </div>
-
-  <!-- ALWAYS-VISIBLE A-ADS BANNER -->
   <div class="aads-wrapper">
     <div class="aads-label">⚡ SPONSORED CRYPTO NETWORK</div>
     <div id="frame" style="width:100%;position:relative;display:flex;justify-content:center;min-height:90px">
@@ -159,7 +130,6 @@
     </div>
   </div>
 
-  <!-- BROWSER FALLBACK -->
   <div id="browserView" class="browser-view hidden">
     <div class="logo-orb" style="margin-bottom:14px">₮</div>
     <h2 style="margin:0 0 6px">USDT Hub</h2>
@@ -169,7 +139,6 @@
     <button class="action-btn" onclick="window.location.href='https://t.me/Ussdt_hub_bot'">🚀 OPEN IN TELEGRAM</button>
   </div>
 
-  <!-- 1. LOADING SCREEN -->
   <div id="loadingScreen" class="loading-screen hidden">
     <div style="text-align:center">
       <div class="logo-orb">₮</div>
@@ -178,7 +147,6 @@
     </div>
   </div>
 
-  <!-- 2. MANDATORY CHANNELS LOCK -->
   <section id="lockScreen" class="lock-screen hidden">
     <div class="lock-wrap">
       <div class="lock-logo">🔒</div>
@@ -218,7 +186,6 @@
     </div>
   </section>
 
-  <!-- 3. WELCOME BONUS -->
   <section id="welcomeScreen" class="welcome-screen hidden">
     <div class="welcome-wrap">
       <div class="welcome-icon">🎁</div>
@@ -235,8 +202,7 @@
     </div>
   </section>
 
-  <!-- 4. MAIN APP -->
-  <main id="app" class="app">
+  <main id="app" class="app hidden">
     <header class="topbar">
       <div class="brand">
         <div class="brand-logo">₮</div>
@@ -253,7 +219,6 @@
       </div>
     </header>
 
-    <!-- PAGE 1: HOME -->
     <section id="page-home" class="page active">
       <div class="box-rect balance-box">
         <div style="display:flex;justify-content:space-between;align-items:center">
@@ -264,14 +229,8 @@
           </div>
           <button onclick="showPage('withdraw')" style="background:#22c55e;padding:12px 18px;border-radius:14px;font-weight:900;font-size:13px">💸 Withdraw</button>
         </div>
-        <div style="margin-top:12px;font-size:10px;color:#cbd5e1;display:flex;justify-content:space-between">
-          <span>VIP Level Progress</span>
-          <span id="vipTierName">Bronze (1.0x)</span>
-        </div>
-        <div class="progress-bar-bg" style="margin:4px 0 0"><div id="vipProgressFill" class="progress-fill" style="width:15%"></div></div>
       </div>
 
-      <!-- 7-Day Login Streak -->
       <div class="box-rect">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div style="font-weight:900;font-size:14px">🔥 7-Day Login Streak</div>
@@ -288,7 +247,6 @@
         </div>
       </div>
 
-      <!-- Activity Stats -->
       <div class="box-rect">
         <div style="font-weight:900;margin-bottom:12px">📊 Your Activity Overview</div>
         <div class="stats-grid">
@@ -311,13 +269,6 @@
         </div>
       </div>
 
-      <!-- Recent Transactions History -->
-      <div class="box-rect">
-        <div style="font-weight:900;margin-bottom:8px">📝 Recent Activity Ledger</div>
-        <div id="historyList" style="font-size:12px;color:var(--muted)">No recent transactions.</div>
-      </div>
-
-      <!-- Direct Share -->
       <div class="box-rect" style="text-align:center">
         <div style="font-weight:900;font-size:15px">👥 Refer Friends • Earn 500 PTS</div>
         <div style="font-size:12px;color:var(--muted);margin:4px 0 14px">Get 300 PTS on channel join + 200 PTS when referral watches 2 ads.</div>
@@ -328,7 +279,6 @@
       </div>
     </section>
 
-    <!-- PAGE 2: TASKS & ADS -->
     <section id="page-tasks" class="page">
       <div class="section-title">📺 Mining Ads (75 PTS / ad)</div>
 
@@ -363,7 +313,6 @@
       <div id="tasksList"></div>
     </section>
 
-    <!-- PAGE 3: GAMES (PROMO + AVIATOR) -->
     <section id="page-games" class="page">
       <div class="section-title">🎁 Redeem Promo Code (200 PTS)</div>
       <div class="box-rect" style="display:flex;gap:8px">
@@ -389,12 +338,6 @@
         <div id="aviatorStatus" class="aviator-status">Connecting to live round...</div>
 
         <div class="aviator-controls">
-          <div class="quick-bets">
-            <button class="quick-bet-btn" onclick="setQuickBet(50)">+50</button>
-            <button class="quick-bet-btn" onclick="setQuickBet(100)">+100</button>
-            <button class="quick-bet-btn" onclick="setQuickBet(500)">+500</button>
-            <button class="quick-bet-btn" onclick="setQuickBet('max')">MAX</button>
-          </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
             <input id="aviatorBet" class="input" style="margin-bottom:0" type="number" min="1" placeholder="Bet PTS">
             <input id="autoCashoutVal" class="input" style="margin-bottom:0" type="number" step="0.1" min="1.1" placeholder="Auto Cash (e.g. 2.0)">
@@ -402,17 +345,8 @@
           <button id="aviatorBtn" class="action-btn" onclick="handleAviatorAction()">PLACE BET</button>
         </div>
       </div>
-
-      <div class="box-rect" style="margin-top:12px">
-        <div style="font-weight:900;margin-bottom:8px">👥 Live Aviator Arena Bets</div>
-        <div id="aviatorLiveBets" style="font-size:11px;color:var(--muted)">
-          <div style="display:flex;justify-content:space-between;padding:4px 0"><span>👤 @dawit_eth</span><span style="color:#facc15">Bet: 250 PTS</span></div>
-          <div style="display:flex;justify-content:space-between;padding:4px 0"><span>👤 @crypto_tg</span><span style="color:#4ade80">Won: +580 PTS (2.32x)</span></div>
-        </div>
-      </div>
     </section>
 
-    <!-- PAGE 4: REFERRALS -->
     <section id="page-referrals" class="page">
       <div class="section-title">👥 Referral Center</div>
       <div class="box-rect" style="text-align:center">
@@ -440,7 +374,6 @@
       <div id="referralList" class="box-rect">No referrals yet.</div>
     </section>
 
-    <!-- PAGE 5: WITHDRAW -->
     <section id="page-withdraw" class="page">
       <div class="section-title">💸 Automated BEP20 Withdrawal</div>
       <div class="box-rect">
@@ -462,8 +395,7 @@
     </section>
   </main>
 
-  <!-- BOTTOM NAVIGATION -->
-  <nav id="bottomNav" class="bottom-nav">
+  <nav id="bottomNav" class="bottom-nav hidden">
     <div class="nav-inner">
       <button class="nav-btn active" data-page="home" onclick="showPage('home')"><span class="nav-icon">🏠</span>Home</button>
       <button class="nav-btn" data-page="tasks" onclick="showPage('tasks')"><span class="nav-icon">🎯</span>Tasks</button>
@@ -473,10 +405,8 @@
     </div>
   </nav>
 
-  <!-- TOAST NOTIFICATIONS -->
   <div id="toast" class="toast"></div>
 
-  <!-- DEPOSIT MODAL -->
   <div id="depositModal" class="modal hidden">
     <div class="modal-box">
       <div style="font-size:18px;font-weight:900;margin-bottom:6px">💳 Deposit USDT (BEP20)</div>
@@ -489,7 +419,6 @@
     </div>
   </div>
 
-  <!-- CREATE TASK MODAL -->
   <div id="taskModal" class="modal hidden">
     <div class="modal-box">
       <div style="font-size:18px;font-weight:900;margin-bottom:6px">➕ Create Community Task</div>
@@ -526,32 +455,8 @@ let currentUser = null;
 let appReady = false;
 let activeAviatorBet = null;
 let currentAviatorRound = null;
-let soundEnabled = true;
 
 function $(id) { return document.getElementById(id); }
-
-function playTone(freq = 440, type = "sine", duration = 0.15) {
-  if (!soundEnabled) return;
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    gain.gain.setValueAtTime(0.08, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + duration);
-  } catch {}
-}
-
-function toggleAudio() {
-  soundEnabled = !soundEnabled;
-  $("soundToggle").textContent = soundEnabled ? "🔊 Audio: ON" : "🔇 Audio: OFF";
-  triggerHaptic("light");
-}
 
 function triggerHaptic(type = "medium") {
   try {
@@ -568,7 +473,7 @@ function showToast(msg, type = "") {
   toast.textContent = msg;
   toast.className = "toast show " + type;
   clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => { toast.className = "toast"; }, 4000);
+  showToast.timer = setTimeout(() => { toast.className = "toast"; }, 3500);
 }
 
 function openTelegram(url) {
@@ -601,13 +506,11 @@ async function apiRequest(endpoint, body = {}) {
     });
   }
 
-  const rawText = await response.text();
   let data;
   try {
-    data = JSON.parse(rawText);
+    data = await response.json();
   } catch {
-    const cleanErr = rawText.replace(/<[^>]*>?/gm, "").trim().slice(0, 100);
-    throw new Error(`Server Error (${response.status}): ${cleanErr || "Backend service crashed."}`);
+    throw new Error("Server communication error. Please try again.");
   }
 
   if (!response.ok || data?.success === false) {
@@ -616,14 +519,9 @@ async function apiRequest(endpoint, body = {}) {
   return data;
 }
 
-// ==========================================
-// APP INITIALIZATION
-// ==========================================
 async function initialize() {
   if (!INIT_DATA) {
     $("browserView").classList.remove("hidden");
-    $("app").classList.add("hidden");
-    $("bottomNav").classList.add("hidden");
     return;
   }
 
@@ -658,7 +556,6 @@ async function initialize() {
   } catch (error) {
     setLoading(false);
     showToast(error.message, "error");
-    unlockApp();
   }
 }
 
@@ -688,10 +585,9 @@ function unlockApp() {
   appReady = true;
 
   updateUserUI();
-  try { loadTasks(); } catch {}
-  try { loadReferrals(); } catch {}
-  try { loadTransactions(); } catch {}
-  try { startSynchronizedAviatorLoop(); } catch {}
+  loadTasks();
+  loadReferrals();
+  startSynchronizedAviatorLoop();
 }
 
 function updateUserUI() {
@@ -705,13 +601,9 @@ function updateUserUI() {
   $("refCount").textContent = currentUser.referrals || 0;
   $("winCount").textContent = currentUser.aviatorWins || 0;
   $("vipBadge").textContent = currentUser.vipTier || "Bronze";
-  $("vipTierName").textContent = `${currentUser.vipTier || "Bronze"} (${currentUser.vipMultiplier || 1.0}x)`;
 
   const botName = currentUser.botUsername || "Ussdt_hub_bot";
   $("refLink").textContent = `https://t.me/${botName}?startapp=ref_${currentUser.telegramId}`;
-
-  const pct = Math.min(100, Math.max(10, (pts / 200000) * 100));
-  $("vipProgressFill").style.width = pct + "%";
 
   const ml = Number(currentUser.monetagToday || 0);
   $("monetagCount").textContent = `${ml} / 25 today`;
@@ -728,9 +620,6 @@ function updateUserUI() {
   }
 }
 
-// ==========================================
-// 7-DAY LOGIN STREAK
-// ==========================================
 async function claimDailyStreak() {
   triggerHaptic("light");
   try {
@@ -738,19 +627,14 @@ async function claimDailyStreak() {
     currentUser.balance = Number(currentUser.balance || 0) + Number(res.reward || 0);
     currentUser.streakDay = res.streakDay;
     updateUserUI();
-    playTone(587, "triangle", 0.2);
     triggerHaptic("success");
     showToast(`🔥 Day ${res.streakDay} claimed: +${res.reward} PTS!`, "success");
-    loadTransactions();
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message === "STREAK_ALREADY_CLAIMED_TODAY" ? "You claimed today's streak already!" : err.message, "error");
   }
 }
 
-// ==========================================
-// CHANNEL VERIFY & WELCOME BONUS
-// ==========================================
 async function verifyChannels() {
   triggerHaptic("light");
   const btn = $("verifyBtn");
@@ -803,9 +687,6 @@ async function claimWelcome() {
   }
 }
 
-// ==========================================
-// ADS (MONETAG & HILLTOPADS)
-// ==========================================
 async function watchAd(provider = "monetag") {
   triggerHaptic("medium");
   const btn = $(provider === "hilltop" ? "hilltopBtn" : "monetagBtn");
@@ -834,28 +715,13 @@ async function watchAd(provider = "monetag") {
     if (res.hilltopToday !== undefined) currentUser.hilltopToday = res.hilltopToday;
 
     updateUserUI();
-    playTone(520, "sine", 0.2);
     triggerHaptic("success");
     showToast(`+${res.reward} PTS earned!`, "success");
-    loadTransactions();
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
   } finally {
     btn.disabled = false;
-  }
-}
-
-// ==========================================
-// LIVE AVIATOR ENGINE & CLIENT (16s CYCLE)
-// ==========================================
-function setQuickBet(val) {
-  triggerHaptic("light");
-  if (val === "max") {
-    $("aviatorBet").value = Number(currentUser?.balance || 0);
-  } else {
-    const cur = Number($("aviatorBet").value || 0);
-    $("aviatorBet").value = cur + val;
   }
 }
 
@@ -1028,7 +894,6 @@ async function handleAviatorAction() {
       activeAviatorBet = { roundIndex: round.roundIndex, bet, cashedOut: false };
       currentUser.balance = Number(currentUser.balance || 0) - bet;
       updateUserUI();
-      playTone(400, "triangle", 0.15);
       triggerHaptic("success");
       showToast(`✅ Bet of ${bet} PTS placed!`, "success");
     } catch (err) {
@@ -1050,10 +915,8 @@ async function handleAviatorAction() {
       currentUser.balance = Number(currentUser.balance || 0) + Number(data.payout || 0);
       currentUser.aviatorWins = Number(currentUser.aviatorWins || 0) + 1;
       updateUserUI();
-      playTone(660, "sine", 0.25);
       triggerHaptic("success");
       showToast(`🚀 Cashed out at ${data.multiplier}x (+${data.payout} PTS)!`, "success");
-      loadTransactions();
     } catch (err) {
       triggerHaptic("error");
       showToast(err.message === "FLEW_AWAY" ? "💥 Plane flew away before cashout!" : err.message, "error");
@@ -1061,9 +924,6 @@ async function handleAviatorAction() {
   }
 }
 
-// ==========================================
-// TASKS & DEPOSIT
-// ==========================================
 async function loadTasks() {
   const container = $("tasksList");
   try {
@@ -1097,12 +957,9 @@ async function completeTask(taskId, link) {
     currentUser.balance = Number(currentUser.balance || 0) + Number(data.reward || 0);
     currentUser.tasksCompleted = Number(currentUser.tasksCompleted || 0) + 1;
     updateUserUI();
-    playTone(550, "sine", 0.2);
     triggerHaptic("success");
     showToast(`🎯 +${data.reward} PTS rewarded!`, "success");
-    
     await loadTasks();
-    loadTransactions();
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
@@ -1173,9 +1030,6 @@ async function submitDeposit() {
   }
 }
 
-// ==========================================
-// REFERRAL & LEADERBOARD
-// ==========================================
 async function loadReferrals() {
   try {
     const [refData, leadData] = await Promise.all([
@@ -1200,7 +1054,7 @@ async function loadReferrals() {
 
     const leaders = leadData.leaderboard || [];
     if (!leaders.length) {
-      $("leaderboardList").innerHTML = `<div style="text-align:color:var(--muted);font-size:12px">No leaders yet.</div>`;
+      $("leaderboardList").innerHTML = `<div style="text-align:center;color:var(--muted);font-size:12px">No leaders yet.</div>`;
     } else {
       $("leaderboardList").innerHTML = leaders.map((l, i) => `
         <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px">
@@ -1210,26 +1064,6 @@ async function loadReferrals() {
       `).join("");
     }
   } catch {}
-}
-
-async function loadTransactions() {
-  try {
-    const data = await apiRequest("transactions");
-    const list = data.transactions || [];
-    const container = $("historyList");
-    if (!list.length) {
-      container.innerHTML = "No recent transactions.";
-      return;
-    }
-    container.innerHTML = list.map(tx => `
-      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-        <span>${tx.title || tx.type}</span>
-        <span style="color:${tx.amount >= 0 ? '#4ade80' : '#ef4444'}">${tx.amount >= 0 ? '+' : ''}${tx.amount} PTS</span>
-      </div>
-    `).join("");
-  } catch {
-    $("historyList").textContent = "No recent transactions.";
-  }
 }
 
 async function copyReferral() {
@@ -1255,19 +1089,14 @@ async function claimPromo() {
     currentUser.balance = Number(currentUser.balance || 0) + Number(data.reward || 0);
     updateUserUI();
     $("promoCode").value = "";
-    playTone(600, "triangle", 0.2);
     triggerHaptic("success");
     showToast(`🎁 +${data.reward} PTS claimed!`, "success");
-    loadTransactions();
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
   }
 }
 
-// ==========================================
-// WITHDRAW
-// ==========================================
 async function withdraw() {
   const address = $("withdrawAddress").value.trim();
   if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
@@ -1287,7 +1116,6 @@ async function withdraw() {
     $("withdrawAddress").value = "";
     triggerHaptic("success");
     showToast(`✅ Withdrawal sent: ${data.amount} USDT`, "success");
-    loadTransactions();
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
@@ -1310,7 +1138,6 @@ function showPage(page) {
 
   if (page === "tasks") loadTasks();
   if (page === "referrals") loadReferrals();
-  if (page === "home") loadTransactions();
 }
 
 document.addEventListener("DOMContentLoaded", initialize);
