@@ -196,7 +196,6 @@ async function userHandler(req, res) {
     appUnlocked: false,
     streakDay: 0,
     lastStreakDate: null,
-    lastWheelDate: null,
     aviatorGames: 0,
     aviatorWins: 0,
     withdrawals: 0,
@@ -295,52 +294,6 @@ async function claimStreak(req, res) {
     success: true,
     streakDay: newStreak,
     reward: streakReward
-  });
-}
-
-// =====================================================
-// DAILY FORTUNE WHEEL (24h COOLDOWN)
-// =====================================================
-
-async function spinWheel(req, res) {
-  const { user } = getUser(req);
-  const uid = String(user.id);
-  const userRef = db.collection("users").doc(uid);
-  const dToday = today();
-
-  const wheelPrizes = [50, 100, 150, 200, 300, 500, 1000, 2500];
-  const selectedReward = wheelPrizes[Math.floor(Math.random() * wheelPrizes.length)];
-  const prizeIndex = wheelPrizes.indexOf(selectedReward);
-
-  await db.runTransaction(async tx => {
-    const snap = await tx.get(userRef);
-    if (!snap.exists) throw new Error("USER_NOT_FOUND");
-    const u = snap.data();
-
-    if (u.lastWheelDate === dToday) {
-      throw new Error("WHEEL_ALREADY_SPUN_TODAY");
-    }
-
-    tx.update(userRef, {
-      balance: FieldValue.increment(selectedReward),
-      lastWheelDate: dToday,
-      updatedAt: FieldValue.serverTimestamp()
-    });
-
-    const logRef = db.collection("transactions").doc();
-    tx.set(logRef, {
-      userId: uid,
-      type: "fortune_wheel",
-      amount: selectedReward,
-      title: "Fortune Wheel Spin",
-      createdAt: FieldValue.serverTimestamp()
-    });
-  });
-
-  return res.status(200).json({
-    success: true,
-    reward: selectedReward,
-    prizeIndex
   });
 }
 
@@ -1195,7 +1148,6 @@ export default async function handler(req, res) {
 
     if (path === "/api/user" || endpoint === "user") return userHandler(req, res);
     if (path === "/api/claim-streak" || endpoint === "claim-streak") return claimStreak(req, res);
-    if (path === "/api/spin-wheel" || endpoint === "spin-wheel") return spinWheel(req, res);
     if (path === "/api/verify-membership" || endpoint === "verify-membership") return verifyMembership(req, res);
     if (path === "/api/claim-welcome" || endpoint === "claim-welcome") return claimWelcome(req, res);
     if (path === "/api/ads" || endpoint === "ads") return ads(req, res);
