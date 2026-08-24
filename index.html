@@ -568,7 +568,7 @@ function showToast(msg, type = "") {
   toast.textContent = msg;
   toast.className = "toast show " + type;
   clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => { toast.className = "toast"; }, 3200);
+  showToast.timer = setTimeout(() => { toast.className = "toast"; }, 4000);
 }
 
 function openTelegram(url) {
@@ -580,6 +580,7 @@ function openTelegram(url) {
 
 function setLoading(show) { $("loadingScreen").classList.toggle("hidden", !show); }
 
+// Resilient API requester with explicit HTML crash detection
 async function apiRequest(endpoint, body = {}) {
   const headers = {
     "Content-Type": "application/json",
@@ -601,11 +602,14 @@ async function apiRequest(endpoint, body = {}) {
     });
   }
 
+  const rawText = await response.text();
   let data;
   try {
-    data = await response.json();
+    data = JSON.parse(rawText);
   } catch {
-    throw new Error("Server returned an invalid format. Please try again.");
+    // If Vercel returns HTML error, extract readable text
+    const cleanErr = rawText.replace(/<[^>]*>?/gm, "").trim().slice(0, 100);
+    throw new Error(`Server Error (${response.status}): ${cleanErr || "Backend service crashed."}`);
   }
 
   if (!response.ok || data?.success === false) {
@@ -1198,7 +1202,7 @@ async function loadReferrals() {
 
     const leaders = leadData.leaderboard || [];
     if (!leaders.length) {
-      $("leaderboardList").innerHTML = `<div style="text-align:color:var(--muted);font-size:12px">No leaders yet.</div>`;
+      $("leaderboardList").innerHTML = `<div style="text-align:center;color:var(--muted);font-size:12px">No leaders yet.</div>`;
     } else {
       $("leaderboardList").innerHTML = leaders.map((l, i) => `
         <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px">
@@ -1315,4 +1319,3 @@ document.addEventListener("DOMContentLoaded", initialize);
 </script>
 </body>
 </html>
-.
