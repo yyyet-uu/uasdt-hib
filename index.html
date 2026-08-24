@@ -322,8 +322,8 @@
 
       <!-- Direct Share -->
       <div class="box-rect" style="text-align:center">
-        <div style="font-weight:900;font-size:15px">👥 Refer Friends • Earn 1,000 PTS ($0.01)</div>
-        <div style="font-size:12px;color:var(--muted);margin:4px 0 14px">Get 500 PTS on channel join + 500 PTS when referral watches 2 ads.</div>
+        <div style="font-weight:900;font-size:15px">👥 Refer Friends • Earn 500 PTS</div>
+        <div style="font-size:12px;color:var(--muted);margin:4px 0 14px">Get 300 PTS on channel join + 200 PTS when referral watches 2 ads.</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <button class="action-btn purple" onclick="copyReferral()">📋 COPY LINK</button>
           <button class="action-btn" onclick="shareReferral()">🚀 DIRECT SHARE</button>
@@ -433,9 +433,9 @@
       <div class="box-rect">
         <div style="font-weight:900;margin-bottom:8px">📜 Rules & Rewards</div>
         <div style="font-size:12px;color:var(--muted);line-height:1.6">
-          • <b>Join Channels:</b> Earn <b>+500 PTS</b> when your referral verifies channels.<br>
-          • <b>Watch 2 Ads:</b> Earn <b>+500 PTS</b> when your referral watches 2 ads.<br>
-          • <i>Total: 1,000 PTS ($0.01 USDT) per active user.</i>
+          • <b>Join Channels:</b> Earn <b>+300 PTS</b> when your referral verifies channels.<br>
+          • <b>Watch 2 Ads:</b> Earn <b>+200 PTS</b> when your referral watches 2 ads.<br>
+          • <i>Total: 500 PTS per active user.</i>
         </div>
       </div>
 
@@ -856,7 +856,7 @@ async function watchAd(provider = "monetag") {
 }
 
 // ==========================================
-// FAST LIVE AVIATOR ENGINE & CLIENT
+// BALANCED LIVE AVIATOR ENGINE & CLIENT (16s CYCLE)
 // ==========================================
 function setQuickBet(val) {
   triggerHaptic("light");
@@ -869,38 +869,36 @@ function setQuickBet(val) {
 }
 
 function getClientLiveRound(timestamp = Date.now()) {
-  const roundDuration = 10000;
+  const roundDuration = 16000;
   const roundIndex = Math.floor(timestamp / roundDuration);
   const msInRound = timestamp % roundDuration;
 
   function computeCrash(idx) {
     const seed = (idx * 9301 + 49297) % 233280;
     const rand = seed / 233280;
-    const cycle = idx % 6;
+    const cycle = idx % 5;
 
     let mult;
-    if (cycle === 0 || cycle === 4) {
-      if (rand < 0.28) mult = 1.05 + rand * 0.35;
-      else if (rand < 0.70) mult = 1.50 + rand * 2.8;
-      else if (rand < 0.90) mult = 4.50 + rand * 5.0;
-      else mult = 10.00 + rand * 15.0;
+    if (cycle === 0) {
+      if (rand < 0.52) mult = 1.01 + rand * 0.23;
+      else if (rand < 0.88) mult = 1.25 + (rand - 0.52) * 2.8;
+      else mult = 2.40 + (rand - 0.88) * 15.0;
     } else if (cycle === 1 || cycle === 3) {
-      if (rand < 0.35) mult = 1.02 + rand * 0.28;
-      else if (rand < 0.85) mult = 1.40 + rand * 2.2;
-      else if (rand < 0.96) mult = 5.00 + rand * 5.5;
-      else mult = 15.00 + rand * 12.0;
+      if (rand < 0.48) mult = 1.00 + rand * 0.25;
+      else if (rand < 0.84) mult = 1.26 + (rand - 0.48) * 3.2;
+      else if (rand < 0.96) mult = 3.00 + (rand - 0.84) * 25.0;
+      else mult = 7.00 + (rand - 0.96) * 120.0;
     } else {
-      if (rand < 0.18) mult = 1.01 + rand * 0.20;
-      else if (rand < 0.65) mult = 1.60 + rand * 3.0;
-      else if (rand < 0.88) mult = 4.00 + rand * 6.0;
-      else mult = 12.00 + rand * 18.0;
+      if (rand < 0.54) mult = 1.02 + rand * 0.20;
+      else if (rand < 0.86) mult = 1.24 + (rand - 0.54) * 2.6;
+      else mult = 2.20 + (rand - 0.86) * 35.0;
     }
     return Math.round(mult * 100) / 100;
   }
 
   const crashMultiplier = computeCrash(roundIndex);
-  const flyTimeMs = Math.min(5500, Math.max(1400, Math.log(crashMultiplier + 1) * 2600));
-  const bettingDuration = 3500;
+  const flyTimeMs = Math.min(8500, Math.max(2200, Math.log(crashMultiplier + 1) * 3600));
+  const bettingDuration = 5000;
 
   let phase;
   let currentMultiplier = 1.00;
@@ -910,7 +908,7 @@ function getClientLiveRound(timestamp = Date.now()) {
   } else if (msInRound < bettingDuration + flyTimeMs) {
     phase = "FLYING";
     const progress = (msInRound - bettingDuration) / flyTimeMs;
-    currentMultiplier = Math.min(crashMultiplier, Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.6)));
+    currentMultiplier = Math.min(crashMultiplier, Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.75)));
   } else {
     phase = "CRASHED";
     currentMultiplier = crashMultiplier;
@@ -957,7 +955,7 @@ function startSynchronizedAviatorLoop() {
     }
 
     if (round.phase === "BETTING") {
-      const countdown = Math.max(1, Math.ceil((3500 - round.msInRound) / 1000));
+      const countdown = Math.max(1, Math.ceil((5000 - round.msInRound) / 1000));
       multEl.textContent = `${countdown}s`;
       multEl.className = "multiplier betting";
       planeEl.style.left = "10%";
@@ -977,7 +975,7 @@ function startSynchronizedAviatorLoop() {
       multEl.textContent = round.currentMultiplier.toFixed(2) + "x";
       multEl.className = "multiplier flying";
 
-      const progress = (round.msInRound - 3500) / round.flyTimeMs;
+      const progress = (round.msInRound - 5000) / round.flyTimeMs;
       planeEl.style.left = (10 + progress * 72) + "%";
       planeEl.style.bottom = (14 + progress * 58) + "%";
       statusEl.textContent = "✈️ Flying live...";
@@ -1204,7 +1202,7 @@ async function loadReferrals() {
       $("referralList").innerHTML = list.map(r => `
         <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px">
           <span>👤 User ${r.referredUserId.slice(0, 5)}***</span>
-          <span style="color:#4ade80">${r.channelRewarded && r.adsRewarded ? "+1,000 PTS" : r.channelRewarded ? "+500 PTS" : "Pending"}</span>
+          <span style="color:#4ade80">${r.channelRewarded && r.adsRewarded ? "+500 PTS" : r.channelRewarded ? "+300 PTS" : "Pending"}</span>
         </div>
       `).join("");
     }
