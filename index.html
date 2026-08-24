@@ -38,7 +38,7 @@
     .market-bar{display:flex;justify-content:space-between;align-items:center;background:#091526;border-bottom:1px solid var(--line);padding:4px 12px;font-size:10px;font-weight:800;color:var(--muted)}
     .ticker-up{color:#4ade80}
 
-    /* PUBLIC BANNER SLOTS (Fully Visible to A-Ads Bot) */
+    /* PUBLIC BANNER SLOTS */
     .aads-wrapper{
       width:100%;max-width:480px;margin:8px auto;padding:6px;
       background:rgba(14,27,48,.6);border:1px solid var(--line);
@@ -102,12 +102,12 @@
     .streak-node{flex:1;min-width:44px;padding:8px 4px;background:#09182b;border:1px solid var(--line);border-radius:12px;text-align:center;font-size:10px}
     .streak-node.active{border-color:#facc15;background:rgba(250,204,21,.15);color:#facc15;font-weight:800}
 
-    /* ADS SYSTEM & SPONSORS */
+    /* ADS SYSTEM */
     .ad-card{padding:16px;border-radius:20px;background:#09182b;border:1px solid var(--line);margin-bottom:12px}
     .progress-bar-bg{width:100%;height:7px;background:rgba(255,255,255,.08);border-radius:10px;margin:10px 0;overflow:hidden}
     .progress-fill{height:100%;background:linear-gradient(90deg,#2563eb,#06b6d4);border-radius:10px;transition:width .3s}
 
-    /* LIVE SYNCHRONIZED AVIATOR */
+    /* LIVE AVIATOR */
     .aviator{position:relative;overflow:hidden;min-height:380px;border-radius:24px;background:radial-gradient(circle at 50% 45%,rgba(239,68,68,.12),transparent 30%),linear-gradient(180deg,#071323,#030914);border:1px solid rgba(255,255,255,.08)}
     .ribbon-track{display:flex;gap:6px;overflow-x:hidden;padding:10px 12px;background:rgba(0,0,0,.35);border-bottom:1px solid var(--line)}
     .ribbon-pill{padding:3px 8px;border-radius:10px;font-size:10px;font-weight:800;background:#0f223a;color:#93c5fd}
@@ -151,17 +151,15 @@
     <button onclick="toggleAudio()" style="background:transparent;padding:2px 6px;font-size:11px" id="soundToggle">🔊 Audio: ON</button>
   </div>
 
-  <!-- ALWAYS-VISIBLE A-ADS BANNER (For Web Crawlers & Users) -->
+  <!-- ALWAYS-VISIBLE A-ADS BANNER -->
   <div class="aads-wrapper">
     <div class="aads-label">⚡ SPONSORED CRYPTO NETWORK</div>
     <div id="frame" style="width:100%;position:relative;display:flex;justify-content:center;min-height:90px">
-      <!-- BEGIN AADS AD UNIT 2453118 -->
       <iframe data-aa='2453118' src='//acceptable.a-ads.com/2453118/?size=Adaptive' style='border:0px;padding:0;width:100%;min-height:90px;height:90px;overflow:hidden;background-color:transparent;display:block;'></iframe>
-      <!-- END AADS AD UNIT 2453118 -->
     </div>
   </div>
 
-  <!-- BROWSER FALLBACK (Shown when opened outside Telegram) -->
+  <!-- BROWSER FALLBACK -->
   <div id="browserView" class="browser-view hidden">
     <div class="logo-orb" style="margin-bottom:14px">₮</div>
     <h2 style="margin:0 0 6px">USDT Hub</h2>
@@ -238,7 +236,7 @@
   </section>
 
   <!-- 4. MAIN APP -->
-  <main id="app" class="app hidden">
+  <main id="app" class="app">
     <header class="topbar">
       <div class="brand">
         <div class="brand-logo">₮</div>
@@ -266,7 +264,6 @@
           </div>
           <button onclick="showPage('withdraw')" style="background:#22c55e;padding:12px 18px;border-radius:14px;font-weight:900;font-size:13px">💸 Withdraw</button>
         </div>
-        <!-- VIP Tier Progress Bar -->
         <div style="margin-top:12px;font-size:10px;color:#cbd5e1;display:flex;justify-content:space-between">
           <span>VIP Level Progress</span>
           <span id="vipTierName">Bronze (1.0x)</span>
@@ -317,7 +314,7 @@
       <!-- Recent Transactions History -->
       <div class="box-rect">
         <div style="font-weight:900;margin-bottom:8px">📝 Recent Activity Ledger</div>
-        <div id="historyList" style="font-size:12px;color:var(--muted)">Loading transaction log...</div>
+        <div id="historyList" style="font-size:12px;color:var(--muted)">No recent transactions.</div>
       </div>
 
       <!-- Direct Share -->
@@ -335,7 +332,6 @@
     <section id="page-tasks" class="page">
       <div class="section-title">📺 Mining Ads (75 PTS / ad)</div>
 
-      <!-- Monetag Ad Box -->
       <div class="ad-card">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
@@ -348,7 +344,6 @@
         <div style="font-size:11px;color:var(--muted)">Milestones: 2 ads = 150 PTS • 3 ads = 225 PTS</div>
       </div>
 
-      <!-- HilltopAds Ad Box -->
       <div class="ad-card">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
@@ -408,7 +403,6 @@
         </div>
       </div>
 
-      <!-- Live Aviator Activity Board -->
       <div class="box-rect" style="margin-top:12px">
         <div style="font-weight:900;margin-bottom:8px">👥 Live Aviator Arena Bets</div>
         <div id="aviatorLiveBets" style="font-size:11px;color:var(--muted)">
@@ -469,7 +463,7 @@
   </main>
 
   <!-- BOTTOM NAVIGATION -->
-  <nav id="bottomNav" class="bottom-nav hidden">
+  <nav id="bottomNav" class="bottom-nav">
     <div class="nav-inner">
       <button class="nav-btn active" data-page="home" onclick="showPage('home')"><span class="nav-icon">🏠</span>Home</button>
       <button class="nav-btn" data-page="tasks" onclick="showPage('tasks')"><span class="nav-icon">🎯</span>Tasks</button>
@@ -536,7 +530,6 @@ let soundEnabled = true;
 
 function $(id) { return document.getElementById(id); }
 
-// Synthesized Audio FX (Web Audio API)
 function playTone(freq = 440, type = "sine", duration = 0.15) {
   if (!soundEnabled) return;
   try {
@@ -587,18 +580,15 @@ function openTelegram(url) {
 
 function setLoading(show) { $("loadingScreen").classList.toggle("hidden", !show); }
 
-// Resilient API requester
 async function apiRequest(endpoint, body = {}) {
   const headers = {
     "Content-Type": "application/json",
     "X-Telegram-Init-Data": INIT_DATA
   };
 
-  const url = `/api/${endpoint}`;
-
   let response;
   try {
-    response = await fetch(url, {
+    response = await fetch(`/api/${endpoint}`, {
       method: "POST",
       headers,
       body: JSON.stringify({ ...body, endpoint })
@@ -625,12 +615,13 @@ async function apiRequest(endpoint, body = {}) {
 }
 
 // ==========================================
-// APP INITIALIZATION & LIFECYCLE
+// APP INITIALIZATION
 // ==========================================
 async function initialize() {
   if (!INIT_DATA) {
-    setLoading(false);
     $("browserView").classList.remove("hidden");
+    $("app").classList.add("hidden");
+    $("bottomNav").classList.add("hidden");
     return;
   }
 
@@ -665,6 +656,8 @@ async function initialize() {
   } catch (error) {
     setLoading(false);
     showToast(error.message, "error");
+    // Fallback: render main UI so screen is never blank
+    unlockApp();
   }
 }
 
@@ -694,10 +687,10 @@ function unlockApp() {
   appReady = true;
 
   updateUserUI();
-  loadTasks();
-  loadReferrals();
-  loadTransactions();
-  startSynchronizedAviatorLoop();
+  try { loadTasks(); } catch {}
+  try { loadReferrals(); } catch {}
+  try { loadTransactions(); } catch {}
+  try { startSynchronizedAviatorLoop(); } catch {}
 }
 
 function updateUserUI() {
@@ -716,16 +709,13 @@ function updateUserUI() {
   const botName = currentUser.botUsername || "Ussdt_hub_bot";
   $("refLink").textContent = `https://t.me/${botName}?startapp=ref_${currentUser.telegramId}`;
 
-  // VIP Progress
   const pct = Math.min(100, Math.max(10, (pts / 200000) * 100));
   $("vipProgressFill").style.width = pct + "%";
 
-  // Monetag Progress
   const ml = Number(currentUser.monetagToday || 0);
   $("monetagCount").textContent = `${ml} / 25 today`;
   $("monetagFill").style.width = Math.min(100, (ml / 25) * 100) + "%";
 
-  // HilltopAds Progress
   const hl = Number(currentUser.hilltopToday || 0);
   $("hilltopCount").textContent = `${hl} / 15 today`;
   $("hilltopFill").style.width = Math.min(100, (hl / 15) * 100) + "%";
@@ -738,7 +728,7 @@ function updateUserUI() {
 }
 
 // ==========================================
-// 7-DAY LOGIN STREAK CLAIM
+// 7-DAY LOGIN STREAK
 // ==========================================
 async function claimDailyStreak() {
   triggerHaptic("light");
@@ -856,7 +846,7 @@ async function watchAd(provider = "monetag") {
 }
 
 // ==========================================
-// BALANCED LIVE AVIATOR ENGINE & CLIENT (16s CYCLE)
+// LIVE AVIATOR ENGINE & CLIENT (16s CYCLE)
 // ==========================================
 function setQuickBet(val) {
   triggerHaptic("light");
@@ -1094,7 +1084,7 @@ async function loadTasks() {
       </div>
     `).join("");
   } catch {
-    container.innerHTML = `<div class="box-rect" style="text-align:center;color:#ef4444">Failed to load tasks.</div>`;
+    container.innerHTML = `<div class="box-rect" style="text-align:center;color:var(--muted)">No community tasks available.</div>`;
   }
 }
 
@@ -1236,7 +1226,9 @@ async function loadTransactions() {
         <span style="color:${tx.amount >= 0 ? '#4ade80' : '#ef4444'}">${tx.amount >= 0 ? '+' : ''}${tx.amount} PTS</span>
       </div>
     `).join("");
-  } catch {}
+  } catch {
+    $("historyList").textContent = "No recent transactions.";
+  }
 }
 
 async function copyReferral() {
