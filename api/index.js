@@ -279,15 +279,6 @@ async function claimStreak(req, res) {
       lastStreakDate: dToday,
       updatedAt: FieldValue.serverTimestamp()
     });
-
-    const logRef = db.collection("transactions").doc();
-    tx.set(logRef, {
-      userId: uid,
-      type: "streak",
-      amount: streakReward,
-      title: `Day ${newStreak} Streak Reward`,
-      createdAt: FieldValue.serverTimestamp()
-    });
   });
 
   return res.status(200).json({
@@ -506,15 +497,6 @@ async function ads(req, res) {
       updatedAt: FieldValue.serverTimestamp()
     });
 
-    const logRef = db.collection("transactions").doc();
-    tx.set(logRef, {
-      userId: uid,
-      type: "ad_reward",
-      amount: finalReward,
-      title: `${provider.toUpperCase()} Ad Reward`,
-      createdAt: FieldValue.serverTimestamp()
-    });
-
     if (u.referredBy && totalAds >= 2) {
       shouldRewardInviter = true;
       inviterId = u.referredBy;
@@ -550,7 +532,7 @@ async function ads(req, res) {
 }
 
 // =====================================================
-// LIVE SYNCHRONIZED AVIATOR (LAG-TOLERANT ENGINE)
+// LIVE SYNCHRONIZED AVIATOR
 // =====================================================
 
 async function games(req, res) {
@@ -568,11 +550,14 @@ async function games(req, res) {
   }
 
   if (action === "aviator_bet") {
-    const bet = Math.floor(Number(req.body?.bet));
+    const bet = Number(req.body?.bet);
     if (!Number.isFinite(bet) || bet <= 0) throw new Error("INVALID_BET");
 
-    const targetRoundIndex = Number(req.body?.roundIndex) || currentRound.roundIndex;
-    const betDocRef = db.collection("aviatorBets").doc(`${targetRoundIndex}_${uid}`);
+    if (currentRound.phase !== "BETTING") {
+      throw new Error("ROUND_ALREADY_STARTED");
+    }
+
+    const betDocRef = db.collection("aviatorBets").doc(`${currentRound.roundIndex}_${uid}`);
 
     await db.runTransaction(async tx => {
       const snap = await tx.get(userRef);
@@ -593,7 +578,7 @@ async function games(req, res) {
 
       tx.create(betDocRef, {
         userId: uid,
-        roundIndex: targetRoundIndex,
+        roundIndex: currentRound.roundIndex,
         bet,
         status: "active",
         cashedOut: false,
@@ -604,18 +589,17 @@ async function games(req, res) {
     return res.status(200).json({
       success: true,
       bet,
-      roundIndex: targetRoundIndex
+      roundIndex: currentRound.roundIndex
     });
   }
 
   if (action === "aviator_cashout") {
-    const targetRoundIndex = Number(req.body?.roundIndex) || currentRound.roundIndex;
-    const claimedMultiplier = Number(req.body?.multiplier) || currentRound.currentMultiplier;
-    const betDocRef = db.collection("aviatorBets").doc(`${targetRoundIndex}_${uid}`);
+    if (currentRound.phase !== "FLYING") {
+      throw new Error("CANNOT_CASHOUT_NOW");
+    }
 
-    const actualCrash = calculateRoundCrash(targetRoundIndex);
+    const betDocRef = db.collection("aviatorBets").doc(`${currentRound.roundIndex}_${uid}`);
     let payout = 0;
-    let finalMultiplier = 1.00;
 
     await db.runTransaction(async tx => {
       const betSnap = await tx.get(betDocRef);
@@ -626,16 +610,12 @@ async function games(req, res) {
         throw new Error("ALREADY_CASHED_OUT");
       }
 
-      if (claimedMultiplier > actualCrash) {
-        throw new Error("FLEW_AWAY");
-      }
-
-      finalMultiplier = Math.min(actualCrash, Math.max(1.00, Number(claimedMultiplier.toFixed(2))));
-      payout = Math.floor(b.bet * finalMultiplier);
+      const multiplier = currentRound.currentMultiplier;
+      payout = Math.floor(b.bet * multiplier);
 
       tx.update(betDocRef, {
         cashedOut: true,
-        cashMultiplier: finalMultiplier,
+        cashMultiplier: multiplier,
         payout,
         status: "won",
         updatedAt: FieldValue.serverTimestamp()
@@ -646,20 +626,11 @@ async function games(req, res) {
         aviatorWins: FieldValue.increment(1),
         updatedAt: FieldValue.serverTimestamp()
       });
-
-      const logRef = db.collection("transactions").doc();
-      tx.set(logRef, {
-        userId: uid,
-        type: "aviator_win",
-        amount: payout,
-        title: `Aviator Win (${finalMultiplier}x)`,
-        createdAt: FieldValue.serverTimestamp()
-      });
     });
 
     return res.status(200).json({
       success: true,
-      multiplier: finalMultiplier,
+      multiplier: currentRound.currentMultiplier,
       payout
     });
   }
@@ -744,15 +715,6 @@ async function promo(req, res) {
     tx.update(userRef, {
       balance: FieldValue.increment(CONFIG.PROMO_REWARD),
       updatedAt: FieldValue.serverTimestamp()
-    });
-
-    const logRef = db.collection("transactions").doc();
-    tx.set(logRef, {
-      userId: uid,
-      type: "promo_code",
-      amount: CONFIG.PROMO_REWARD,
-      title: `Promo: ${code}`,
-      createdAt: FieldValue.serverTimestamp()
     });
   });
 
@@ -920,15 +882,6 @@ async function tasks(req, res) {
         tasksCompleted: FieldValue.increment(1),
         updatedAt: FieldValue.serverTimestamp()
       });
-
-      const logRef = db.collection("transactions").doc();
-      tx.set(logRef, {
-        userId: uid,
-        type: "task_completed",
-        amount: reward,
-        title: `Completed: ${t.title}`,
-        createdAt: FieldValue.serverTimestamp()
-      });
     });
 
     return res.status(200).json({ success: true, reward });
@@ -979,15 +932,6 @@ async function withdraw(req, res) {
       status: "processing",
       createdAt: FieldValue.serverTimestamp()
     });
-
-    const logRef = db.collection("transactions").doc();
-    tx.set(logRef, {
-      userId: uid,
-      type: "withdrawal",
-      amount: -minPoints,
-      title: `Payout to ${destination.slice(0, 6)}...`,
-      createdAt: FieldValue.serverTimestamp()
-    });
   });
 
   try {
@@ -1033,21 +977,6 @@ async function withdraw(req, res) {
 }
 
 // =====================================================
-// TRANSACTIONS LEDGER
-// =====================================================
-
-async function transactions(req, res) {
-  const { user } = getUser(req);
-  const uid = String(user.id);
-  const snap = await db.collection("transactions").where("userId", "==", uid).orderBy("createdAt", "desc").limit(20).get();
-
-  return res.status(200).json({
-    success: true,
-    transactions: snap.docs.map(d => ({ id: d.id, ...d.data() }))
-  });
-}
-
-// =====================================================
 // TELEGRAM /START WEBHOOK HANDLER
 // =====================================================
 
@@ -1061,7 +990,7 @@ async function telegram(req, res) {
     const parts = text.split(" ");
     const startParam = parts.length > 1 ? parts[1] : "";
 
-    const baseUrl = CONFIG.WEBAPP_URL || "https://usdt-hub-1.vercel.app";
+    const baseUrl = "https://usdt-hub-1.vercel.app";
     const launchUrl = startParam ? `${baseUrl}?startapp=${startParam}` : baseUrl;
 
     const welcomeMessage = [
@@ -1157,7 +1086,6 @@ export default async function handler(req, res) {
     if (path === "/api/referral" || endpoint === "referral") return referral(req, res);
     if (path === "/api/tasks" || endpoint === "tasks") return tasks(req, res);
     if (path === "/api/withdraw" || endpoint === "withdraw") return withdraw(req, res);
-    if (path === "/api/transactions" || endpoint === "transactions") return transactions(req, res);
 
     return res.status(404).json({
       success: false,
