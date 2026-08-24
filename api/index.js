@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { getFirestore, FieldValue } from "../lib/firebase.js";
+import { getDb, FieldValue } from "../lib/firebase.js";
 import { validateInitData, getInitData } from "../lib/auth.js";
 import {
   getChatMember,
@@ -54,7 +54,7 @@ function getVipTier(totalPts = 0) {
   return CONFIG.VIP_TIERS.BRONZE;
 }
 
-// 16s Balanced Aviator Cycle
+// 16s Balanced Aviator Engine
 function calculateRoundCrash(roundIndex) {
   const hash = crypto
     .createHmac("sha256", CONFIG.AVIATOR_SERVER_SECRET || "USDT_HUB_SECRET_KEY_999")
@@ -1065,12 +1065,12 @@ async function telegram(req, res) {
 export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
 
-  const db = getFirestore();
+  const db = getDb();
 
   if (!db && req.method === "POST") {
     return res.status(200).json({
       success: false,
-      error: "DATABASE_DISCONNECTED: Verify FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY on Vercel."
+      error: "DATABASE_NOT_CONFIGURED: Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in Vercel."
     });
   }
 
