@@ -580,7 +580,6 @@ function openTelegram(url) {
 
 function setLoading(show) { $("loadingScreen").classList.toggle("hidden", !show); }
 
-// Resilient API requester with explicit HTML crash detection
 async function apiRequest(endpoint, body = {}) {
   const headers = {
     "Content-Type": "application/json",
@@ -607,7 +606,6 @@ async function apiRequest(endpoint, body = {}) {
   try {
     data = JSON.parse(rawText);
   } catch {
-    // If Vercel returns HTML error, extract readable text
     const cleanErr = rawText.replace(/<[^>]*>?/gm, "").trim().slice(0, 100);
     throw new Error(`Server Error (${response.status}): ${cleanErr || "Backend service crashed."}`);
   }
@@ -1202,7 +1200,7 @@ async function loadReferrals() {
 
     const leaders = leadData.leaderboard || [];
     if (!leaders.length) {
-      $("leaderboardList").innerHTML = `<div style="text-align:center;color:var(--muted);font-size:12px">No leaders yet.</div>`;
+      $("leaderboardList").innerHTML = `<div style="text-align:color:var(--muted);font-size:12px">No leaders yet.</div>`;
     } else {
       $("leaderboardList").innerHTML = leaders.map((l, i) => `
         <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px">
