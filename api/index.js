@@ -632,13 +632,6 @@ async function tasks(req, res) {
       if (!freshTask.exists || !userSnap.exists) throw new Error("NOT_FOUND");
       if (completion.exists) throw new Error("ALREADY_COMPLETED");
 
-      const t = freshTask.data();
-      const count = Number(t.completions || 0);
-
-      if (t.status !== "active" || count >= CONFIG.TASK_LIMIT) {
-        throw new Error("TASK_FULL");
-      }
-
       reward = Number(CONFIG.TASK_REWARD);
 
       tx.create(completionRef, {
@@ -648,17 +641,14 @@ async function tasks(req, res) {
         createdAt: FieldValue.serverTimestamp()
       });
 
-      tx.update(taskRef, {
-        completions: count + 1,
-        status: count + 1 >= CONFIG.TASK_LIMIT ? "completed" : "active",
-        updatedAt: FieldValue.serverTimestamp()
-      });
-
       tx.update(userRef, {
         balance: FieldValue.increment(reward),
         tasksCompleted: FieldValue.increment(1),
         updatedAt: FieldValue.serverTimestamp()
       });
+
+      // Completely delete the task document so it disappears for all users
+      tx.delete(taskRef);
     });
 
     return res.status(200).json({ success: true, reward });
@@ -848,7 +838,7 @@ export default async function handler(req, res) {
     if (path === "/api/promo" || endpoint === "promo") return promo(req, res);
     if (path === "/api/referral" || endpoint === "referral") return referral(req, res);
     if (path === "/api/tasks" || endpoint === "tasks") return tasks(req, res);
-    if (path === "api/withdraw" || path === "/api/withdraw" || endpoint === "withdraw") return withdraw(req, res);
+    if (path === "/api/withdraw" || endpoint === "withdraw") return withdraw(req, res);
 
     return res.status(404).json({
       success: false,
