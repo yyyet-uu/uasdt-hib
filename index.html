@@ -125,6 +125,10 @@
     .quick-bets{display:flex;gap:4px;margin-bottom:6px}
     .quick-bet-btn{flex:1;padding:6px;background:#102238;border-radius:8px;font-size:10px;font-weight:800;border:1px solid var(--line)}
 
+    /* FORTUNE WHEEL */
+    .wheel-box{text-align:center;position:relative;margin:12px auto;width:180px;height:180px;border-radius:50%;border:4px solid #facc15;background:conic-gradient(#2563eb 0deg 45deg,#7c3aed 45deg 90deg,#16a34a 90deg 135deg,#ea580c 135deg 180deg,#2563eb 180deg 225deg,#7c3aed 225deg 270deg,#16a34a 270deg 315deg,#ea580c 315deg 360deg);transition:transform 3s cubic-bezier(.17,.67,.12,.99)}
+    .wheel-pointer{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:20px;z-index:10}
+
     /* BOTTOM NAVIGATION */
     .bottom-nav{position:fixed;z-index:1000;bottom:0;left:0;right:0;padding:6px 4px calc(6px + env(safe-area-inset-bottom));background:rgba(4,10,20,.96);backdrop-filter:blur(20px);border-top:1px solid var(--line);display:flex;justify-content:center}
     .nav-inner{width:100%;max-width:640px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
@@ -272,6 +276,14 @@
           <span id="vipTierName">Bronze (1.0x)</span>
         </div>
         <div class="progress-bar-bg" style="margin:4px 0 0"><div id="vipProgressFill" class="progress-fill" style="width:15%"></div></div>
+      </div>
+
+      <!-- Daily Fortune Wheel -->
+      <div class="box-rect" style="text-align:center">
+        <div style="font-weight:900;font-size:14px">🎡 Daily Fortune Wheel (Free Spin)</div>
+        <div class="wheel-pointer">▼</div>
+        <div id="wheelBox" class="wheel-box"></div>
+        <button id="spinBtn" class="action-btn purple" style="width:auto;padding:8px 24px" onclick="spinFortuneWheel()">SPIN WHEEL</button>
       </div>
 
       <!-- 7-Day Login Streak -->
@@ -758,6 +770,36 @@ async function claimDailyStreak() {
 }
 
 // ==========================================
+// FORTUNE WHEEL
+// ==========================================
+async function spinFortuneWheel() {
+  triggerHaptic("medium");
+  const btn = $("spinBtn");
+  btn.disabled = true;
+  try {
+    const res = await apiRequest("spin-wheel");
+    const wheel = $("wheelBox");
+    const degrees = 1440 + (res.prizeIndex * 45);
+    wheel.style.transform = `rotate(${degrees}deg)`;
+    playTone(330, "sawtooth", 0.3);
+
+    setTimeout(() => {
+      currentUser.balance = Number(currentUser.balance || 0) + Number(res.reward || 0);
+      updateUserUI();
+      triggerHaptic("success");
+      playTone(523, "sine", 0.35);
+      showToast(`🎉 You won +${res.reward} PTS!`, "success");
+      loadTransactions();
+      btn.disabled = false;
+    }, 3200);
+  } catch (err) {
+    triggerHaptic("error");
+    showToast(err.message === "WHEEL_ALREADY_SPUN_TODAY" ? "Spin available once every 24 hours!" : err.message, "error");
+    btn.disabled = false;
+  }
+}
+
+// ==========================================
 // CHANNEL VERIFY & WELCOME BONUS
 // ==========================================
 async function verifyChannels() {
@@ -856,7 +898,7 @@ async function watchAd(provider = "monetag") {
 }
 
 // ==========================================
-// BALANCED LIVE AVIATOR ENGINE & CLIENT (16s CYCLE)
+// FAST LIVE AVIATOR ENGINE & CLIENT
 // ==========================================
 function setQuickBet(val) {
   triggerHaptic("light");
@@ -869,36 +911,38 @@ function setQuickBet(val) {
 }
 
 function getClientLiveRound(timestamp = Date.now()) {
-  const roundDuration = 16000; // Slower 16s Total Cycle
+  const roundDuration = 10000;
   const roundIndex = Math.floor(timestamp / roundDuration);
   const msInRound = timestamp % roundDuration;
 
   function computeCrash(idx) {
     const seed = (idx * 9301 + 49297) % 233280;
     const rand = seed / 233280;
-    const cycle = idx % 5;
+    const cycle = idx % 6;
 
     let mult;
-    if (cycle === 0) {
-      if (rand < 0.52) mult = 1.01 + rand * 0.23;
-      else if (rand < 0.88) mult = 1.25 + (rand - 0.52) * 2.8;
-      else mult = 2.40 + (rand - 0.88) * 15.0;
+    if (cycle === 0 || cycle === 4) {
+      if (rand < 0.28) mult = 1.05 + rand * 0.35;
+      else if (rand < 0.70) mult = 1.50 + rand * 2.8;
+      else if (rand < 0.90) mult = 4.50 + rand * 5.0;
+      else mult = 10.00 + rand * 15.0;
     } else if (cycle === 1 || cycle === 3) {
-      if (rand < 0.48) mult = 1.00 + rand * 0.25;
-      else if (rand < 0.84) mult = 1.26 + (rand - 0.48) * 3.2;
-      else if (rand < 0.96) mult = 3.00 + (rand - 0.84) * 25.0;
-      else mult = 7.00 + (rand - 0.96) * 120.0;
+      if (rand < 0.35) mult = 1.02 + rand * 0.28;
+      else if (rand < 0.85) mult = 1.40 + rand * 2.2;
+      else if (rand < 0.96) mult = 5.00 + rand * 5.5;
+      else mult = 15.00 + rand * 12.0;
     } else {
-      if (rand < 0.54) mult = 1.02 + rand * 0.20;
-      else if (rand < 0.86) mult = 1.24 + (rand - 0.54) * 2.6;
-      else mult = 2.20 + (rand - 0.86) * 35.0;
+      if (rand < 0.18) mult = 1.01 + rand * 0.20;
+      else if (rand < 0.65) mult = 1.60 + rand * 3.0;
+      else if (rand < 0.88) mult = 4.00 + rand * 6.0;
+      else mult = 12.00 + rand * 18.0;
     }
     return Math.round(mult * 100) / 100;
   }
 
   const crashMultiplier = computeCrash(roundIndex);
-  const flyTimeMs = Math.min(8500, Math.max(2200, Math.log(crashMultiplier + 1) * 3600));
-  const bettingDuration = 5000; // 5s betting window
+  const flyTimeMs = Math.min(5500, Math.max(1400, Math.log(crashMultiplier + 1) * 2600));
+  const bettingDuration = 3500;
 
   let phase;
   let currentMultiplier = 1.00;
@@ -908,7 +952,7 @@ function getClientLiveRound(timestamp = Date.now()) {
   } else if (msInRound < bettingDuration + flyTimeMs) {
     phase = "FLYING";
     const progress = (msInRound - bettingDuration) / flyTimeMs;
-    currentMultiplier = Math.min(crashMultiplier, Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.75)));
+    currentMultiplier = Math.min(crashMultiplier, Math.max(1.00, 1.00 + (crashMultiplier - 1.00) * Math.pow(progress, 1.6)));
   } else {
     phase = "CRASHED";
     currentMultiplier = crashMultiplier;
@@ -955,7 +999,7 @@ function startSynchronizedAviatorLoop() {
     }
 
     if (round.phase === "BETTING") {
-      const countdown = Math.max(1, Math.ceil((5000 - round.msInRound) / 1000));
+      const countdown = Math.max(1, Math.ceil((3500 - round.msInRound) / 1000));
       multEl.textContent = `${countdown}s`;
       multEl.className = "multiplier betting";
       planeEl.style.left = "10%";
@@ -975,7 +1019,7 @@ function startSynchronizedAviatorLoop() {
       multEl.textContent = round.currentMultiplier.toFixed(2) + "x";
       multEl.className = "multiplier flying";
 
-      const progress = (round.msInRound - 5000) / round.flyTimeMs;
+      const progress = (round.msInRound - 3500) / round.flyTimeMs;
       planeEl.style.left = (10 + progress * 72) + "%";
       planeEl.style.bottom = (14 + progress * 58) + "%";
       statusEl.textContent = "✈️ Flying live...";
@@ -1110,6 +1154,7 @@ async function completeTask(taskId, link) {
     triggerHaptic("success");
     showToast(`🎯 +${data.reward} PTS rewarded!`, "success");
     
+    // Automatically removes task card
     await loadTasks();
     loadTransactions();
   } catch (err) {
