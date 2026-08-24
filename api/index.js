@@ -51,6 +51,7 @@ function getVipTier(totalPts = 0) {
   return CONFIG.VIP_TIERS.BRONZE;
 }
 
+// 16s Balanced Aviator Cycle
 function calculateRoundCrash(roundIndex) {
   const hash = crypto
     .createHmac("sha256", CONFIG.AVIATOR_SERVER_SECRET || "USDT_HUB_SECRET_KEY_999")
