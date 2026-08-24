@@ -1,5 +1,6 @@
 import crypto from "crypto";
-import { getDb, FieldValue } from "../lib/firebase.js";
+import { ethers } from "ethers";
+import { db, FieldValue } from "../lib/firebase.js";
 import { validateInitData, getInitData } from "../lib/auth.js";
 import {
   getChatMember,
@@ -12,10 +13,6 @@ import {
 } from "../lib/telegram.js";
 import { sendUSDT, getPayoutWalletInfo } from "../lib/payout.js";
 import { CONFIG } from "../lib/config.js";
-
-function isAddress(address) {
-  return typeof address === "string" && /^0x[a-fA-F0-9]{40}$/.test(address);
-}
 
 function getPath(req) {
   const rawUrl = String(req.url || "");
@@ -54,7 +51,6 @@ function getVipTier(totalPts = 0) {
   return CONFIG.VIP_TIERS.BRONZE;
 }
 
-// 16s Balanced Aviator Engine
 function calculateRoundCrash(roundIndex) {
   const hash = crypto
     .createHmac("sha256", CONFIG.AVIATOR_SERVER_SECRET || "USDT_HUB_SECRET_KEY_999")
@@ -123,7 +119,7 @@ function getLiveAviatorState(timestamp = Date.now()) {
   };
 }
 
-async function userHandler(req, res, db) {
+async function userHandler(req, res) {
   let { user, startParam } = getUser(req);
   const uid = String(user.id);
 
@@ -232,7 +228,7 @@ async function userHandler(req, res, db) {
   });
 }
 
-async function claimStreak(req, res, db) {
+async function claimStreak(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
   const userRef = db.collection("users").doc(uid);
@@ -265,15 +261,6 @@ async function claimStreak(req, res, db) {
       lastStreakDate: dToday,
       updatedAt: FieldValue.serverTimestamp()
     });
-
-    const logRef = db.collection("transactions").doc();
-    tx.set(logRef, {
-      userId: uid,
-      type: "streak",
-      amount: streakReward,
-      title: `Day ${newStreak} Streak Reward`,
-      createdAt: FieldValue.serverTimestamp()
-    });
   });
 
   return res.status(200).json({
@@ -283,7 +270,7 @@ async function claimStreak(req, res, db) {
   });
 }
 
-async function verifyMembership(req, res, db) {
+async function verifyMembership(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
 
@@ -329,16 +316,16 @@ async function verifyMembership(req, res, db) {
   return res.status(200).json({ success: true, joined: true });
 }
 
-async function claimWelcome(req, res, db) {
+async function claimWelcome(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
   const address = String(req.body?.address || "").trim();
 
-  if (!isAddress(address)) throw new Error("INVALID_ADDRESS");
-  const normalized = address.toLowerCase();
+  if (!ethers.isAddress(address)) throw new Error("INVALID_ADDRESS");
+  const normalized = ethers.getAddress(address);
 
   const userRef = db.collection("users").doc(uid);
-  const addressRef = db.collection("welcomeClaims").doc(normalized);
+  const addressRef = db.collection("welcomeClaims").doc(normalized.toLowerCase());
   const payoutRef = db.collection("payouts").doc();
 
   await db.runTransaction(async tx => {
@@ -421,7 +408,7 @@ async function claimWelcome(req, res, db) {
   }
 }
 
-async function ads(req, res, db) {
+async function ads(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
   const provider = String(req.body?.provider || "").toLowerCase();
@@ -480,15 +467,6 @@ async function ads(req, res, db) {
       updatedAt: FieldValue.serverTimestamp()
     });
 
-    const logRef = db.collection("transactions").doc();
-    tx.set(logRef, {
-      userId: uid,
-      type: "ad_reward",
-      amount: finalReward,
-      title: `${provider.toUpperCase()} Ad Reward`,
-      createdAt: FieldValue.serverTimestamp()
-    });
-
     if (u.referredBy && totalAds >= 2) {
       shouldRewardInviter = true;
       inviterId = u.referredBy;
@@ -523,7 +501,7 @@ async function ads(req, res, db) {
   return res.status(200).json({ success: true, ...result });
 }
 
-async function games(req, res, db) {
+async function games(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
   const action = String(req.body?.action || "").toLowerCase();
@@ -616,15 +594,6 @@ async function games(req, res, db) {
         aviatorWins: FieldValue.increment(1),
         updatedAt: FieldValue.serverTimestamp()
       });
-
-      const logRef = db.collection("transactions").doc();
-      tx.set(logRef, {
-        userId: uid,
-        type: "aviator_win",
-        amount: payout,
-        title: `Aviator Win (${finalMultiplier}x)`,
-        createdAt: FieldValue.serverTimestamp()
-      });
     });
 
     return res.status(200).json({
@@ -637,7 +606,7 @@ async function games(req, res, db) {
   throw new Error("UNKNOWN_GAME_ACTION");
 }
 
-async function deposit(req, res, db) {
+async function deposit(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
   const action = String(req.body?.action || "").toLowerCase();
@@ -677,7 +646,7 @@ async function deposit(req, res, db) {
   throw new Error("UNKNOWN_DEPOSIT_ACTION");
 }
 
-async function promo(req, res, db) {
+async function promo(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
   const code = String(req.body?.code || "").trim().toUpperCase();
@@ -707,15 +676,6 @@ async function promo(req, res, db) {
       balance: FieldValue.increment(CONFIG.PROMO_REWARD),
       updatedAt: FieldValue.serverTimestamp()
     });
-
-    const logRef = db.collection("transactions").doc();
-    tx.set(logRef, {
-      userId: uid,
-      type: "promo_code",
-      amount: CONFIG.PROMO_REWARD,
-      title: `Promo: ${code}`,
-      createdAt: FieldValue.serverTimestamp()
-    });
   });
 
   return res.status(200).json({
@@ -724,7 +684,7 @@ async function promo(req, res, db) {
   });
 }
 
-async function referral(req, res, db) {
+async function referral(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
   const action = String(req.body?.action || "").toLowerCase();
@@ -755,7 +715,7 @@ async function referral(req, res, db) {
   throw new Error("UNKNOWN_ACTION");
 }
 
-async function tasks(req, res, db) {
+async function tasks(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
   const action = String(req.body?.action || "").toLowerCase();
@@ -874,15 +834,6 @@ async function tasks(req, res, db) {
         tasksCompleted: FieldValue.increment(1),
         updatedAt: FieldValue.serverTimestamp()
       });
-
-      const logRef = db.collection("transactions").doc();
-      tx.set(logRef, {
-        userId: uid,
-        type: "task_completed",
-        amount: reward,
-        title: `Completed: ${t.title}`,
-        createdAt: FieldValue.serverTimestamp()
-      });
     });
 
     return res.status(200).json({ success: true, reward });
@@ -891,13 +842,13 @@ async function tasks(req, res, db) {
   throw new Error("UNKNOWN_ACTION");
 }
 
-async function withdraw(req, res, db) {
+async function withdraw(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
   const address = String(req.body?.address || "").trim();
 
-  if (!isAddress(address)) throw new Error("INVALID_ADDRESS");
-  const destination = address.toLowerCase();
+  if (!ethers.isAddress(address)) throw new Error("INVALID_ADDRESS");
+  const destination = ethers.getAddress(address);
 
   const minPoints = Number(CONFIG.WITHDRAW_MIN_POINTS);
   const pointsPerUSDT = Number(CONFIG.POINTS_PER_USDT);
@@ -927,15 +878,6 @@ async function withdraw(req, res, db) {
       points: minPoints,
       amountUSDT: Number(amount.toFixed(8)),
       status: "processing",
-      createdAt: FieldValue.serverTimestamp()
-    });
-
-    const logRef = db.collection("transactions").doc();
-    tx.set(logRef, {
-      userId: uid,
-      type: "withdrawal",
-      amount: -minPoints,
-      title: `Payout to ${destination.slice(0, 6)}...`,
       createdAt: FieldValue.serverTimestamp()
     });
   });
@@ -982,17 +924,6 @@ async function withdraw(req, res, db) {
   }
 }
 
-async function transactions(req, res, db) {
-  const { user } = getUser(req);
-  const uid = String(user.id);
-  const snap = await db.collection("transactions").where("userId", "==", uid).orderBy("createdAt", "desc").limit(20).get();
-
-  return res.status(200).json({
-    success: true,
-    transactions: snap.docs.map(d => ({ id: d.id, ...d.data() }))
-  });
-}
-
 async function telegram(req, res) {
   const update = req.body || {};
 
@@ -1003,7 +934,7 @@ async function telegram(req, res) {
     const parts = text.split(" ");
     const startParam = parts.length > 1 ? parts[1] : "";
 
-    const baseUrl = CONFIG.WEBAPP_URL || "https://usdt-hub-1.vercel.app";
+    const baseUrl = "https://usdt-hub-1.vercel.app";
     const launchUrl = startParam ? `${baseUrl}?startapp=${startParam}` : baseUrl;
 
     const welcomeMessage = [
@@ -1065,15 +996,6 @@ async function telegram(req, res) {
 export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
 
-  const db = getDb();
-
-  if (!db && req.method === "POST") {
-    return res.status(200).json({
-      success: false,
-      error: "DATABASE_NOT_CONFIGURED: Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in Vercel."
-    });
-  }
-
   try {
     const path = getPath(req);
     const endpoint = req.query?.endpoint || req.body?.endpoint || "";
@@ -1093,18 +1015,17 @@ export default async function handler(req, res) {
       return telegram(req, res);
     }
 
-    if (path === "/api/user" || endpoint === "user") return userHandler(req, res, db);
-    if (path === "/api/claim-streak" || endpoint === "claim-streak") return claimStreak(req, res, db);
-    if (path === "/api/verify-membership" || endpoint === "verify-membership") return verifyMembership(req, res, db);
-    if (path === "/api/claim-welcome" || endpoint === "claim-welcome") return claimWelcome(req, res, db);
-    if (path === "/api/ads" || endpoint === "ads") return ads(req, res, db);
-    if (path === "/api/games" || endpoint === "games") return games(req, res, db);
-    if (path === "/api/deposit" || endpoint === "deposit") return deposit(req, res, db);
-    if (path === "/api/promo" || endpoint === "promo") return promo(req, res, db);
-    if (path === "/api/referral" || endpoint === "referral") return referral(req, res, db);
-    if (path === "/api/tasks" || endpoint === "tasks") return tasks(req, res, db);
-    if (path === "/api/withdraw" || endpoint === "withdraw") return withdraw(req, res, db);
-    if (path === "/api/transactions" || endpoint === "transactions") return transactions(req, res, db);
+    if (path === "/api/user" || endpoint === "user") return userHandler(req, res);
+    if (path === "/api/claim-streak" || endpoint === "claim-streak") return claimStreak(req, res);
+    if (path === "/api/verify-membership" || endpoint === "verify-membership") return verifyMembership(req, res);
+    if (path === "/api/claim-welcome" || endpoint === "claim-welcome") return claimWelcome(req, res);
+    if (path === "/api/ads" || endpoint === "ads") return ads(req, res);
+    if (path === "/api/games" || endpoint === "games") return games(req, res);
+    if (path === "/api/deposit" || endpoint === "deposit") return deposit(req, res);
+    if (path === "/api/promo" || endpoint === "promo") return promo(req, res);
+    if (path === "/api/referral" || endpoint === "referral") return referral(req, res);
+    if (path === "/api/tasks" || endpoint === "tasks") return tasks(req, res);
+    if (path === "/api/withdraw" || endpoint === "withdraw") return withdraw(req, res);
 
     return res.status(404).json({
       success: false,
