@@ -804,24 +804,24 @@ function getClientLiveRound(timestamp = Date.now()) {
       if (rand < 0.28) mult = 1.05 + rand * 0.35;
       else if (rand < 0.70) mult = 1.50 + rand * 2.8;
       else if (rand < 0.90) mult = 4.50 + rand * 5.0;
-      else mult = 10.00 + rand * 15.0; // 10x - 25x
+      else mult = 10.00 + rand * 15.0;
     } else if (cycle === 1 || cycle === 3) {
       if (rand < 0.35) mult = 1.02 + rand * 0.28;
       else if (rand < 0.85) mult = 1.40 + rand * 2.2;
       else if (rand < 0.96) mult = 5.00 + rand * 5.5;
-      else mult = 15.00 + rand * 12.0; // 15x - 27x
+      else mult = 15.00 + rand * 12.0;
     } else {
       if (rand < 0.18) mult = 1.01 + rand * 0.20;
       else if (rand < 0.65) mult = 1.60 + rand * 3.0;
       else if (rand < 0.88) mult = 4.00 + rand * 6.0;
-      else mult = 12.00 + rand * 18.0; // 12x - 30x
+      else mult = 12.00 + rand * 18.0;
     }
     return Math.round(mult * 100) / 100;
   }
 
   const crashMultiplier = computeCrash(roundIndex);
   const flyTimeMs = Math.min(5500, Math.max(1400, Math.log(crashMultiplier + 1) * 2600));
-  const bettingDuration = 3500; // 3.5s betting window
+  const bettingDuration = 3500;
 
   let phase;
   let currentMultiplier = 1.00;
@@ -1017,7 +1017,9 @@ async function completeTask(taskId, link) {
     updateUserUI();
     triggerHaptic("success");
     showToast(`🎯 +${data.reward} PTS rewarded!`, "success");
-    loadTasks();
+    
+    // Automatically removes completed task from user view
+    await loadTasks();
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
