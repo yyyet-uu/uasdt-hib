@@ -14,10 +14,6 @@ import {
 import { sendUSDT, getPayoutWalletInfo } from "../lib/payout.js";
 import { CONFIG } from "../lib/config.js";
 
-// =====================================================
-// ROUTING & TIME HELPERS
-// =====================================================
-
 function getPath(req) {
   const rawUrl = String(req.url || "");
   return rawUrl.split("?")[0].replace(/\/+$/, "") || "/";
@@ -55,10 +51,7 @@ function getVipTier(totalPts = 0) {
   return CONFIG.VIP_TIERS.BRONZE;
 }
 
-// =====================================================
-// BALANCED LIVE AVIATOR ENGINE (16s Smooth Cycle)
-// =====================================================
-
+// 16s Balanced Aviator Cycle
 function calculateRoundCrash(roundIndex) {
   const hash = crypto
     .createHmac("sha256", CONFIG.AVIATOR_SERVER_SECRET || "USDT_HUB_SECRET_KEY_999")
@@ -126,10 +119,6 @@ function getLiveAviatorState(timestamp = Date.now()) {
     history
   };
 }
-
-// =====================================================
-// USER REGISTRATION & REFERRAL ENGINE
-// =====================================================
 
 async function userHandler(req, res) {
   let { user, startParam } = getUser(req);
@@ -240,10 +229,6 @@ async function userHandler(req, res) {
   });
 }
 
-// =====================================================
-// 7-DAY LOGIN STREAK
-// =====================================================
-
 async function claimStreak(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
@@ -295,10 +280,6 @@ async function claimStreak(req, res) {
   });
 }
 
-// =====================================================
-// CHANNEL MEMBERSHIP VERIFICATION (300 PTS INVITER REWARD)
-// =====================================================
-
 async function verifyMembership(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
@@ -344,10 +325,6 @@ async function verifyMembership(req, res) {
 
   return res.status(200).json({ success: true, joined: true });
 }
-
-// =====================================================
-// WELCOME BONUS & AUTOMATED PAYMENT PROOF
-// =====================================================
 
 async function claimWelcome(req, res) {
   const { user } = getUser(req);
@@ -440,10 +417,6 @@ async function claimWelcome(req, res) {
     throw error;
   }
 }
-
-// =====================================================
-// ADS (200 PTS INVITER REWARD AFTER 2 ADS)
-// =====================================================
 
 async function ads(req, res) {
   const { user } = getUser(req);
@@ -546,10 +519,6 @@ async function ads(req, res) {
 
   return res.status(200).json({ success: true, ...result });
 }
-
-// =====================================================
-// LIVE SYNCHRONIZED AVIATOR (LAG-TOLERANT ENGINE)
-// =====================================================
 
 async function games(req, res) {
   const { user } = getUser(req);
@@ -665,10 +634,6 @@ async function games(req, res) {
   throw new Error("UNKNOWN_GAME_ACTION");
 }
 
-// =====================================================
-// DEPOSIT SYSTEM
-// =====================================================
-
 async function deposit(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
@@ -708,10 +673,6 @@ async function deposit(req, res) {
 
   throw new Error("UNKNOWN_DEPOSIT_ACTION");
 }
-
-// =====================================================
-// PROMO CODES (200 PTS)
-// =====================================================
 
 async function promo(req, res) {
   const { user } = getUser(req);
@@ -760,10 +721,6 @@ async function promo(req, res) {
   });
 }
 
-// =====================================================
-// REFERRALS & LEADERBOARD
-// =====================================================
-
 async function referral(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
@@ -794,10 +751,6 @@ async function referral(req, res) {
 
   throw new Error("UNKNOWN_ACTION");
 }
-
-// =====================================================
-// TASKS (FILTERING COMPLETED TASKS PER USER)
-// =====================================================
 
 async function tasks(req, res) {
   const { user } = getUser(req);
@@ -935,10 +888,6 @@ async function tasks(req, res) {
   throw new Error("UNKNOWN_ACTION");
 }
 
-// =====================================================
-// WITHDRAW & AUTOMATED PROOFS
-// =====================================================
-
 async function withdraw(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
@@ -1030,10 +979,6 @@ async function withdraw(req, res) {
   }
 }
 
-// =====================================================
-// TRANSACTIONS LEDGER
-// =====================================================
-
 async function transactions(req, res) {
   const { user } = getUser(req);
   const uid = String(user.id);
@@ -1044,10 +989,6 @@ async function transactions(req, res) {
     transactions: snap.docs.map(d => ({ id: d.id, ...d.data() }))
   });
 }
-
-// =====================================================
-// TELEGRAM /START WEBHOOK HANDLER
-// =====================================================
 
 async function telegram(req, res) {
   const update = req.body || {};
@@ -1118,18 +1059,13 @@ async function telegram(req, res) {
   return res.status(200).json({ success: true });
 }
 
-// =====================================================
-// MASTER HANDLER ROUTER (FAIL-SAFE JSON OUTPUT)
-// =====================================================
-
 export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
 
-  // Prevent 500 crash if database initialization failed
   if (!db && req.method === "POST") {
     return res.status(200).json({
       success: false,
-      error: "DATABASE_CONNECTION_ERROR: Please check your Firebase environment variables on Vercel."
+      error: "DATABASE_DISCONNECTED: Please verify FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY on Vercel."
     });
   }
 
