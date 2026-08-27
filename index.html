@@ -7,141 +7,209 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>USDT Hub</title>
 
-  <meta name="af52b5a5b2ffaa8c13b4f13f9b439a5d64f06c03" content="af52b5a5b2ffaa8c13b4f13f9b439a5d64f06c03" />
-
   <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
   <script src="//libtl.com/sdk.js" data-zone="11601754" data-sdk="show_11601754"></script>
 
   <style>
+    /* ULTRA-ATTRACTIVE NEW 3D TACTILE CSS */
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     :root{
-      --bg:#030712;--card:rgba(13,25,45,.85);--card2:rgba(18,34,58,.95);
-      --line:rgba(255,255,255,.1);--text:#f8fafc;--muted:#94a3b8;
+      --bg:#030712;--card:rgba(13,25,45,.88);--card2:rgba(18,34,58,.95);
+      --line:rgba(255,255,255,.12);--text:#f8fafc;--muted:#94a3b8;
       --blue:#3b82f6;--green:#22c55e;--red:#ef4444;--yellow:#facc15;--purple:#8b5cf6;--orange:#f97316;
-      --shadow:0 20px 40px rgba(0,0,0,.6);
+      --shadow:0 25px 50px rgba(0,0,0,.7);
     }
     html,body{
       margin:0;padding:0;width:100%;min-height:100%;
-      background:radial-gradient(circle at 10% 10%,rgba(59,130,246,.15),transparent 40%),radial-gradient(circle at 90% 90%,rgba(139,92,246,.12),transparent 40%),var(--bg);
+      background:radial-gradient(circle at 15% 10%,rgba(59,130,246,.2),transparent 45%),radial-gradient(circle at 85% 90%,rgba(139,92,246,.15),transparent 45%),var(--bg);
       color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;overflow-x:hidden;
     }
-    body{min-height:100vh;padding-bottom:110px}
+    body{min-height:100vh;padding-bottom:115px}
     button,input,select{font:inherit}
     button{border:0;cursor:pointer;color:white}
     .hidden{display:none!important}
 
-    /* 3D SPONSORED BANNER */
     .aads-wrapper{
       width:100%;max-width:480px;margin:12px auto;padding:8px;
-      background:linear-gradient(145deg,rgba(15,28,48,.9),rgba(8,16,30,.9));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:20px;text-align:center;position:relative;z-index:10;
-      box-shadow:0 10px 25px rgba(0,0,0,.4);
+      background:linear-gradient(145deg,rgba(16,30,52,.95),rgba(8,16,30,.95));
+      border:1px solid rgba(255,255,255,.1);border-radius:22px;text-align:center;
+      position:relative;z-index:10;box-shadow:0 12px 30px rgba(0,0,0,.5);
     }
-    .aads-label{font-size:10px;font-weight:900;color:var(--muted);margin-bottom:6px;letter-spacing:1px}
+    .aads-label{font-size:10px;font-weight:950;color:var(--muted);margin-bottom:6px;letter-spacing:1px}
 
     .browser-view{
-      max-width:460px;margin:40px auto;padding:30px 22px;text-align:center;
-      background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);
+      max-width:460px;margin:40px auto;padding:32px 24px;text-align:center;
+      background:var(--card);border:1px solid var(--line);border-radius:30px;box-shadow:var(--shadow);
     }
 
     .loading-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#030712}
-    .logo-orb{width:86px;height:86px;margin:auto;border-radius:28px;display:grid;place-items:center;font-size:38px;font-weight:950;background:linear-gradient(135deg,#3b82f6,#06b6d4,#8b5cf6);box-shadow:0 0 50px rgba(59,130,246,.5),inset 0 2px 6px rgba(255,255,255,.4);animation:pulseOrb 2s infinite ease-in-out}
-    @keyframes pulseOrb{0%,100%{transform:scale(1);box-shadow:0 0 40px rgba(59,130,246,.4)}50%{transform:scale(1.08);box-shadow:0 0 75px rgba(6,182,212,.7)}}
+    .logo-orb{
+      width:90px;height:90px;margin:auto;border-radius:30px;display:grid;place-items:center;
+      font-size:40px;font-weight:950;background:linear-gradient(135deg,#3b82f6,#06b6d4,#8b5cf6);
+      box-shadow:0 0 60px rgba(59,130,246,.6),inset 0 2px 8px rgba(255,255,255,.5);
+      animation:pulseOrb 2s infinite ease-in-out;
+    }
+    @keyframes pulseOrb{0%,100%{transform:scale(1);box-shadow:0 0 45px rgba(59,130,246,.5)}50%{transform:scale(1.08);box-shadow:0 0 85px rgba(6,182,212,.8)}}
 
-    .lock-screen,.welcome-screen{position:fixed;inset:0;z-index:9000;overflow:auto;padding:26px 16px;background:radial-gradient(circle at 50% 0%,rgba(37,99,235,.3),transparent 50%),#030712}
+    .lock-screen,.welcome-screen{position:fixed;inset:0;z-index:9000;overflow:auto;padding:26px 16px;background:radial-gradient(circle at 50% 0%,rgba(37,99,235,.35),transparent 55%),#030712}
     .lock-wrap,.welcome-wrap{max-width:460px;margin:20px auto}
-    .lock-logo,.welcome-icon{width:82px;height:82px;border-radius:26px;display:grid;place-items:center;margin:0 auto 18px;font-size:34px;background:linear-gradient(135deg,#2563eb,#06b6d4);box-shadow:0 15px 35px rgba(37,99,235,.4),inset 0 2px 5px rgba(255,255,255,.4)}
-    .welcome-icon{background:linear-gradient(135deg,#16a34a,#22c55e);box-shadow:0 15px 35px rgba(34,197,94,.4),inset 0 2px 5px rgba(255,255,255,.4)}
-    .join-card,.address-card{padding:18px;border:1px solid var(--line);background:linear-gradient(145deg,rgba(16,32,56,.95),rgba(8,18,34,.95));border-radius:22px;margin-bottom:14px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+    .lock-logo,.welcome-icon{
+      width:84px;height:84px;border-radius:28px;display:grid;place-items:center;margin:0 auto 18px;font-size:36px;
+      background:linear-gradient(135deg,#2563eb,#06b6d4);box-shadow:0 15px 40px rgba(37,99,235,.5),inset 0 2px 6px rgba(255,255,255,.4);
+    }
+    .welcome-icon{background:linear-gradient(135deg,#16a34a,#22c55e);box-shadow:0 15px 40px rgba(34,197,94,.5),inset 0 2px 6px rgba(255,255,255,.4)}
+    .join-card,.address-card{
+      padding:20px;border:1px solid var(--line);
+      background:linear-gradient(145deg,rgba(16,34,58,.95),rgba(8,18,35,.98));
+      border-radius:24px;margin-bottom:14px;box-shadow:0 12px 35px rgba(0,0,0,.6);
+    }
     .join-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .channel-icon{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:rgba(59,130,246,.18);font-size:20px;box-shadow:inset 0 1px 3px rgba(255,255,255,.2)}
-    
-    /* 3D LIVE BUTTONS */
-    .join-btn{padding:11px 18px;border-radius:14px;background:linear-gradient(145deg,#3b82f6,#1d4ed8);font-weight:900;font-size:12px;box-shadow:0 6px 0 #1e3a8a,0 10px 20px rgba(0,0,0,.4);transition:all .1s ease;transform:translateY(0)}
-    .join-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #1e3a8a,0 5px 10px rgba(0,0,0,.3)}
+    .channel-icon{
+      width:48px;height:48px;border-radius:16px;display:grid;place-items:center;
+      background:rgba(59,130,246,.2);font-size:22px;box-shadow:inset 0 1px 4px rgba(255,255,255,.3);
+    }
 
-    .app{width:100%;max-width:640px;margin:auto;padding:14px 14px 30px}
-    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .app{width:100%;max-width:640px;margin:auto;padding:14px 14px 35px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
     .brand{display:flex;align-items:center;gap:12px}
-    .brand-logo{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;font-size:20px;font-weight:950;background:linear-gradient(135deg,#2563eb,#06b6d4);box-shadow:0 8px 20px rgba(37,99,235,.4),inset 0 2px 4px rgba(255,255,255,.4)}
-    .profile-pill{display:flex;align-items:center;gap:6px;background:linear-gradient(145deg,rgba(18,34,58,.9),rgba(10,20,38,.9));border:1px solid var(--line);padding:7px 14px;border-radius:22px;font-size:11px;font-weight:900;box-shadow:0 5px 15px rgba(0,0,0,.3)}
+    .brand-logo{
+      width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:22px;font-weight:950;
+      background:linear-gradient(135deg,#2563eb,#06b6d4);box-shadow:0 8px 25px rgba(37,99,235,.5),inset 0 2px 6px rgba(255,255,255,.4);
+    }
+    .profile-pill{
+      display:flex;align-items:center;gap:6px;
+      background:linear-gradient(145deg,rgba(18,36,60,.9),rgba(10,21,38,.9));
+      border:1px solid var(--line);padding:8px 14px;border-radius:24px;font-size:11px;font-weight:950;
+      box-shadow:0 6px 18px rgba(0,0,0,.4);
+    }
 
     .page{display:none;animation:pageIn .25s cubic-bezier(.16,1,.3,1)}
     .page.active{display:block}
     @keyframes pageIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
 
-    /* 3D GLASS CARDS */
     .box-rect{
-      padding:20px;border:1px solid var(--line);border-radius:26px;
-      background:linear-gradient(145deg,rgba(15,29,50,.9),rgba(9,19,36,.95));
-      box-shadow:0 15px 35px rgba(0,0,0,.5),inset 0 1px 1px rgba(255,255,255,.1);
-      margin-bottom:14px;backdrop-filter:blur(10px);
+      padding:22px;border:1px solid var(--line);border-radius:28px;
+      background:linear-gradient(145deg,rgba(15,30,52,.92),rgba(8,18,35,.96));
+      box-shadow:0 18px 40px rgba(0,0,0,.6),inset 0 1px 1px rgba(255,255,255,.12);
+      margin-bottom:16px;backdrop-filter:blur(12px);
     }
     .balance-box{
-      background:radial-gradient(circle at 90% 0%,rgba(34,211,238,.25),transparent 50%),linear-gradient(145deg,#132f5e,#091833);
-      border-color:rgba(96,165,250,.35);
-      box-shadow:0 20px 45px rgba(11,28,58,.6),inset 0 1px 2px rgba(255,255,255,.2);
+      background:radial-gradient(circle at 90% 0%,rgba(34,211,238,.3),transparent 55%),linear-gradient(145deg,#133368,#091a38);
+      border-color:rgba(96,165,250,.4);
+      box-shadow:0 22px 50px rgba(11,30,62,.7),inset 0 1px 3px rgba(255,255,255,.25);
     }
-    .balance-num{font-size:38px;font-weight:950;line-height:1;margin:6px 0 4px;letter-spacing:-1px;text-shadow:0 2px 10px rgba(0,0,0,.5)}
-    .section-title{font-size:16px;font-weight:950;margin:20px 4px 10px;display:flex;justify-content:space-between;align-items:center;letter-spacing:.3px}
+    .balance-num{font-size:40px;font-weight:950;line-height:1;margin:6px 0 4px;letter-spacing:-1px;text-shadow:0 3px 12px rgba(0,0,0,.6)}
+    .section-title{font-size:16px;font-weight:950;margin:22px 4px 10px;display:flex;justify-content:space-between;align-items:center;letter-spacing:.3px}
     .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-    .stat-tile{padding:16px;background:linear-gradient(145deg,rgba(10,22,39,.9),rgba(5,13,25,.9));border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 20px rgba(0,0,0,.3),inset 0 1px 1px rgba(255,255,255,.05)}
+    .stat-tile{
+      padding:16px;background:linear-gradient(145deg,rgba(10,23,41,.9),rgba(5,13,26,.95));
+      border:1px solid var(--line);border-radius:20px;box-shadow:0 8px 22px rgba(0,0,0,.4),inset 0 1px 1px rgba(255,255,255,.06);
+    }
 
-    /* ULTRA 3D LIVE BUTTONS */
+    /* 3D LIVE TACTILE BUTTONS */
     .action-btn{
-      width:100%;padding:15px;border-radius:16px;font-weight:950;letter-spacing:.5px;
+      width:100%;padding:16px;border-radius:18px;font-weight:950;letter-spacing:.5px;
       background:linear-gradient(145deg,#3b82f6,#1d4ed8);
-      box-shadow:0 6px 0 #1e3a8a,0 12px 25px rgba(37,99,235,.4),inset 0 2px 4px rgba(255,255,255,.3);
+      box-shadow:0 7px 0 #1e3a8a,0 14px 28px rgba(37,99,235,.45),inset 0 2px 5px rgba(255,255,255,.35);
       transition:all .12s cubic-bezier(.2,0,0,1);transform:translateY(0);cursor:pointer;
     }
     .action-btn:hover{filter:brightness(1.1)}
-    .action-btn:active{transform:translateY(5px);box-shadow:0 1px 0 #1e3a8a,0 4px 10px rgba(37,99,235,.3),inset 0 1px 2px rgba(0,0,0,.2)}
+    .action-btn:active{transform:translateY(5px);box-shadow:0 2px 0 #1e3a8a,0 5px 12px rgba(37,99,235,.35),inset 0 1px 3px rgba(0,0,0,.3)}
 
     .action-btn.green{
       background:linear-gradient(145deg,#22c55e,#15803d);
-      box-shadow:0 6px 0 #166534,0 12px 25px rgba(34,197,94,.4),inset 0 2px 4px rgba(255,255,255,.3);
+      box-shadow:0 7px 0 #166534,0 14px 28px rgba(34,197,94,.45),inset 0 2px 5px rgba(255,255,255,.35);
     }
-    .action-btn.green:active{box-shadow:0 1px 0 #166534,0 4px 10px rgba(34,197,94,.3),inset 0 1px 2px rgba(0,0,0,.2)}
+    .action-btn.green:active{box-shadow:0 2px 0 #166534,0 5px 12px rgba(34,197,94,.35),inset 0 1px 3px rgba(0,0,0,.3)}
 
     .action-btn.purple{
       background:linear-gradient(145deg,#8b5cf6,#6d28d9);
-      box-shadow:0 6px 0 #5b21b6,0 12px 25px rgba(139,92,246,.4),inset 0 2px 4px rgba(255,255,255,.3);
+      box-shadow:0 7px 0 #5b21b6,0 14px 28px rgba(139,92,246,.45),inset 0 2px 5px rgba(255,255,255,.35);
     }
-    .action-btn.purple:active{box-shadow:0 1px 0 #5b21b6,0 4px 10px rgba(139,92,246,.3),inset 0 1px 2px rgba(0,0,0,.2)}
+    .action-btn.purple:active{box-shadow:0 2px 0 #5b21b6,0 5px 12px rgba(139,92,246,.35),inset 0 1px 3px rgba(0,0,0,.3)}
 
     .action-btn.orange{
       background:linear-gradient(145deg,#f97316,#c2410c);
-      box-shadow:0 6px 0 #9a3412,0 12px 25px rgba(249,115,22,.4),inset 0 2px 4px rgba(255,255,255,.3);
+      box-shadow:0 7px 0 #9a3412,0 14px 28px rgba(249,115,22,.45),inset 0 2px 5px rgba(255,255,255,.35);
     }
-    .action-btn.orange:active{box-shadow:0 1px 0 #9a3412,0 4px 10px rgba(249,115,22,.3),inset 0 1px 2px rgba(0,0,0,.2)}
+    .action-btn.orange:active{box-shadow:0 2px 0 #9a3412,0 5px 12px rgba(249,115,22,.35),inset 0 1px 3px rgba(0,0,0,.3)}
 
-    .input{width:100%;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:rgba(5,13,25,.9);color:white;outline:none;margin-bottom:12px;box-shadow:inset 0 2px 5px rgba(0,0,0,.5);transition:all .2s}
-    .input:focus{border-color:#3b82f6;box-shadow:0 0 15px rgba(59,130,246,.3),inset 0 2px 5px rgba(0,0,0,.5)}
+    .join-btn{
+      padding:11px 18px;border-radius:14px;background:linear-gradient(145deg,#3b82f6,#1d4ed8);
+      font-weight:950;font-size:12px;box-shadow:0 5px 0 #1e3a8a,0 10px 20px rgba(0,0,0,.4);
+      transition:all .1s ease;transform:translateY(0);
+    }
+    .join-btn:active{transform:translateY(4px);box-shadow:0 1px 0 #1e3a8a,0 4px 10px rgba(0,0,0,.3)}
+
+    .input{
+      width:100%;padding:15px 18px;border-radius:16px;border:1px solid var(--line);
+      background:rgba(5,13,26,.92);color:white;outline:none;margin-bottom:12px;
+      box-shadow:inset 0 3px 6px rgba(0,0,0,.6);transition:all .2s;
+    }
+    .input:focus{border-color:#3b82f6;box-shadow:0 0 18px rgba(59,130,246,.35),inset 0 3px 6px rgba(0,0,0,.6)}
 
     .streak-container{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-top:12px}
-    .streak-node{flex:1;min-width:48px;padding:10px 4px;background:rgba(10,22,39,.9);border:1px solid var(--line);border-radius:14px;text-align:center;font-size:10px;box-shadow:0 4px 10px rgba(0,0,0,.3)}
-    .streak-node.active{border-color:#facc15;background:linear-gradient(145deg,rgba(250,204,21,.25),rgba(202,138,4,.15));color:#facc15;font-weight:900;box-shadow:0 6px 15px rgba(250,204,21,.25),inset 0 1px 2px rgba(255,255,255,.4)}
+    .streak-node{
+      flex:1;min-width:48px;padding:10px 4px;background:rgba(10,23,41,.9);
+      border:1px solid var(--line);border-radius:16px;text-align:center;font-size:10px;
+      box-shadow:0 5px 12px rgba(0,0,0,.35);
+    }
+    .streak-node.active{
+      border-color:#facc15;background:linear-gradient(145deg,rgba(250,204,21,.3),rgba(202,138,4,.2));
+      color:#facc15;font-weight:950;box-shadow:0 6px 18px rgba(250,204,21,.3),inset 0 1px 3px rgba(255,255,255,.5);
+    }
 
-    .ad-card{padding:18px;border-radius:22px;background:linear-gradient(145deg,rgba(11,24,42,.9),rgba(6,14,27,.95));border:1px solid var(--line);margin-bottom:14px;box-shadow:0 10px 25px rgba(0,0,0,.4)}
-    .progress-bar-bg{width:100%;height:9px;background:rgba(0,0,0,.4);border-radius:10px;margin:12px 0;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,.6)}
-    .progress-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#22d3ee);border-radius:10px;box-shadow:0 0 12px rgba(34,211,238,.6);transition:width .4s cubic-bezier(.2,0,0,1)}
+    .ad-card{
+      padding:20px;border-radius:24px;background:linear-gradient(145deg,rgba(12,26,46,.92),rgba(6,15,29,.96));
+      border:1px solid var(--line);margin-bottom:14px;box-shadow:0 12px 30px rgba(0,0,0,.5);
+    }
+    .progress-bar-bg{
+      width:100%;height:10px;background:rgba(0,0,0,.5);border-radius:12px;margin:12px 0;
+      overflow:hidden;box-shadow:inset 0 2px 5px rgba(0,0,0,.7);
+    }
+    .progress-fill{
+      height:100%;background:linear-gradient(90deg,#3b82f6,#22d3ee);border-radius:12px;
+      box-shadow:0 0 15px rgba(34,211,238,.7);transition:width .4s cubic-bezier(.2,0,0,1);
+    }
 
     /* 3D FLOATING BOTTOM NAVIGATION */
-    .bottom-nav{position:fixed;z-index:1000;bottom:0;left:0;right:0;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:rgba(3,7,18,.92);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:center;box-shadow:0 -10px 30px rgba(0,0,0,.6)}
+    .bottom-nav{
+      position:fixed;z-index:1000;bottom:0;left:0;right:0;padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+      background:rgba(3,7,18,.94);backdrop-filter:blur(25px);border-top:1px solid rgba(255,255,255,.1);
+      display:flex;justify-content:center;box-shadow:0 -12px 35px rgba(0,0,0,.7);
+    }
     .nav-inner{width:100%;max-width:640px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-    .nav-btn{padding:8px 2px;border-radius:14px;background:transparent;color:#64748b;font-size:10px;font-weight:900;transition:all .2s}
-    .nav-btn.active{color:#60a5fa;background:rgba(59,130,246,.15);box-shadow:inset 0 1px 2px rgba(96,165,250,.3)}
-    .nav-icon{font-size:20px;display:block;margin-bottom:3px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
+    .nav-btn{
+      padding:8px 2px;border-radius:16px;background:transparent;color:#64748b;
+      font-size:10px;font-weight:950;transition:all .2s;
+    }
+    .nav-btn.active{
+      color:#60a5fa;background:rgba(59,130,246,.18);
+      box-shadow:inset 0 1px 3px rgba(96,165,250,.4),0 4px 12px rgba(59,130,246,.2);
+    }
+    .nav-icon{font-size:22px;display:block;margin-bottom:3px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))}
 
-    .toast{position:fixed;z-index:11000;left:50%;bottom:95px;transform:translate(-50%,20px);width:calc(100% - 30px);max-width:440px;padding:14px;border-radius:16px;background:linear-gradient(145deg,#0f1f38,#081324);border:1px solid var(--line);box-shadow:0 20px 50px rgba(0,0,0,.7);opacity:0;pointer-events:none;transition:.25s cubic-bezier(.2,0,0,1);font-size:13px;text-align:center;font-weight:800}
+    .toast{
+      position:fixed;z-index:11000;left:50%;bottom:95px;transform:translate(-50%,20px);
+      width:calc(100% - 30px);max-width:440px;padding:15px;border-radius:18px;
+      background:linear-gradient(145deg,#112340,#091528);border:1px solid var(--line);
+      box-shadow:0 22px 55px rgba(0,0,0,.8);opacity:0;pointer-events:none;
+      transition:.25s cubic-bezier(.2,0,0,1);font-size:13px;text-align:center;font-weight:900;
+    }
     .toast.show{opacity:1;transform:translate(-50%,0)}
-    .toast.success{border-color:rgba(34,197,94,.5);box-shadow:0 20px 50px rgba(0,0,0,.7),0 0 20px rgba(34,197,94,.2)}
-    .toast.error{border-color:rgba(239,68,68,.5);box-shadow:0 20px 50px rgba(0,0,0,.7),0 0 20px rgba(239,68,68,.2)}
-    
-    .modal{position:fixed;inset:0;z-index:10500;display:flex;align-items:flex-end;justify-content:center;padding:12px;background:rgba(3,7,18,.8);backdrop-filter:blur(12px);animation:fadeIn .2s}
+    .toast.success{border-color:rgba(34,197,94,.6);box-shadow:0 22px 55px rgba(0,0,0,.8),0 0 25px rgba(34,197,94,.25)}
+    .toast.error{border-color:rgba(239,68,68,.6);box-shadow:0 22px 55px rgba(0,0,0,.8),0 0 25px rgba(239,68,68,.25)}
+
+    .modal{
+      position:fixed;inset:0;z-index:10500;display:flex;align-items:flex-end;justify-content:center;
+      padding:12px;background:rgba(3,7,18,.85);backdrop-filter:blur(14px);animation:fadeIn .2s;
+    }
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    .modal-box{width:100%;max-width:480px;max-height:86vh;overflow:auto;padding:22px;border-radius:26px;background:linear-gradient(145deg,#0d1b31,#071224);border:1px solid var(--line);box-shadow:0 25px 60px rgba(0,0,0,.8)}
+    .modal-box{
+      width:100%;max-width:480px;max-height:86vh;overflow:auto;padding:24px;border-radius:28px;
+      background:linear-gradient(145deg,#0e1e36,#081326);border:1px solid var(--line);
+      box-shadow:0 30px 70px rgba(0,0,0,.9);
+    }
   </style>
 </head>
 
@@ -155,9 +223,9 @@
   </div>
 
   <div id="browserView" class="browser-view hidden">
-    <div class="logo-orb" style="margin-bottom:14px">₮</div>
-    <h2 style="margin:0 0 6px">USDT Hub</h2>
-    <p style="color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:18px">
+    <div class="logo-orb" style="margin-bottom:16px">₮</div>
+    <h2 style="margin:0 0 8px;font-size:22px;font-weight:950">USDT Hub</h2>
+    <p style="color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:20px">
       USDT Hub is an automated micro-earning platform with BEP20 payouts. Please open our official Telegram Mini App to start earning!
     </p>
     <button class="action-btn" onclick="window.location.href='https://t.me/Ussdt_hub_bot'">🚀 OPEN IN TELEGRAM</button>
@@ -166,25 +234,25 @@
   <div id="loadingScreen" class="loading-screen">
     <div style="text-align:center">
       <div class="logo-orb">₮</div>
-      <h2 style="margin:16px 0 4px">USDT Hub</h2>
-      <p id="loadingText" style="color:var(--muted);margin:0;font-size:13px">Loading verified account...</p>
+      <h2 style="margin:18px 0 6px;font-weight:950">USDT Hub</h2>
+      <p id="loadingText" style="color:var(--muted);margin:0;font-size:13px;font-weight:700">Loading verified account...</p>
     </div>
   </div>
 
   <section id="lockScreen" class="lock-screen hidden">
     <div class="lock-wrap">
       <div class="lock-logo">🔒</div>
-      <h2 style="text-align:center;margin-bottom:6px">Join to Continue</h2>
-      <div style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px">
+      <h2 style="text-align:center;margin-bottom:8px;font-weight:950">Join to Continue</h2>
+      <div style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px;line-height:1.5">
         Join both official channels to unlock the app and receive your 0.01 USDT bonus.
       </div>
 
       <div class="join-card">
         <div class="join-row">
-          <div style="display:flex;align-items:center;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px">
             <div class="channel-icon">📢</div>
             <div>
-              <div style="font-weight:800">Birr Gram</div>
+              <div style="font-weight:900">Birr Gram</div>
               <div style="color:var(--muted);font-size:12px">@birr_gram</div>
             </div>
           </div>
@@ -194,10 +262,10 @@
 
       <div class="join-card">
         <div class="join-row">
-          <div style="display:flex;align-items:center;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px">
             <div class="channel-icon">💎</div>
             <div>
-              <div style="font-weight:800">USDT Gram</div>
+              <div style="font-weight:900">USDT Gram</div>
               <div style="color:var(--muted);font-size:12px">@usdt_g_ram</div>
             </div>
           </div>
@@ -205,21 +273,21 @@
         </div>
       </div>
 
-      <button id="verifyBtn" class="action-btn" style="margin-top:10px" onclick="verifyChannels()">✅ VERIFY MEMBERSHIP</button>
-      <div id="verifyStatus" style="text-align:center;color:var(--muted);font-size:12px;margin-top:12px">Join both channels, then click verify.</div>
+      <button id="verifyBtn" class="action-btn" style="margin-top:12px" onclick="verifyChannels()">✅ VERIFY MEMBERSHIP</button>
+      <div id="verifyStatus" style="text-align:center;color:var(--muted);font-size:12px;margin-top:14px">Join both channels, then click verify.</div>
     </div>
   </section>
 
   <section id="welcomeScreen" class="welcome-screen hidden">
     <div class="welcome-wrap">
       <div class="welcome-icon">🎁</div>
-      <h2 style="text-align:center;margin:0 0 6px">Welcome Bonus</h2>
-      <div style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px">
+      <h2 style="text-align:center;margin:0 0 8px;font-weight:950">Welcome Bonus</h2>
+      <div style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px;line-height:1.5">
         Enter your BEP20 address. <b>0.01 USDT</b> will be sent automatically to your wallet.
       </div>
 
       <div class="address-card">
-        <label style="display:block;font-size:12px;font-weight:700;margin-bottom:8px;color:#c8d4e7">BEP20 / BNB Smart Chain Address</label>
+        <label style="display:block;font-size:12px;font-weight:800;margin-bottom:8px;color:#cbd5e1">BEP20 / BNB Smart Chain Address</label>
         <input id="welcomeAddress" class="input" placeholder="0x...">
         <button id="claimBtn" class="action-btn green" onclick="claimWelcome()">🎁 CLAIM 0.01 USDT BONUS</button>
       </div>
@@ -231,15 +299,15 @@
       <div class="brand">
         <div class="brand-logo">₮</div>
         <div>
-          <div style="font-size:17px;font-weight:900">USDT Hub</div>
-          <div style="font-size:11px;color:var(--muted)">Earn • Mine • Withdraw</div>
+          <div style="font-size:18px;font-weight:950">USDT Hub</div>
+          <div style="font-size:11px;color:var(--muted);font-weight:800">Earn • Mine • Withdraw</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         <div class="profile-pill">
           <span style="color:#facc15">★</span> <span id="vipBadge">Bronze</span>
         </div>
-        <button onclick="openTelegram('https://t.me/birr_gram')" style="background:#1e293b;padding:8px 12px;border-radius:14px;font-size:11px;font-weight:800">📢 Proofs</button>
+        <button onclick="openTelegram('https://t.me/birr_gram')" style="background:rgba(30,41,59,.9);padding:8px 14px;border-radius:16px;font-size:11px;font-weight:900;border:1px solid var(--line);box-shadow:0 4px 10px rgba(0,0,0,.3)">📢 Proofs</button>
       </div>
     </header>
 
@@ -248,18 +316,18 @@
       <div class="box-rect balance-box">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
-            <div style="color:#a8b9d3;font-size:12px">Available Balance</div>
+            <div style="color:#a8b9d3;font-size:12px;font-weight:800">Available Balance</div>
             <div class="balance-num"><span id="balance">0</span> <small style="font-size:15px;color:#9bb7df">PTS</small></div>
-            <div style="font-size:12px;color:#4ade80">≈ $<span id="balanceUsdt">0.00</span> USDT (10,000 PTS = $0.10)</div>
+            <div style="font-size:12px;color:#4ade80;font-weight:900">≈ $<span id="balanceUsdt">0.00</span> USDT (10,000 PTS = $0.10)</div>
           </div>
-          <button onclick="showPage('withdraw')" style="background:#22c55e;padding:12px 18px;border-radius:14px;font-weight:900;font-size:13px">💸 Withdraw</button>
+          <button onclick="showPage('withdraw')" style="background:linear-gradient(145deg,#22c55e,#15803d);box-shadow:0 5px 0 #166534,0 10px 20px rgba(34,197,94,.4);padding:12px 18px;border-radius:16px;font-weight:950;font-size:13px">💸 Withdraw</button>
         </div>
       </div>
 
       <div class="box-rect">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:900;font-size:14px">🔥 7-Day Login Streak</div>
-          <button id="claimStreakBtn" class="action-btn green" style="width:auto;padding:6px 14px;font-size:11px" onclick="claimDailyStreak()">CLAIM TODAY</button>
+          <div style="font-weight:950;font-size:14px">🔥 7-Day Login Streak</div>
+          <button id="claimStreakBtn" class="action-btn green" style="width:auto;padding:6px 14px;font-size:11px;box-shadow:0 4px 0 #166534,0 8px 15px rgba(34,197,94,.3)" onclick="claimDailyStreak()">CLAIM TODAY</button>
         </div>
         <div class="streak-container" id="streakTrack">
           <div class="streak-node">D1<br><b>+50</b></div>
@@ -273,29 +341,29 @@
       </div>
 
       <div class="section-title">🎁 Redeem Promo Code (200 PTS)</div>
-      <div class="box-rect" style="display:flex;gap:8px">
+      <div class="box-rect" style="display:flex;gap:10px">
         <input id="promoCode" class="input" style="margin-bottom:0" placeholder="ENTER PROMO CODE" autocomplete="off">
-        <button class="action-btn green" style="width:auto;padding:0 18px" onclick="claimPromo()">CLAIM</button>
+        <button class="action-btn green" style="width:auto;padding:0 22px" onclick="claimPromo()">CLAIM</button>
       </div>
 
       <div class="box-rect">
-        <div style="font-weight:900;margin-bottom:12px">📊 Your Activity Overview</div>
+        <div style="font-weight:950;margin-bottom:14px">📊 Your Activity Overview</div>
         <div class="stats-grid">
           <div class="stat-tile">
-            <div style="font-size:11px;color:var(--muted)">Ads Watched</div>
-            <div id="adsCount" style="font-size:19px;font-weight:900;margin-top:4px">0</div>
+            <div style="font-size:11px;color:var(--muted);font-weight:800">Ads Watched</div>
+            <div id="adsCount" style="font-size:20px;font-weight:950;margin-top:4px">0</div>
           </div>
           <div class="stat-tile">
-            <div style="font-size:11px;color:var(--muted)">Tasks Done</div>
-            <div id="taskCount" style="font-size:19px;font-weight:900;margin-top:4px">0</div>
+            <div style="font-size:11px;color:var(--muted);font-weight:800">Tasks Done</div>
+            <div id="taskCount" style="font-size:20px;font-weight:950;margin-top:4px">0</div>
           </div>
           <div class="stat-tile">
-            <div style="font-size:11px;color:var(--muted)">Referrals</div>
-            <div id="refCount" style="font-size:19px;font-weight:900;margin-top:4px">0</div>
+            <div style="font-size:11px;color:var(--muted);font-weight:800">Referrals</div>
+            <div id="refCount" style="font-size:20px;font-weight:950;margin-top:4px">0</div>
           </div>
           <div class="stat-tile">
-            <div style="font-size:11px;color:var(--muted)">VIP Status</div>
-            <div id="vipStatusBox" style="font-size:15px;font-weight:900;margin-top:4px;color:#facc15">Bronze</div>
+            <div style="font-size:11px;color:var(--muted);font-weight:800">VIP Status</div>
+            <div id="vipStatusBox" style="font-size:15px;font-weight:950;margin-top:4px;color:#facc15">Bronze</div>
           </div>
         </div>
       </div>
@@ -303,15 +371,18 @@
 
     <!-- PAGE 2: TASKS & ADS -->
     <section id="page-tasks" class="page">
-      <div class="section-title">📺 Mining Ads (75 PTS / ad)</div>
+      <div class="section-title">
+        <span>📺 Mining Ads (75 PTS / ad)</span>
+        <span id="resetCountdown" style="font-size:11px;color:#facc15;font-weight:900">Resets in: --:--:--</span>
+      </div>
 
       <div class="ad-card">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
-            <div style="font-weight:900">Monetag Direct Ads</div>
-            <div id="monetagCount" style="color:var(--muted);font-size:11px">0 / 25 today</div>
+            <div style="font-weight:950">Monetag Direct Ads</div>
+            <div id="monetagCount" style="color:var(--muted);font-size:11px;font-weight:800">0 / 25 today</div>
           </div>
-          <button id="monetagBtn" style="padding:10px 16px;border-radius:12px;background:#2563eb;font-weight:900" onclick="watchAd('monetag')">WATCH</button>
+          <button id="monetagBtn" style="padding:10px 18px;border-radius:14px;background:linear-gradient(145deg,#2563eb,#1d4ed8);font-weight:950;box-shadow:0 5px 0 #1e3a8a,0 8px 15px rgba(37,99,235,.4)" onclick="watchAd('monetag')">WATCH</button>
         </div>
         <div class="progress-bar-bg"><div id="monetagFill" class="progress-fill" style="width:0%"></div></div>
       </div>
@@ -319,17 +390,17 @@
       <div class="ad-card">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
-            <div style="font-weight:900">⚡ HilltopAds Direct Mining</div>
-            <div id="hilltopCount" style="color:var(--muted);font-size:11px">0 / 15 today</div>
+            <div style="font-weight:950">⚡ HilltopAds Direct Mining</div>
+            <div id="hilltopCount" style="color:var(--muted);font-size:11px;font-weight:800">0 / 15 today</div>
           </div>
-          <button id="hilltopBtn" style="padding:10px 16px;border-radius:12px;background:#f97316;font-weight:900" onclick="watchAd('hilltop')">WATCH</button>
+          <button id="hilltopBtn" style="padding:10px 18px;border-radius:14px;background:linear-gradient(145deg,#f97316,#c2410c);font-weight:950;box-shadow:0 5px 0 #9a3412,0 8px 15px rgba(249,115,22,.4)" onclick="watchAd('hilltop')">WATCH</button>
         </div>
-        <div class="progress-bar-bg"><div id="hilltopFill" class="progress-fill" style="width:0%;background:linear-gradient(90deg,#ea580c,#f97316)"></div></div>
+        <div class="progress-bar-bg"><div id="hilltopFill" class="progress-fill" style="width:0%;background:linear-gradient(90deg,#ea580c,#f97316);box-shadow:0 0 15px rgba(249,115,22,.6)"></div></div>
       </div>
 
       <div class="section-title">
         <span>🎯 Community Tasks</span>
-        <button class="action-btn" style="width:auto;padding:6px 14px;font-size:11px" onclick="openCreateTask()">➕ CREATE TASK</button>
+        <button class="action-btn" style="width:auto;padding:6px 14px;font-size:11px;box-shadow:0 4px 0 #1e3a8a,0 8px 15px rgba(37,99,235,.3)" onclick="openCreateTask()">➕ CREATE TASK</button>
       </div>
       <div id="tasksList"></div>
     </section>
@@ -338,20 +409,20 @@
     <section id="page-referrals" class="page">
       <div class="section-title">👥 Referral Center</div>
       <div class="box-rect" style="text-align:center">
-        <div style="font-size:12px;color:var(--muted)">Your Personal Referral Link</div>
-        <div id="refLink" style="margin:10px 0;padding:12px;border-radius:14px;background:#071221;border:1px dashed rgba(139,92,246,.4);font-weight:900;font-size:12px;word-break:break-all">Loading...</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="font-size:12px;color:var(--muted);font-weight:800">Your Personal Referral Link</div>
+        <div id="refLink" style="margin:12px 0;padding:14px;border-radius:16px;background:rgba(5,13,26,.9);border:1px dashed rgba(139,92,246,.5);font-weight:950;font-size:12px;word-break:break-all;color:#c084fc">Loading...</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <button class="action-btn purple" onclick="copyReferral()">📋 COPY</button>
           <button class="action-btn" onclick="shareReferral()">🚀 DIRECT SHARE</button>
         </div>
       </div>
 
       <div class="box-rect">
-        <div style="font-weight:900;margin-bottom:8px">📜 Rules & Rewards</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.6">
-          • <b>Join Channels:</b> Earn <b>+300 PTS</b> when your referral verifies channels.<br>
-          • <b>Watch 2 Ads:</b> Earn <b>+200 PTS</b> when your referral watches 2 ads.<br>
-          • <i>Total: 500 PTS per active user.</i>
+        <div style="font-weight:950;margin-bottom:10px">📜 Rules & Rewards</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.7;font-weight:700">
+          • <b>Join Channels (+300 PTS):</b> Invited friend <u>must join channels</u> first. If they don't join, no points will be credited!<br>
+          • <b>Watch 2 Ads (+200 PTS):</b> Credited when your referral watches 2 ads.<br>
+          • <i>Total: 500 PTS per verified active user.</i>
         </div>
       </div>
 
@@ -366,19 +437,19 @@
     <section id="page-withdraw" class="page">
       <div class="section-title">💸 Automated BEP20 Withdrawal</div>
       <div class="box-rect">
-        <div style="text-align:center;font-size:12px;color:var(--muted)">Available Balance</div>
-        <div id="withdrawBalance" style="text-align:center;font-size:32px;font-weight:950;margin:6px 0">0 PTS</div>
-        <div style="text-align:center;font-size:12px;color:#4ade80;margin-bottom:14px">Minimum: 10,000 PTS = 0.10 USDT</div>
+        <div style="text-align:center;font-size:12px;color:var(--muted);font-weight:800">Available Balance</div>
+        <div id="withdrawBalance" style="text-align:center;font-size:34px;font-weight:950;margin:6px 0;text-shadow:0 2px 10px rgba(0,0,0,.5)">0 PTS</div>
+        <div style="text-align:center;font-size:12px;color:#4ade80;font-weight:900;margin-bottom:16px">Minimum: 10,000 PTS = 0.10 USDT</div>
 
-        <label style="font-size:11px;color:var(--muted);font-weight:700">DESTINATION BEP20 ADDRESS</label>
-        <input id="withdrawAddress" class="input" style="margin-top:6px" placeholder="0x... BSC address" autocomplete="off">
+        <label style="font-size:11px;color:var(--muted);font-weight:800">DESTINATION BEP20 ADDRESS</label>
+        <input id="withdrawAddress" class="input" style="margin-top:8px" placeholder="0x... BSC address" autocomplete="off">
         <button id="withdrawBtn" class="action-btn green" onclick="withdraw()">💸 WITHDRAW 0.10 USDT</button>
       </div>
 
       <div class="box-rect">
-        <div style="font-weight:900;margin-bottom:6px">📢 Payment Proofs</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.55">
-          All payouts are broadcast automatically to our official proof channel: <a href="javascript:openTelegram('https://t.me/birr_gram')" style="color:#60a5fa;text-decoration:none;font-weight:800">@birr_gram</a>.
+        <div style="font-weight:950;margin-bottom:8px">📢 Payment Proofs</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;font-weight:700">
+          All payouts are broadcast automatically to our official proof channel: <a href="javascript:openTelegram('https://t.me/birr_gram')" style="color:#60a5fa;text-decoration:none;font-weight:900">@birr_gram</a>.
         </div>
       </div>
     </section>
@@ -398,20 +469,20 @@
 
   <div id="depositModal" class="modal hidden">
     <div class="modal-box">
-      <div style="font-size:18px;font-weight:900;margin-bottom:6px">💳 Deposit USDT (BEP20)</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Send USDT (BEP20) to the address below ($1.00 = 100,000 PTS):</div>
-      <div id="depAddressText" style="padding:10px;background:#071221;border-radius:12px;font-size:11px;word-break:break-all;margin-bottom:8px">Loading...</div>
-      <button class="action-btn purple" style="padding:8px;margin-bottom:12px" onclick="copyDepositAddress()">📋 COPY ADDRESS</button>
+      <div style="font-size:18px;font-weight:950;margin-bottom:8px">💳 Deposit USDT (BEP20)</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;font-weight:700">Send USDT (BEP20) to the address below ($1.00 = 100,000 PTS):</div>
+      <div id="depAddressText" style="padding:12px;background:rgba(5,13,26,.9);border-radius:14px;font-size:11px;word-break:break-all;margin-bottom:12px;border:1px solid var(--line);color:#38bdf8">Loading...</div>
+      <button class="action-btn purple" style="padding:10px;margin-bottom:14px" onclick="copyDepositAddress()">📋 COPY ADDRESS</button>
       <input id="depositTxHash" class="input" placeholder="0x... Transaction Hash">
       <button class="action-btn green" onclick="submitDeposit()">SUBMIT TX</button>
-      <button class="action-btn" style="background:#17263c;margin-top:8px" onclick="closeDepositModal()">CLOSE</button>
+      <button class="action-btn" style="background:rgba(30,41,59,.9);margin-top:10px;box-shadow:0 4px 0 #0f172a,0 8px 15px rgba(0,0,0,.4)" onclick="closeDepositModal()">CLOSE</button>
     </div>
   </div>
 
   <div id="taskModal" class="modal hidden">
     <div class="modal-box">
-      <div style="font-size:18px;font-weight:900;margin-bottom:6px">➕ Create Community Task</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Costs 100,000 PTS ($1.00) — Free for Admin.</div>
+      <div style="font-size:18px;font-weight:950;margin-bottom:8px">➕ Create Community Task</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;font-weight:700">Costs 100,000 PTS ($1.00) — Free for Admin.</div>
       <input id="taskTitle" class="input" placeholder="Channel / Bot Title">
       <input id="taskLink" class="input" placeholder="https://t.me/example">
       <input id="taskChatId" class="input" placeholder="@username or Chat ID">
@@ -419,11 +490,11 @@
         <option value="channel">Channel</option>
         <option value="bot">Bot</option>
       </select>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:10px;margin-top:4px">
         <button class="action-btn" onclick="createTask()">CREATE</button>
         <button class="action-btn purple" onclick="openDepositModal()">💳 DEPOSIT</button>
       </div>
-      <button class="action-btn" style="background:#17263c;margin-top:8px" onclick="closeCreateTask()">CANCEL</button>
+      <button class="action-btn" style="background:rgba(30,41,59,.9);margin-top:10px;box-shadow:0 4px 0 #0f172a,0 8px 15px rgba(0,0,0,.4)" onclick="closeCreateTask()">CANCEL</button>
     </div>
   </div>
 
@@ -472,6 +543,30 @@ function openTelegram(url) {
 
 function setLoading(show) { $("loadingScreen").classList.toggle("hidden", !show); }
 
+// Ads Reset Countdown Timer (Resets at midnight UTC)
+function startResetCountdown() {
+  function updateTimer() {
+    const now = new Date();
+    const utcNow = new Date(now.toUTCString().slice(0, -4));
+    const tomorrow = new Date(utcNow);
+    tomorrow.setUTCHours(24, 0, 0, 0);
+    const diff = tomorrow - utcNow;
+
+    if (diff <= 0) {
+      $("resetCountdown").textContent = "Resets in: 00:00:00";
+      return;
+    }
+
+    const hours = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
+    const minutes = String(Math.floor((diff / 1000 / 60) % 60)).padStart(2, '0');
+    const seconds = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
+
+    $("resetCountdown").textContent = `Resets in: ${hours}:${minutes}:${seconds}`;
+  }
+  updateTimer();
+  setInterval(updateTimer, 1000);
+}
+
 async function apiRequest(endpoint, body = {}) {
   const headers = {
     "Content-Type": "application/json",
@@ -499,6 +594,7 @@ async function apiRequest(endpoint, body = {}) {
 }
 
 async function initialize() {
+  startResetCountdown();
   if (!INIT_DATA) {
     $("browserView").classList.remove("hidden");
     setLoading(false);
@@ -716,13 +812,13 @@ async function loadTasks() {
     }
 
     container.innerHTML = list.map(t => `
-      <div class="box-rect" style="margin-bottom:10px" id="task-card-${t.id}">
-        <div style="display:flex;justify-content:space-between;font-weight:900">
+      <div class="box-rect" style="margin-bottom:12px" id="task-card-${t.id}">
+        <div style="display:flex;justify-content:space-between;font-weight:950">
           <div>${t.title}</div>
           <div style="color:#4ade80">+${t.reward} PTS</div>
         </div>
-        <div style="color:var(--muted);font-size:11px;margin:4px 0 10px">${t.completions || 0}/${t.maxCompletions} completed</div>
-        <button class="action-btn" onclick="completeTask('${t.id}', '${t.link}')">🚀 JOIN & CLAIM</button>
+        <div style="color:var(--muted);font-size:11px;margin:4px 0 12px;font-weight:800">${t.completions || 0}/${t.maxCompletions} completed</div>
+        <button class="action-btn" style="box-shadow:0 5px 0 #1e3a8a,0 10px 20px rgba(37,99,235,.4)" onclick="completeTask('${t.id}', '${t.link}')">🚀 JOIN & CLAIM</button>
       </div>
     `).join("");
   } catch {
@@ -739,7 +835,7 @@ async function completeTask(taskId, link) {
     currentUser.tasksCompleted = Number(currentUser.tasksCompleted || 0) + 1;
     updateUserUI();
     triggerHaptic("success");
-    showToast(`🎯 +${data.reward} PTS rewarded!`, "success");
+    showToast(`🎯 +${data.reward} PTS rewarded & task completed!`, "success");
     await loadTasks();
   } catch (err) {
     triggerHaptic("error");
@@ -823,22 +919,22 @@ async function loadReferrals() {
     $("refCount").textContent = list.length;
 
     if (!list.length) {
-      $("referralList").innerHTML = `<div style="text-align:center;color:var(--muted);font-size:12px">No referrals yet. Share your link to start earning!</div>`;
+      $("referralList").innerHTML = `<div style="text-align:center;color:var(--muted);font-size:12px;font-weight:800">No referrals yet. Share your link to start earning!</div>`;
     } else {
       $("referralList").innerHTML = list.map(r => `
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px">
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px;font-weight:800">
           <span>👤 User ${r.referredUserId.slice(0, 5)}***</span>
-          <span style="color:#4ade80">${r.channelRewarded && r.adsRewarded ? "+500 PTS" : r.channelRewarded ? "+300 PTS" : "Pending"}</span>
+          <span style="color:#4ade80">${r.channelRewarded && r.adsRewarded ? "+500 PTS" : r.channelRewarded ? "+300 PTS" : "Awaiting Channel Join"}</span>
         </div>
       `).join("");
     }
 
     const leaders = leadData.leaderboard || [];
     if (!leaders.length) {
-      $("leaderboardList").innerHTML = `<div style="text-align:center;color:var(--muted);font-size:12px">No leaders yet.</div>`;
+      $("leaderboardList").innerHTML = `<div style="text-align:center;color:var(--muted);font-size:12px;font-weight:800">No leaders yet.</div>`;
     } else {
       $("leaderboardList").innerHTML = leaders.map((l, i) => `
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px">
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px;font-weight:800">
           <span>#${i + 1} <b>${l.firstName}</b></span>
           <span style="color:#60a5fa">${l.referrals} refs (${l.referralPoints} PTS)</span>
         </div>
