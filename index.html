@@ -58,8 +58,7 @@
     .app{width:100%;max-width:640px;margin:auto;padding:12px 14px 25px}
     .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
     .brand{display:flex;align-items:center;gap:10px}
-
-.brand-logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:19px;font-weight:900;background:linear-gradient(145deg,#2563eb,#06b6d4)}
+    .brand-logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:19px;font-weight:900;background:linear-gradient(145deg,#2563eb,#06b6d4)}
     .profile-pill{display:flex;align-items:center;gap:6px;background:#12223a;border:1px solid var(--line);padding:6px 12px;border-radius:20px;font-size:11px;font-weight:800}
 
     .page{display:none;animation:pageIn .2s ease}
@@ -110,7 +109,7 @@
 
 <body>
 
-<div class="aads-wrapper">
+  <div class="aads-wrapper">
     <div class="aads-label">⚡ SPONSORED CRYPTO NETWORK</div>
     <div id="frame" style="width:100%;position:relative;display:flex;justify-content:center;min-height:90px">
       <iframe data-aa='2453118' src='//acceptable.a-ads.com/2453118/?size=Adaptive' style='border:0px;padding:0;width:100%;min-height:90px;height:90px;overflow:hidden;background-color:transparent;display:block;'></iframe>
@@ -126,11 +125,11 @@
     <button class="action-btn" onclick="window.location.href='https://t.me/Ussdt_hub_bot'">🚀 OPEN IN TELEGRAM</button>
   </div>
 
-  <div id="loadingScreen" class="loading-screen hidden">
+  <div id="loadingScreen" class="loading-screen">
     <div style="text-align:center">
       <div class="logo-orb">₮</div>
       <h2 style="margin:16px 0 4px">USDT Hub</h2>
-      <p style="color:var(--muted);margin:0;font-size:13px">Loading verified account...</p>
+      <p id="loadingText" style="color:var(--muted);margin:0;font-size:13px">Loading verified account...</p>
     </div>
   </div>
 
@@ -192,8 +191,7 @@
   <main id="app" class="app hidden">
     <header class="topbar">
       <div class="brand">
-
-<div class="brand-logo">₮</div>
+        <div class="brand-logo">₮</div>
         <div>
           <div style="font-size:17px;font-weight:900">USDT Hub</div>
           <div style="font-size:11px;color:var(--muted)">Earn • Mine • Withdraw</div>
@@ -269,7 +267,7 @@
     <section id="page-tasks" class="page">
       <div class="section-title">📺 Mining Ads (75 PTS / ad)</div>
 
-<div class="ad-card">
+      <div class="ad-card">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
             <div style="font-weight:900">Monetag Direct Ads</div>
@@ -339,7 +337,7 @@
         <button id="withdrawBtn" class="action-btn green" onclick="withdraw()">💸 WITHDRAW 0.10 USDT</button>
       </div>
 
-<div class="box-rect">
+      <div class="box-rect">
         <div style="font-weight:900;margin-bottom:6px">📢 Payment Proofs</div>
         <div style="font-size:12px;color:var(--muted);line-height:1.55">
           All payouts are broadcast automatically to our official proof channel: <a href="javascript:openTelegram('https://t.me/birr_gram')" style="color:#60a5fa;text-decoration:none;font-weight:800">@birr_gram</a>.
@@ -442,16 +440,22 @@ async function apiRequest(endpoint, body = {}) {
     "X-Telegram-Init-Data": INIT_DATA
   };
 
-  const response = await fetch(/api/index?endpoint=${endpoint}, {
+  const response = await fetch(`/api/index?endpoint=${endpoint}`, {
     method: "POST",
     headers,
     body: JSON.stringify({ ...body, endpoint })
   });
 
-  const data = await response.json();
+  const responseText = await response.text();
+  let data;
+  try {
+    data = JSON.parse(responseText);
+  } catch (e) {
+    throw new Error("Server returned invalid response (HTML/Error). Check Vercel logs.");
+  }
 
   if (!response.ok || data?.success === false) {
-    throw new Error(data?.error || HTTP_${response.status});
+    throw new Error(data?.error || `HTTP_${response.status}`);
   }
   return data;
 }
@@ -459,6 +463,7 @@ async function apiRequest(endpoint, body = {}) {
 async function initialize() {
   if (!INIT_DATA) {
     $("browserView").classList.remove("hidden");
+    setLoading(false);
     return;
   }
 
@@ -492,6 +497,8 @@ async function initialize() {
     unlockApp();
   } catch (error) {
     setLoading(false);
+    // If initialization fails, show error visually on screen so it never stays blank
+    $("loadingText").innerHTML = `<span style="color:#ef4444">Error: ${error.message}</span>`;
     showToast(error.message, "error");
   }
 }
@@ -539,14 +546,14 @@ function updateUserUI() {
   $("vipStatusBox").textContent = currentUser.vipTier || "Bronze";
 
   const botName = currentUser.botUsername || "Ussdt_hub_bot";
-  $("refLink").textContent = https://t.me/${botName}?startapp=ref_${currentUser.telegramId};
+  $("refLink").textContent = `https://t.me/${botName}?startapp=ref_${currentUser.telegramId}`;
 
   const ml = Number(currentUser.monetagToday || 0);
-  $("monetagCount").textContent = ${ml} / 25 today;
+  $("monetagCount").textContent = `${ml} / 25 today`;
   $("monetagFill").style.width = Math.min(100, (ml / 25) * 100) + "%";
 
   const hl = Number(currentUser.hilltopToday || 0);
-  $("hilltopCount").textContent = ${hl} / 15 today;
+  $("hilltopCount").textContent = `${hl} / 15 today`;
   $("hilltopFill").style.width = Math.min(100, (hl / 15) * 100) + "%";
 
   const streak = Number(currentUser.streakDay || 0);
@@ -560,11 +567,11 @@ async function claimDailyStreak() {
   triggerHaptic("light");
   try {
     const res = await apiRequest("claim-streak");
-    currentUser.balance = Number(currentUser.balance  0) + Number(res.reward  0);
+    currentUser.balance = Number(currentUser.balance || 0) + Number(res.reward || 0);
     currentUser.streakDay = res.streakDay;
     updateUserUI();
     triggerHaptic("success");
-    showToast(🔥 Day ${res.streakDay} claimed: +${res.reward} PTS!, "success");
+    showToast(`🔥 Day ${res.streakDay} claimed: +${res.reward} PTS!`, "success");
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message === "STREAK_ALREADY_CLAIMED_TODAY" ? "You claimed today's streak already!" : err.message, "error");
@@ -613,7 +620,7 @@ async function claimWelcome() {
     const data = await apiRequest("claim-welcome", { address });
     currentUser.welcomeBonusClaimed = true;
     triggerHaptic("success");
-    showToast(🎁 0.01 USDT sent! Hash: ${data.txHash.slice(0, 10)}..., "success");
+    showToast(`🎁 0.01 USDT sent! Hash: ${data.txHash.slice(0, 10)}...`, "success");
     setTimeout(unlockApp, 900);
   } catch (err) {
     triggerHaptic("error");
@@ -645,14 +652,14 @@ async function watchAd(provider = "monetag") {
     }
 
     const res = await apiRequest("ads", { provider });
-    currentUser.balance = Number(currentUser.balance  0) + Number(res.reward  0);
+    currentUser.balance = Number(currentUser.balance || 0) + Number(res.reward || 0);
     currentUser.adsWatched = res.totalAds;
     if (res.monetagToday !== undefined) currentUser.monetagToday = res.monetagToday;
     if (res.hilltopToday !== undefined) currentUser.hilltopToday = res.hilltopToday;
 
     updateUserUI();
     triggerHaptic("success");
-    showToast(+${res.reward} PTS earned!, "success");
+    showToast(`+${res.reward} PTS earned!`, "success");
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
@@ -667,23 +674,22 @@ async function loadTasks() {
     const data = await apiRequest("tasks", { action: "list" });
     const list = data.tasks || [];
     if (!list.length) {
-      container.innerHTML = <div class="box-rect" style="text-align:center;color:var(--muted)">All caught up! No active tasks right now.</div>;
+      container.innerHTML = `<div class="box-rect" style="text-align:center;color:var(--muted)">All caught up! No active tasks right now.</div>`;
       return;
     }
 
     container.innerHTML = list.map(t => `
       <div class="box-rect" style="margin-bottom:10px" id="task-card-${t.id}">
-
-<div style="display:flex;justify-content:space-between;font-weight:900">
+        <div style="display:flex;justify-content:space-between;font-weight:900">
           <div>${t.title}</div>
           <div style="color:#4ade80">+${t.reward} PTS</div>
         </div>
         <div style="color:var(--muted);font-size:11px;margin:4px 0 10px">${t.completions || 0}/${t.maxCompletions} completed</div>
         <button class="action-btn" onclick="completeTask('${t.id}', '${t.link}')">🚀 JOIN & CLAIM</button>
       </div>
-    ).join("");
+    `).join("");
   } catch {
-    container.innerHTML = <div class="box-rect" style="text-align:center;color:var(--muted)">No community tasks available.</div>;
+    container.innerHTML = `<div class="box-rect" style="text-align:center;color:var(--muted)">No community tasks available.</div>`;
   }
 }
 
@@ -696,7 +702,7 @@ async function completeTask(taskId, link) {
     currentUser.tasksCompleted = Number(currentUser.tasksCompleted || 0) + 1;
     updateUserUI();
     triggerHaptic("success");
-    showToast(🎯 +${data.reward} PTS rewarded!, "success");
+    showToast(`🎯 +${data.reward} PTS rewarded!`, "success");
     await loadTasks();
   } catch (err) {
     triggerHaptic("error");
@@ -780,27 +786,26 @@ async function loadReferrals() {
     $("refCount").textContent = list.length;
 
     if (!list.length) {
-      $("referralList").innerHTML = <div style="text-align:center;color:var(--muted);font-size:12px">No referrals yet. Share your link to start earning!</div>;
+      $("referralList").innerHTML = `<div style="text-align:center;color:var(--muted);font-size:12px">No referrals yet. Share your link to start earning!</div>`;
     } else {
-      $("referralList").innerHTML = list.map(r =>
-
-<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px">
+      $("referralList").innerHTML = list.map(r => `
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px">
           <span>👤 User ${r.referredUserId.slice(0, 5)}***</span>
           <span style="color:#4ade80">${r.channelRewarded && r.adsRewarded ? "+500 PTS" : r.channelRewarded ? "+300 PTS" : "Pending"}</span>
         </div>
-      ).join("");
+      `).join("");
     }
 
     const leaders = leadData.leaderboard || [];
     if (!leaders.length) {
-      $("leaderboardList").innerHTML = <div style="text-align:center;color:var(--muted);font-size:12px">No leaders yet.</div>;
+      $("leaderboardList").innerHTML = `<div style="text-align:center;color:var(--muted);font-size:12px">No leaders yet.</div>`;
     } else {
-      $("leaderboardList").innerHTML = leaders.map((l, i) => 
+      $("leaderboardList").innerHTML = leaders.map((l, i) => `
         <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px">
           <span>#${i + 1} <b>${l.firstName}</b></span>
           <span style="color:#60a5fa">${l.referrals} refs (${l.referralPoints} PTS)</span>
         </div>
-      ).join("");
+      `).join("");
     }
   } catch {}
 }
@@ -814,7 +819,7 @@ async function copyReferral() {
 function shareReferral() {
   triggerHaptic("medium");
   const link = $("refLink").textContent;
-  const url = https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent("🔥 Join USDT Hub & earn instant USDT rewards!")};
+  const url = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent("🔥 Join USDT Hub & earn instant USDT rewards!")}`;
   openTelegram(url);
 }
 
@@ -829,7 +834,7 @@ async function claimPromo() {
     updateUserUI();
     $("promoCode").value = "";
     triggerHaptic("success");
-    showToast(🎁 +${data.reward} PTS claimed!, "success");
+    showToast(`🎁 +${data.reward} PTS claimed!`, "success");
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
@@ -854,7 +859,7 @@ async function withdraw() {
     updateUserUI();
     $("withdrawAddress").value = "";
     triggerHaptic("success");
-    showToast(✅ Withdrawal sent: ${data.amount} USDT`, "success");
+    showToast(`✅ Withdrawal sent: ${data.amount} USDT`, "success");
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
@@ -882,4 +887,4 @@ function showPage(page) {
 document.addEventListener("DOMContentLoaded", initialize);
 </script>
 </body>
-          </html>
+</html>
