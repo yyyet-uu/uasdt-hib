@@ -226,6 +226,7 @@ async function verifyMembership(req, res) {
     { merge: true }
   );
 
+  // Referral Channel Verification Rule: Reward inviter 300 PTS ONLY when referred user joins channels
   if (u.referredBy) {
     const refDocRef = db.collection("referrals").doc(`${u.referredBy}_${uid}`);
     const refSnap = await refDocRef.get();
@@ -634,6 +635,7 @@ async function tasks(req, res) {
 
       reward = Number(CONFIG.TASK_REWARD);
 
+      // Record completion
       tx.create(completionRef, {
         userId: uid,
         taskId,
@@ -641,13 +643,14 @@ async function tasks(req, res) {
         createdAt: FieldValue.serverTimestamp()
       });
 
+      // Add points to user balance
       tx.update(userRef, {
         balance: FieldValue.increment(reward),
         tasksCompleted: FieldValue.increment(1),
         updatedAt: FieldValue.serverTimestamp()
       });
 
-      // Completely delete the task document so it disappears for all users
+      // Permanently delete task so it vanishes from dashboard
       tx.delete(taskRef);
     });
 
@@ -759,7 +762,7 @@ async function telegram(req, res) {
       `━━━━━━━━━━━━━━━━━━━━`,
       `🎁 <b>0.01 USDT Welcome Gift:</b> Instant BEP20 blockchain payout`,
       `📺 <b>Daily Ad Mining:</b> Earn up to 3,000+ PTS daily with Monetag & HilltopAds`,
-      `👥 <b>500 PTS / Referral:</b> 300 PTS on join + 200 PTS on 2 ads`,
+      `👥 <b>500 PTS / Referral:</b> 300 PTS on channel join + 200 PTS on 2 ads`,
       `💸 <b>Direct BEP20 Payouts:</b> 10,000 PTS = 0.10 USDT (Auto-sent to wallet)`,
       `━━━━━━━━━━━━━━━━━━━━`,
       ``,
