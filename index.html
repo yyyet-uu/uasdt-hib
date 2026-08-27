@@ -11,7 +11,7 @@
   <script src="//libtl.com/sdk.js" data-zone="11601754" data-sdk="show_11601754"></script>
 
   <style>
-    /* ULTRA-ATTRACTIVE NEW 3D TACTILE CSS */
+    /* ULTRA-ATTRACTIVE 3D TACTILE CSS */
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     :root{
       --bg:#030712;--card:rgba(13,25,45,.88);--card2:rgba(18,34,58,.95);
@@ -543,7 +543,6 @@ function openTelegram(url) {
 
 function setLoading(show) { $("loadingScreen").classList.toggle("hidden", !show); }
 
-// Ads Reset Countdown Timer (Resets at midnight UTC)
 function startResetCountdown() {
   function updateTimer() {
     const now = new Date();
@@ -818,7 +817,7 @@ async function loadTasks() {
           <div style="color:#4ade80">+${t.reward} PTS</div>
         </div>
         <div style="color:var(--muted);font-size:11px;margin:4px 0 12px;font-weight:800">${t.completions || 0}/${t.maxCompletions} completed</div>
-        <button class="action-btn" style="box-shadow:0 5px 0 #1e3a8a,0 10px 20px rgba(37,99,235,.4)" onclick="completeTask('${t.id}', '${t.link}')">🚀 JOIN & CLAIM</button>
+        <button id="task-btn-${t.id}" class="action-btn" style="box-shadow:0 5px 0 #1e3a8a,0 10px 20px rgba(37,99,235,.4)" onclick="startTaskCountdown('${t.id}', '${t.link}')">🚀 JOIN & CLAIM</button>
       </div>
     `).join("");
   } catch {
@@ -826,9 +825,33 @@ async function loadTasks() {
   }
 }
 
-async function completeTask(taskId, link) {
+// 3-Second Task Countdown Feature
+function startTaskCountdown(taskId, link) {
   triggerHaptic("light");
   if (link) openTelegram(link);
+
+  const btn = $(`task-btn-${taskId}`);
+  if (!btn) return;
+  btn.disabled = true;
+
+  let timeLeft = 3;
+  btn.style.background = "linear-gradient(145deg,#f97316,#c2410c)";
+  btn.style.boxShadow = "0 5px 0 #9a3412, 0 10px 20px rgba(249,115,22,.4)";
+  btn.textContent = `⏳ Please wait (${timeLeft}s)...`;
+
+  const timer = setInterval(() => {
+    timeLeft--;
+    if (timeLeft > 0) {
+      btn.textContent = `⏳ Please wait (${timeLeft}s)...`;
+    } else {
+      clearInterval(timer);
+      btn.textContent = `✅ Claiming...`;
+      executeTaskCompletion(taskId);
+    }
+  }, 1000);
+}
+
+async function executeTaskCompletion(taskId) {
   try {
     const data = await apiRequest("tasks", { action: "complete", taskId });
     currentUser.balance = Number(currentUser.balance || 0) + Number(data.reward || 0);
@@ -840,6 +863,7 @@ async function completeTask(taskId, link) {
   } catch (err) {
     triggerHaptic("error");
     showToast(err.message, "error");
+    await loadTasks();
   }
 }
 
