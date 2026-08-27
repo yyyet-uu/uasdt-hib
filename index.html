@@ -5,128 +5,2184 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
   <meta name="theme-color" content="#050b15">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>USDT Hub - Important Update</title>
+  <title>USDT Hub</title>
+
+  <meta name="af52b5a5b2ffaa8c13b4f13f9b439a5d64f06c03" content="af52b5a5b2ffaa8c13b4f13f9b439a5d64f06c03" />
 
   <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
+  <script src="//libtl.com/sdk.js" data-zone="11601754" data-sdk="show_11601754"></script>
 
-  <style>
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    :root{
-      --bg:#050b15;--card:rgba(14,27,48,.92);
-      --line:rgba(255,255,255,.12);--text:#f5f8ff;--muted:#94a3b8;
-      --blue:#3b82f6;--green:#22c55e;--yellow:#facc15;--orange:#f97316;
-      --shadow:0 25px 70px rgba(0,0,0,.85);
-    }
-    html,body{
-      margin:0;padding:0;width:100%;min-height:100%;
-      background:radial-gradient(circle at 50% 0%,rgba(37,99,235,.25),transparent 50%),var(--bg);
-      color:var(--text);font-family:Inter,system-ui,-apple-system,sans-serif;overflow-x:hidden;
-    }
-    body{min-height:100vh;padding:16px}
+<style>
+/* =========================================================
+   USDT HUB — PREMIUM 3D UI
+   CSS ONLY — NO HTML / JS LOGIC CHANGED
+========================================================= */
 
-    /* FULL BLOCKING ANNOUNCEMENT OVERLAY */
-    .announcement-overlay{
-      max-width:480px;margin:10px auto;padding:22px 18px;
-      background:linear-gradient(145deg,rgba(11,23,42,.98),rgba(4,11,21,.98));
-      border:2px solid rgba(250,204,21,0.3);border-radius:28px;
-      box-shadow:var(--shadow);text-align:center;position:relative;z-index:99999;
-    }
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
 
-    .announcement-img{
-      width:100%;border-radius:20px;border:1px solid rgba(250,204,21,0.4);
-      box-shadow:0 10px 30px rgba(0,0,0,0.6);margin-bottom:18px;
-    }
+:root{
+  --bg:#030711;
+  --bg2:#07111f;
 
-    .text-card{
-      background:rgba(8,18,34,0.95);border:1px solid var(--line);
-      border-radius:22px;padding:20px;text-align:left;line-height:1.7;font-size:13px;
-    }
+  --card:rgba(12,24,43,.78);
+  --card2:rgba(16,31,55,.92);
 
-    .headline{
-      font-size:17px;font-weight:950;color:#facc15;margin-bottom:14px;
-      text-align:center;text-shadow:0 0 20px rgba(250,204,21,0.4);letter-spacing:0.5px;
-    }
+  --line:rgba(255,255,255,.09);
+  --line2:rgba(96,165,250,.18);
 
-    .highlight-box{
-      background:linear-gradient(135deg,rgba(37,99,235,0.2),rgba(6,182,212,0.1));
-      border:1px solid rgba(96,165,250,0.3);border-radius:16px;padding:14px;
-      text-align:center;margin:16px 0;font-weight:800;color:#38bdf8;
-    }
+  --text:#f7fbff;
+  --muted:#8ea2bd;
 
-    .bullet-list{padding-left:20px;margin:10px 0;color:#cbd5e1;}
-    .bullet-list li{margin-bottom:6px;}
+  --blue:#3b82f6;
+  --cyan:#06b6d4;
+  --green:#22c55e;
+  --red:#ef4444;
+  --yellow:#facc15;
+  --purple:#8b5cf6;
+  --orange:#f97316;
 
-    .footer-badge{
-      margin-top:20px;padding:14px;background:rgba(34,197,94,0.1);
-      border:1px solid rgba(34,197,94,0.3);border-radius:16px;
-      font-weight:900;color:#4ade80;font-size:13px;text-align:center;
-    }
+  --shadow:
+    0 25px 70px rgba(0,0,0,.48),
+    0 8px 25px rgba(0,0,0,.25);
 
-    .sub-footer{
-      margin-top:14px;font-size:11px;color:var(--muted);font-weight:800;letter-spacing:0.5px;
-    }
-  </style>
+  --soft-shadow:
+    0 12px 35px rgba(0,0,0,.35);
+
+  --glow-blue:
+    0 0 25px rgba(59,130,246,.28),
+    0 0 70px rgba(59,130,246,.12);
+
+  --glow-green:
+    0 0 25px rgba(34,197,94,.25),
+    0 0 60px rgba(34,197,94,.10);
+}
+
+/* =========================
+   GLOBAL
+========================= */
+
+html,
+body{
+  margin:0;
+  padding:0;
+  width:100%;
+  min-height:100%;
+
+  color:var(--text);
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    system-ui,
+    sans-serif;
+
+  background:
+    radial-gradient(
+      circle at 15% -10%,
+      rgba(37,99,235,.32),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 100% 5%,
+      rgba(139,92,246,.22),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 50% 100%,
+      rgba(6,182,212,.10),
+      transparent 35%
+    ),
+    #030711;
+
+  overflow-x:hidden;
+}
+
+/* animated background */
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:-40%;
+  pointer-events:none;
+  z-index:-1;
+
+  background:
+    radial-gradient(
+      circle at 30% 30%,
+      rgba(59,130,246,.08),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 70% 60%,
+      rgba(139,92,246,.07),
+      transparent 25%
+    );
+
+  animation:
+    ambientMove 14s ease-in-out infinite alternate;
+}
+
+@keyframes ambientMove{
+  0%{
+    transform:translate3d(-3%, -2%, 0) scale(1);
+  }
+  50%{
+    transform:translate3d(3%, 2%, 0) scale(1.06);
+  }
+  100%{
+    transform:translate3d(-2%, 4%, 0) scale(1.02);
+  }
+}
+
+body{
+  min-height:100vh;
+  padding-bottom:105px;
+}
+
+button,
+input,
+select{
+  font:inherit;
+}
+
+button{
+  border:0;
+  cursor:pointer;
+  color:white;
+  -webkit-user-select:none;
+  user-select:none;
+}
+
+button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+  transform:none!important;
+  filter:grayscale(.3);
+}
+
+.hidden{
+  display:none!important;
+}
+
+/* =========================
+   SPONSORED ADS
+========================= */
+
+.aads-wrapper{
+  width:calc(100% - 20px);
+  max-width:480px;
+  margin:10px auto;
+  padding:8px;
+
+  position:relative;
+  z-index:10;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(18,35,61,.88),
+      rgba(5,14,27,.88)
+    );
+
+  border:1px solid rgba(96,165,250,.15);
+  border-radius:20px;
+
+  box-shadow:
+    0 15px 45px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.06);
+
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+
+.aads-wrapper::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+
+  background:
+    linear-gradient(
+      120deg,
+      transparent 20%,
+      rgba(255,255,255,.05),
+      transparent 70%
+    );
+
+  animation:shineSweep 5s infinite;
+}
+
+@keyframes shineSweep{
+  0%,70%{
+    transform:translateX(-120%);
+  }
+  100%{
+    transform:translateX(120%);
+  }
+}
+
+.aads-label{
+  font-size:9px;
+  font-weight:900;
+  color:#8fb4e8;
+  margin-bottom:7px;
+  letter-spacing:1.2px;
+  text-align:center;
+}
+
+/* =========================
+   BROWSER VIEW
+========================= */
+
+.browser-view{
+  max-width:460px;
+  margin:45px auto;
+  padding:30px 22px;
+
+  text-align:center;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(17,35,62,.95),
+      rgba(5,14,27,.96)
+    );
+
+  border:1px solid rgba(96,165,250,.16);
+  border-radius:30px;
+
+  box-shadow:
+    0 35px 90px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.07);
+
+  backdrop-filter:blur(20px);
+}
+
+/* =========================
+   LOGO ORB
+========================= */
+
+.logo-orb{
+  width:84px;
+  height:84px;
+  margin:auto;
+
+  display:grid;
+  place-items:center;
+
+  border-radius:27px;
+
+  font-size:36px;
+  font-weight:950;
+
+  background:
+    linear-gradient(
+      145deg,
+      #2563eb,
+      #06b6d4
+    );
+
+  box-shadow:
+    0 15px 35px rgba(37,99,235,.35),
+    0 0 45px rgba(6,182,212,.18),
+    inset 0 2px 2px rgba(255,255,255,.28),
+    inset 0 -7px 14px rgba(0,0,0,.20);
+
+  position:relative;
+
+  animation:
+    logoFloat 3s ease-in-out infinite,
+    pulseGlow 2s ease-in-out infinite;
+}
+
+.logo-orb::before{
+  content:"";
+  position:absolute;
+  inset:3px;
+
+  border-radius:24px;
+
+  border:1px solid rgba(255,255,255,.22);
+
+  pointer-events:none;
+}
+
+@keyframes logoFloat{
+  0%,100%{
+    transform:translateY(0) rotate(0deg);
+  }
+  50%{
+    transform:translateY(-5px) rotate(1deg);
+  }
+}
+
+@keyframes pulseGlow{
+  0%,100%{
+    box-shadow:
+      0 15px 35px rgba(37,99,235,.35),
+      0 0 35px rgba(6,182,212,.14),
+      inset 0 2px 2px rgba(255,255,255,.28),
+      inset 0 -7px 14px rgba(0,0,0,.20);
+  }
+
+  50%{
+    box-shadow:
+      0 18px 45px rgba(37,99,235,.48),
+      0 0 65px rgba(6,182,212,.25),
+      inset 0 2px 2px rgba(255,255,255,.32),
+      inset 0 -7px 14px rgba(0,0,0,.20);
+  }
+}
+
+/* =========================
+   LOADING
+========================= */
+
+.loading-screen{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:
+    radial-gradient(
+      circle at 50% 40%,
+      rgba(37,99,235,.16),
+      transparent 35%
+    ),
+    #030711;
+
+  backdrop-filter:blur(12px);
+}
+
+.loading-screen p{
+  animation:
+    loadingText 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes loadingText{
+  from{
+    opacity:.45;
+  }
+  to{
+    opacity:1;
+  }
+}
+
+/* =========================
+   LOCK / WELCOME
+========================= */
+
+.lock-screen,
+.welcome-screen{
+  position:fixed;
+  inset:0;
+  z-index:9000;
+
+  overflow:auto;
+
+  padding:
+    30px 16px
+    calc(30px + env(safe-area-inset-bottom));
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(37,99,235,.25),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 100% 80%,
+      rgba(139,92,246,.12),
+      transparent 35%
+    ),
+    #030711;
+}
+
+.lock-wrap,
+.welcome-wrap{
+  max-width:460px;
+  margin:20px auto;
+}
+
+.lock-logo,
+.welcome-icon{
+  width:86px;
+  height:86px;
+
+  border-radius:28px;
+
+  display:grid;
+  place-items:center;
+
+  margin:0 auto 20px;
+
+  font-size:35px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #2563eb,
+      #06b6d4
+    );
+
+  box-shadow:
+    0 25px 70px rgba(37,99,235,.35),
+    inset 0 2px 2px rgba(255,255,255,.24),
+    inset 0 -10px 20px rgba(0,0,0,.18);
+
+  animation:
+    logoFloat 3s ease-in-out infinite;
+}
+
+.welcome-icon{
+  background:
+    linear-gradient(
+      145deg,
+      #16a34a,
+      #22c55e
+    );
+
+  box-shadow:
+    0 25px 70px rgba(34,197,94,.28),
+    inset 0 2px 2px rgba(255,255,255,.25),
+    inset 0 -10px 20px rgba(0,0,0,.18);
+}
+
+/* =========================
+   CARDS
+========================= */
+
+.join-card,
+.address-card,
+.box-rect,
+.ad-card,
+.stat-tile,
+.modal-box{
+  position:relative;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(17,35,61,.91),
+      rgba(6,15,28,.94)
+    );
+
+  border:1px solid rgba(255,255,255,.075);
+
+  box-shadow:
+    0 18px 45px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.055);
+
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+
+.join-card,
+.address-card{
+  padding:17px;
+  border-radius:22px;
+  margin-bottom:13px;
+
+  transition:
+    transform .25s ease,
+    border-color .25s ease,
+    box-shadow .25s ease;
+}
+
+.join-card:hover{
+  transform:translateY(-3px);
+
+  border-color:rgba(59,130,246,.25);
+
+  box-shadow:
+    0 22px 50px rgba(0,0,0,.42),
+    0 0 30px rgba(59,130,246,.08);
+}
+
+.join-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.channel-icon{
+  width:46px;
+  height:46px;
+
+  border-radius:15px;
+
+  display:grid;
+  place-items:center;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(59,130,246,.22),
+      rgba(6,182,212,.08)
+    );
+
+  border:1px solid rgba(96,165,250,.14);
+
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.08),
+    0 8px 20px rgba(0,0,0,.22);
+
+  font-size:20px;
+}
+
+/* =========================
+   JOIN BUTTON
+========================= */
+
+.join-btn{
+  padding:11px 17px;
+
+  border-radius:13px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #1689e8,
+      #2563eb
+    );
+
+  font-weight:900;
+  font-size:12px;
+
+  box-shadow:
+    0 7px 0 #124c9a,
+    0 12px 25px rgba(37,99,235,.28),
+    inset 0 1px 1px rgba(255,255,255,.28);
+
+  transition:
+    transform .12s ease,
+    box-shadow .12s ease,
+    filter .2s ease;
+}
+
+.join-btn:hover{
+  filter:brightness(1.12);
+  transform:translateY(-2px);
+}
+
+.join-btn:active{
+  transform:translateY(4px);
+
+  box-shadow:
+    0 2px 0 #124c9a,
+    0 5px 12px rgba(37,99,235,.2),
+    inset 0 1px 1px rgba(255,255,255,.2);
+}
+
+/* =========================
+   MAIN APP
+========================= */
+
+.app{
+  width:100%;
+  max-width:640px;
+  margin:auto;
+
+  padding:
+    12px 14px
+    30px;
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  margin-bottom:16px;
+
+  padding:3px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:11px;
+}
+
+.brand-logo{
+  width:45px;
+  height:45px;
+
+  border-radius:15px;
+
+  display:grid;
+  place-items:center;
+
+  font-size:19px;
+  font-weight:950;
+
+  background:
+    linear-gradient(
+      145deg,
+      #2563eb,
+      #06b6d4
+    );
+
+  box-shadow:
+    0 10px 28px rgba(37,99,235,.32),
+    inset 0 2px 2px rgba(255,255,255,.28),
+    inset 0 -7px 13px rgba(0,0,0,.20);
+
+  animation:brandFloat 4s ease-in-out infinite;
+}
+
+@keyframes brandFloat{
+  0%,100%{
+    transform:translateY(0);
+  }
+  50%{
+    transform:translateY(-2px);
+  }
+}
+
+.profile-pill{
+  display:flex;
+  align-items:center;
+  gap:6px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(20,39,67,.95),
+      rgba(8,19,34,.95)
+    );
+
+  border:1px solid rgba(255,255,255,.09);
+
+  padding:7px 12px;
+
+  border-radius:20px;
+
+  font-size:11px;
+  font-weight:900;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 7px 20px rgba(0,0,0,.25);
+}
+
+/* =========================
+   PAGE ANIMATION
+========================= */
+
+.page{
+  display:none;
+  animation:
+    pageIn .3s cubic-bezier(.2,.8,.2,1);
+}
+
+.page.active{
+  display:block;
+}
+
+@keyframes pageIn{
+  from{
+    opacity:0;
+    transform:
+      translateY(12px)
+      scale(.985);
+  }
+
+  to{
+    opacity:1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+/* =========================
+   GENERAL BOX
+========================= */
+
+.box-rect{
+  padding:18px;
+  border-radius:23px;
+  margin-bottom:13px;
+
+  transition:
+    transform .25s ease,
+    border-color .25s ease;
+}
+
+.box-rect:hover{
+  border-color:rgba(96,165,250,.14);
+}
+
+/* =========================
+   BALANCE CARD
+========================= */
+
+.balance-box{
+  overflow:hidden;
+
+  background:
+    radial-gradient(
+      circle at 95% -10%,
+      rgba(34,211,238,.30),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 10% 110%,
+      rgba(59,130,246,.17),
+      transparent 40%
+    ),
+    linear-gradient(
+      135deg,
+      #102d5c,
+      #09162d
+    );
+
+  border-color:rgba(96,165,250,.22);
+
+  box-shadow:
+    0 25px 65px rgba(0,0,0,.48),
+    0 0 40px rgba(37,99,235,.10),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.balance-box::after{
+  content:"";
+
+  position:absolute;
+
+  width:180px;
+  height:180px;
+
+  right:-70px;
+  top:-80px;
+
+  border-radius:50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(255,255,255,.10),
+      transparent 65%
+    );
+
+  animation:
+    balanceOrb 5s ease-in-out infinite;
+}
+
+@keyframes balanceOrb{
+  0%,100%{
+    transform:scale(1);
+  }
+  50%{
+    transform:scale(1.18);
+  }
+}
+
+.balance-num{
+  font-size:38px;
+  font-weight:950;
+  line-height:1;
+
+  margin:7px 0 4px;
+
+  letter-spacing:-1.5px;
+
+  text-shadow:
+    0 4px 20px rgba(96,165,250,.25);
+}
+
+/* =========================
+   TITLES
+========================= */
+
+.section-title{
+  font-size:16px;
+  font-weight:950;
+
+  margin:
+    20px 2px
+    9px;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  letter-spacing:-.2px;
+}
+
+/* =========================
+   STATS
+========================= */
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+
+.stat-tile{
+  padding:15px;
+
+  border-radius:18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(10,28,49,.95),
+      rgba(5,15,27,.95)
+    );
+
+  transition:
+    transform .2s ease,
+    border-color .2s ease;
+}
+
+.stat-tile:hover{
+  transform:translateY(-3px);
+
+  border-color:
+    rgba(59,130,246,.22);
+}
+
+.stat-tile div:last-child{
+  text-shadow:
+    0 0 14px rgba(255,255,255,.08);
+}
+
+/* =========================
+   ALL MAIN BUTTONS
+========================= */
+
+.action-btn{
+  width:100%;
+  padding:14px 16px;
+
+  position:relative;
+  overflow:hidden;
+
+  border-radius:15px;
+
+  font-weight:950;
+  letter-spacing:.1px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #3b82f6,
+      #2563eb
+    );
+
+  box-shadow:
+    0 7px 0 #174a9c,
+    0 13px 30px rgba(37,99,235,.27),
+    inset 0 1px 1px rgba(255,255,255,.28);
+
+  transition:
+    transform .13s ease,
+    box-shadow .13s ease,
+    filter .2s ease;
+}
+
+.action-btn::before{
+  content:"";
+
+  position:absolute;
+  top:0;
+  left:-120%;
+
+  width:70%;
+  height:100%;
+
+  transform:skewX(-20deg);
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,.24),
+      transparent
+    );
+
+  transition:left .65s ease;
+}
+
+.action-btn:hover::before{
+  left:150%;
+}
+
+.action-btn:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.08);
+
+  box-shadow:
+    0 9px 0 #174a9c,
+    0 18px 35px rgba(37,99,235,.35),
+    inset 0 1px 1px rgba(255,255,255,.30);
+}
+
+.action-btn:active{
+  transform:translateY(5px);
+
+  box-shadow:
+    0 2px 0 #174a9c,
+    0 6px 14px rgba(37,99,235,.20),
+    inset 0 2px 5px rgba(0,0,0,.18);
+}
+
+.action-btn.green{
+  background:
+    linear-gradient(
+      145deg,
+      #22c55e,
+      #16a34a
+    );
+
+  box-shadow:
+    0 7px 0 #087a35,
+    0 13px 30px rgba(34,197,94,.24),
+    inset 0 1px 1px rgba(255,255,255,.28);
+}
+
+.action-btn.green:hover{
+  box-shadow:
+    0 9px 0 #087a35,
+    0 18px 38px rgba(34,197,94,.34),
+    inset 0 1px 1px rgba(255,255,255,.3);
+}
+
+.action-btn.green:active{
+  box-shadow:
+    0 2px 0 #087a35,
+    0 6px 14px rgba(34,197,94,.18);
+}
+
+.action-btn.purple{
+  background:
+    linear-gradient(
+      145deg,
+      #8b5cf6,
+      #7c3aed
+    );
+
+  box-shadow:
+    0 7px 0 #4c1d95,
+    0 13px 30px rgba(139,92,246,.25),
+    inset 0 1px 1px rgba(255,255,255,.27);
+}
+
+.action-btn.purple:active{
+  box-shadow:
+    0 2px 0 #4c1d95,
+    0 6px 14px rgba(139,92,246,.18);
+}
+
+.action-btn.orange{
+  background:
+    linear-gradient(
+      145deg,
+      #f97316,
+      #ea580c
+    );
+
+  box-shadow:
+    0 7px 0 #9a3412,
+    0 13px 30px rgba(249,115,22,.24),
+    inset 0 1px 1px rgba(255,255,255,.28);
+}
+
+/* =========================
+   INPUTS
+========================= */
+
+.input{
+  width:100%;
+
+  padding:14px 15px;
+
+  border-radius:15px;
+
+  border:1px solid rgba(255,255,255,.08);
+
+  background:
+    linear-gradient(
+      145deg,
+      #09192d,
+      #050e1b
+    );
+
+  color:white;
+
+  outline:none;
+
+  margin-bottom:10px;
+
+  box-shadow:
+    inset 0 3px 8px rgba(0,0,0,.25),
+    0 1px 0 rgba(255,255,255,.03);
+
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    transform .2s ease;
+}
+
+.input::placeholder{
+  color:#61748e;
+}
+
+.input:focus{
+  border-color:rgba(59,130,246,.55);
+
+  box-shadow:
+    0 0 0 3px rgba(59,130,246,.10),
+    inset 0 3px 8px rgba(0,0,0,.25),
+    0 0 25px rgba(59,130,246,.08);
+
+  transform:translateY(-1px);
+}
+
+/* =========================
+   STREAK
+========================= */
+
+.streak-container{
+  display:flex;
+  gap:7px;
+
+  overflow-x:auto;
+
+  padding:
+    3px
+    2px
+    7px;
+
+  margin-top:10px;
+
+  scrollbar-width:none;
+}
+
+.streak-container::-webkit-scrollbar{
+  display:none;
+}
+
+.streak-node{
+  flex:1;
+  min-width:47px;
+
+  padding:9px 4px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #0b1c31,
+      #071221
+    );
+
+  border:1px solid rgba(255,255,255,.07);
+
+  border-radius:14px;
+
+  text-align:center;
+
+  font-size:10px;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 5px 12px rgba(0,0,0,.2);
+
+  transition:
+    transform .2s ease,
+    background .2s ease,
+    border-color .2s ease;
+}
+
+.streak-node.active{
+  border-color:
+    rgba(250,204,21,.45);
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(250,204,21,.24),
+      transparent 70%
+    ),
+    #17200d;
+
+  color:#facc15;
+
+  font-weight:900;
+
+  box-shadow:
+    0 0 18px rgba(250,204,21,.12),
+    inset 0 1px 0 rgba(255,255,255,.07);
+
+  animation:
+    streakPulse 2.3s ease-in-out infinite;
+}
+
+@keyframes streakPulse{
+  0%,100%{
+    transform:translateY(0);
+  }
+
+  50%{
+    transform:translateY(-2px);
+  }
+}
+
+/* =========================
+   AD CARDS
+========================= */
+
+.ad-card{
+  padding:17px;
+
+  border-radius:21px;
+
+  margin-bottom:12px;
+
+  overflow:hidden;
+
+  transition:
+    transform .25s ease,
+    border-color .25s ease;
+}
+
+.ad-card:hover{
+  transform:translateY(-3px);
+
+  border-color:
+    rgba(59,130,246,.20);
+}
+
+.ad-card button{
+  min-width:92px;
+
+  transition:
+    transform .13s ease,
+    box-shadow .13s ease,
+    filter .2s ease;
+
+  box-shadow:
+    0 5px 0 rgba(0,0,0,.30),
+    inset 0 1px 1px rgba(255,255,255,.25);
+}
+
+.ad-card button:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.12);
+}
+
+.ad-card button:active{
+  transform:translateY(3px);
+
+  box-shadow:
+    0 1px 0 rgba(0,0,0,.30),
+    inset 0 2px 4px rgba(0,0,0,.15);
+}
+
+/* =========================
+   PROGRESS BAR
+========================= */
+
+.progress-bar-bg{
+  width:100%;
+  height:8px;
+
+  background:
+    rgba(255,255,255,.055);
+
+  border-radius:20px;
+
+  margin:12px 0 2px;
+
+  overflow:hidden;
+
+  box-shadow:
+    inset 0 2px 5px rgba(0,0,0,.35);
+}
+
+.progress-fill{
+  height:100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      #2563eb,
+      #06b6d4,
+      #38bdf8
+    );
+
+  border-radius:20px;
+
+  transition:
+    width .5s cubic-bezier(.2,.8,.2,1);
+
+  box-shadow:
+    0 0 12px rgba(6,182,212,.35);
+
+  position:relative;
+  overflow:hidden;
+}
+
+.progress-fill::after{
+  content:"";
+
+  position:absolute;
+  top:0;
+  left:-80px;
+
+  width:70px;
+  height:100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,.5),
+      transparent
+    );
+
+  animation:
+    progressShine 2.2s linear infinite;
+}
+
+@keyframes progressShine{
+  to{
+    left:110%;
+  }
+}
+
+/* =========================
+   BOTTOM NAV
+========================= */
+
+.bottom-nav{
+  position:fixed;
+
+  z-index:1000;
+
+  bottom:0;
+  left:0;
+  right:0;
+
+  padding:
+    7px 7px
+    calc(8px + env(safe-area-inset-bottom));
+
+  background:
+    rgba(3,9,18,.88);
+
+  backdrop-filter:blur(25px);
+  -webkit-backdrop-filter:blur(25px);
+
+  border-top:
+    1px solid rgba(255,255,255,.08);
+
+  box-shadow:
+    0 -15px 40px rgba(0,0,0,.35);
+}
+
+.nav-inner{
+  width:100%;
+  max-width:640px;
+
+  margin:auto;
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(4,1fr);
+
+  gap:5px;
+}
+
+.nav-btn{
+  position:relative;
+
+  padding:8px 3px;
+
+  border-radius:15px;
+
+  background:transparent;
+
+  color:#71839d;
+
+  font-size:10px;
+  font-weight:900;
+
+  transition:
+    color .2s ease,
+    transform .15s ease,
+    background .2s ease;
+}
+
+.nav-btn:hover{
+  color:#bcd3f5;
+  transform:translateY(-2px);
+}
+
+.nav-btn:active{
+  transform:translateY(2px);
+}
+
+.nav-btn.active{
+  color:#60a5fa;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(59,130,246,.16),
+      rgba(37,99,235,.06)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 0 20px rgba(59,130,246,.08);
+}
+
+.nav-btn.active::before{
+  content:"";
+
+  position:absolute;
+
+  top:-1px;
+  left:50%;
+
+  width:22px;
+  height:3px;
+
+  transform:translateX(-50%);
+
+  border-radius:10px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #3b82f6,
+      #06b6d4
+    );
+
+  box-shadow:
+    0 0 12px rgba(59,130,246,.6);
+}
+
+.nav-icon{
+  font-size:19px;
+
+  display:block;
+
+  margin-bottom:3px;
+
+  transition:
+    transform .2s ease;
+}
+
+.nav-btn.active .nav-icon{
+  transform:
+    translateY(-1px)
+    scale(1.08);
+}
+
+/* =========================
+   TOAST
+========================= */
+
+.toast{
+  position:fixed;
+
+  z-index:11000;
+
+  left:50%;
+  bottom:92px;
+
+  transform:
+    translate(-50%,25px)
+    scale(.96);
+
+  width:calc(100% - 30px);
+  max-width:440px;
+
+  padding:14px 15px;
+
+  border-radius:17px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(18,38,65,.96),
+      rgba(7,17,31,.97)
+    );
+
+  border:1px solid rgba(255,255,255,.09);
+
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.48),
+    inset 0 1px 0 rgba(255,255,255,.07);
+
+  opacity:0;
+
+  pointer-events:none;
+
+  transition:
+    opacity .25s ease,
+    transform .25s cubic-bezier(.2,.8,.2,1);
+
+  font-size:13px;
+
+  text-align:center;
+
+  backdrop-filter:blur(20px);
+}
+
+.toast.show{
+  opacity:1;
+
+  transform:
+    translate(-50%,0)
+    scale(1);
+}
+
+.toast.success{
+  border-color:
+    rgba(34,197,94,.38);
+
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.48),
+    0 0 25px rgba(34,197,94,.10);
+}
+
+.toast.error{
+  border-color:
+    rgba(239,68,68,.38);
+
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.48),
+    0 0 25px rgba(239,68,68,.10);
+}
+
+/* =========================
+   MODALS
+========================= */
+
+.modal{
+  position:fixed;
+  inset:0;
+
+  z-index:10500;
+
+  display:flex;
+
+  align-items:flex-end;
+  justify-content:center;
+
+  padding:12px;
+
+  background:
+    rgba(0,0,0,.70);
+
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+
+.modal-box{
+  width:100%;
+  max-width:480px;
+
+  max-height:86vh;
+
+  overflow:auto;
+
+  padding:20px;
+
+  border-radius:26px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(15,32,56,.98),
+      rgba(5,14,27,.99)
+    );
+
+  border:
+    1px solid rgba(255,255,255,.10);
+
+  box-shadow:
+    0 -5px 80px rgba(0,0,0,.60),
+    0 0 40px rgba(59,130,246,.08),
+    inset 0 1px 0 rgba(255,255,255,.07);
+
+  animation:
+    modalUp .3s cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes modalUp{
+  from{
+    opacity:0;
+    transform:
+      translateY(35px)
+      scale(.97);
+  }
+
+  to{
+    opacity:1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+/* =========================
+   LINKS
+========================= */
+
+a{
+  transition:
+    opacity .2s ease,
+    filter .2s ease;
+}
+
+a:hover{
+  opacity:.8;
+  filter:brightness(1.15);
+}
+
+/* =========================
+   SELECT
+========================= */
+
+select.input{
+  appearance:none;
+  -webkit-appearance:none;
+
+  background-image:
+    linear-gradient(45deg,transparent 50%,#60a5fa 50%),
+    linear-gradient(135deg,#60a5fa 50%,transparent 50%);
+
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 13px) 50%;
+
+  background-size:
+    5px 5px,
+    5px 5px;
+
+  background-repeat:no-repeat;
+}
+
+/* =========================
+   SCROLLBAR
+========================= */
+
+::-webkit-scrollbar{
+  width:5px;
+  height:5px;
+}
+
+::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+::-webkit-scrollbar-thumb{
+  background:
+    rgba(96,165,250,.20);
+
+  border-radius:20px;
+}
+
+/* =========================
+   MOBILE POLISH
+========================= */
+
+@media(max-width:420px){
+
+  .app{
+    padding-left:11px;
+    padding-right:11px;
+  }
+
+  .balance-num{
+    font-size:34px;
+  }
+
+  .brand-logo{
+    width:42px;
+    height:42px;
+  }
+
+  .profile-pill{
+    padding:6px 9px;
+  }
+
+  .box-rect{
+    padding:16px;
+  }
+
+  .action-btn{
+    padding:13px 14px;
+  }
+
+  .section-title{
+    font-size:15px;
+  }
+
+  .stats-grid{
+    gap:8px;
+  }
+
+  .stat-tile{
+    padding:13px;
+  }
+}
+
+/* =========================
+   REDUCED MOTION
+========================= */
+
+@media(prefers-reduced-motion:reduce){
+
+  *,
+  *::before,
+  *::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+  }
+}
+
+</style>
 </head>
 
 <body>
 
-  <div class="announcement-overlay">
-    
-    <!-- Announcement Graphic Banner -->
-    <img src="YOUR_IMAGE_URL_HERE" alt="Important Update USDT Hub" class="announcement-img">
+<div class="aads-wrapper">
+    <div class="aads-label">⚡ SPONSORED CRYPTO NETWORK</div>
+    <div id="frame" style="width:100%;position:relative;display:flex;justify-content:center;min-height:90px">
+      <iframe data-aa='2453118' src='//acceptable.a-ads.com/2453118/?size=Adaptive' style='border:0px;padding:0;width:100%;min-height:90px;height:90px;overflow:hidden;background-color:transparent;display:block;'></iframe>
+    </div>
+  </div>
 
-    <!-- Styled Content Card -->
-    <div class="text-card">
-      <div class="headline">🚨💙 IMPORTANT UPDATE — USDT HUB 💙🚨</div>
-      
-      <p>😔 <b>SORRY, SORRY, SORRY!</b> 🙏<br>
-      We truly apologize to everyone who tried to withdraw $0.10 but didn’t receive it. 💔</p>
-      
-      <p>Please don’t worry! ❤️<br>
-      We are currently working on things behind the scenes to make USDT Hub better, smoother, and more exciting for everyone. 🔧⚡</p>
-      
-      <div class="highlight-box">
-        ⏳ BUT WAIT… 👀<br><br>
-        🔥 NEXT MONDAY — AUGUST 31, 2026 🔥<br>
-        <span style="color:#f5f8ff;font-size:12px;font-weight:700;">Something BIG is coming… 🎁💰</span>
+  <div id="browserView" class="browser-view hidden">
+    <div class="logo-orb" style="margin-bottom:14px">₮</div>
+    <h2 style="margin:0 0 6px">USDT Hub</h2>
+    <p style="color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:18px">
+      USDT Hub is an automated micro-earning platform with BEP20 payouts. Please open our official Telegram Mini App to start earning!
+    </p>
+    <button class="action-btn" onclick="window.location.href='https://t.me/Ussdt_hub_bot'">🚀 OPEN IN TELEGRAM</button>
+  </div>
+
+  <div id="loadingScreen" class="loading-screen hidden">
+    <div style="text-align:center">
+      <div class="logo-orb">₮</div>
+      <h2 style="margin:16px 0 4px">USDT Hub</h2>
+      <p style="color:var(--muted);margin:0;font-size:13px">Loading verified account...</p>
+    </div>
+  </div>
+
+  <section id="lockScreen" class="lock-screen hidden">
+    <div class="lock-wrap">
+      <div class="lock-logo">🔒</div>
+      <h2 style="text-align:center;margin-bottom:6px">Join to Continue</h2>
+      <div style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px">
+        Join both official channels to unlock the app and receive your 0.01 USDT bonus.
       </div>
-      
-      <p>🚨 <b>A HUGE CONTEST IS COMING TO USDT HUB!</b> 🚨</p>
-      <ul class="bullet-list">
-        <li>💵 <b>More rewards</b></li>
-        <li>👥 <b>More referrals</b></li>
-        <li>🎉 <b>More opportunities</b></li>
-        <li>🔥 <b>And potentially MANY, MANY DOLLARS to collect!</b></li>
-      </ul>
-      
-      <p>But we’re not revealing everything yet… 🤫👀<br>
-      You’ll have to wait until Monday to see what we’ve prepared. 😏🔥</p>
-      
-      <div class="footer-badge">
-        📅 MONDAY — AUGUST 31<br>⏰ DON’T MISS IT!
+
+      <div class="join-card">
+        <div class="join-row">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="channel-icon">📢</div>
+            <div>
+              <div style="font-weight:800">Birr Gram</div>
+              <div style="color:var(--muted);font-size:12px">@birr_gram</div>
+            </div>
+          </div>
+          <button class="join-btn" onclick="openTelegram('https://t.me/birr_gram')">JOIN</button>
+        </div>
       </div>
-      
-      <p style="text-align:center;color:#94a3b8;font-size:12px;margin-top:16px;line-height:1.5;">
-        Stay connected to this channel because the announcement you’ve been waiting for is coming… 🚀💙
-      </p>
+
+      <div class="join-card">
+        <div class="join-row">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="channel-icon">💎</div>
+            <div>
+              <div style="font-weight:800">USDT Gram</div>
+              <div style="color:var(--muted);font-size:12px">@usdt_g_ram</div>
+            </div>
+          </div>
+          <button class="join-btn" onclick="openTelegram('https://t.me/usdt_g_ram')">JOIN</button>
+        </div>
+      </div>
+
+      <button id="verifyBtn" class="action-btn" style="margin-top:10px" onclick="verifyChannels()">✅ VERIFY MEMBERSHIP</button>
+      <div id="verifyStatus" style="text-align:center;color:var(--muted);font-size:12px;margin-top:12px">Join both channels, then click verify.</div>
+    </div>
+  </section>
+
+  <section id="welcomeScreen" class="welcome-screen hidden">
+    <div class="welcome-wrap">
+      <div class="welcome-icon">🎁</div>
+      <h2 style="text-align:center;margin:0 0 6px">Welcome Bonus</h2>
+      <div style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px">
+        Enter your BEP20 address. <b>0.01 USDT</b> will be sent automatically to your wallet.
+      </div>
+
+      <div class="address-card">
+        <label style="display:block;font-size:12px;font-weight:700;margin-bottom:8px;color:#c8d4e7">BEP20 / BNB Smart Chain Address</label>
+        <input id="welcomeAddress" class="input" placeholder="0x...">
+        <button id="claimBtn" class="action-btn green" onclick="claimWelcome()">🎁 CLAIM 0.01 USDT BONUS</button>
+      </div>
+    </div>
+  </section>
+
+  <main id="app" class="app hidden">
+    <header class="topbar">
+      <div class="brand">
+
+<div class="brand-logo">₮</div>
+        <div>
+          <div style="font-size:17px;font-weight:900">USDT Hub</div>
+          <div style="font-size:11px;color:var(--muted)">Earn • Mine • Withdraw</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="profile-pill">
+          <span style="color:#facc15">★</span> <span id="vipBadge">Bronze</span>
+        </div>
+        <button onclick="openTelegram('https://t.me/birr_gram')" style="background:#1e293b;padding:8px 12px;border-radius:14px;font-size:11px;font-weight:800">📢 Proofs</button>
+      </div>
+    </header>
+
+    <section id="page-home" class="page active">
+      <div class="box-rect balance-box">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="color:#a8b9d3;font-size:12px">Available Balance</div>
+            <div class="balance-num"><span id="balance">0</span> <small style="font-size:15px;color:#9bb7df">PTS</small></div>
+            <div style="font-size:12px;color:#4ade80">≈ $<span id="balanceUsdt">0.00</span> USDT (10,000 PTS = $0.10)</div>
+          </div>
+          <button onclick="showPage('withdraw')" style="background:#22c55e;padding:12px 18px;border-radius:14px;font-weight:900;font-size:13px">💸 Withdraw</button>
+        </div>
+      </div>
+
+      <div class="box-rect">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:900;font-size:14px">🔥 7-Day Login Streak</div>
+          <button id="claimStreakBtn" class="action-btn green" style="width:auto;padding:6px 14px;font-size:11px" onclick="claimDailyStreak()">CLAIM TODAY</button>
+        </div>
+        <div class="streak-container" id="streakTrack">
+          <div class="streak-node">D1<br><b>+50</b></div>
+          <div class="streak-node">D2<br><b>+75</b></div>
+          <div class="streak-node">D3<br><b>+100</b></div>
+          <div class="streak-node">D4<br><b>+150</b></div>
+          <div class="streak-node">D5<br><b>+200</b></div>
+          <div class="streak-node">D6<br><b>+300</b></div>
+          <div class="streak-node">D7<br><b>+500</b></div>
+        </div>
+      </div>
+
+      <div class="section-title">🎁 Redeem Promo Code (200 PTS)</div>
+
+      <div class="box-rect" style="display:flex;gap:8px">
+        <input id="promoCode" class="input" style="margin-bottom:0" placeholder="ENTER PROMO CODE" autocomplete="off">
+        <button class="action-btn green" style="width:auto;padding:0 18px" onclick="claimPromo()">CLAIM</button>
+      </div>
+
+      <div class="box-rect">
+        <div style="font-weight:900;margin-bottom:12px">📊 Your Activity Overview</div>
+
+        <div class="stats-grid">
+
+          <div class="stat-tile">
+            <div style="font-size:11px;color:var(--muted)">Ads Watched</div>
+            <div id="adsCount" style="font-size:19px;font-weight:900;margin-top:4px">0</div>
+          </div>
+
+          <div class="stat-tile">
+            <div style="font-size:11px;color:var(--muted)">Tasks Done</div>
+            <div id="taskCount" style="font-size:19px;font-weight:900;margin-top:4px">0</div>
+          </div>
+
+          <div class="stat-tile">
+            <div style="font-size:11px;color:var(--muted)">Referrals</div>
+            <div id="refCount" style="font-size:19px;font-weight:900;margin-top:4px">0</div>
+          </div>
+
+          <div class="stat-tile">
+            <div style="font-size:11px;color:var(--muted)">VIP Status</div>
+            <div id="vipStatusBox" style="font-size:15px;font-weight:900;margin-top:4px;color:#facc15">Bronze</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section id="page-tasks" class="page">
+
+      <div class="section-title">📺 Mining Ads (75 PTS / ad)</div>
+
+      <div class="ad-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+
+          <div>
+            <div style="font-weight:900">Monetag Direct Ads</div>
+            <div id="monetagCount" style="color:var(--muted);font-size:11px">0 / 25 today</div>
+          </div>
+
+          <button id="monetagBtn" style="padding:10px 16px;border-radius:12px;background:#2563eb;font-weight:900" onclick="watchAd('monetag')">
+            WATCH
+          </button>
+
+        </div>
+
+        <div class="progress-bar-bg">
+          <div id="monetagFill" class="progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="ad-card">
+
+        <div style="display:flex;justify-content:space-between;align-items:center">
+
+          <div>
+            <div style="font-weight:900">⚡ HilltopAds Direct Mining</div>
+            <div id="hilltopCount" style="color:var(--muted);font-size:11px">0 / 15 today</div>
+          </div>
+
+          <button id="hilltopBtn" style="padding:10px 16px;border-radius:12px;background:#f97316;font-weight:900" onclick="watchAd('hilltop')">
+            WATCH
+          </button>
+
+        </div>
+
+        <div class="progress-bar-bg">
+          <div id="hilltopFill" class="progress-fill" style="width:0%;background:linear-gradient(90deg,#ea580c,#f97316)"></div>
+        </div>
+
+      </div>
+
+      <div class="section-title">
+
+        <span>🎯 Community Tasks</span>
+
+        <button class="action-btn" style="width:auto;padding:6px 14px;font-size:11px" onclick="openCreateTask()">
+          ➕ CREATE TASK
+        </button>
+
+      </div>
+
+      <div id="tasksList"></div>
+
+    </section>
+
+    <section id="page-referrals" class="page">
+
+      <div class="section-title">👥 Referral Center</div>
+
+      <div class="box-rect" style="text-align:center">
+
+        <div style="font-size:12px;color:var(--muted)">
+          Your Personal Referral Link
+        </div>
+
+        <div id="refLink" style="margin:10px 0;padding:12px;border-radius:14px;background:#071221;border:1px dashed rgba(139,92,246,.4);font-weight:900;font-size:12px;word-break:break-all">
+          Loading...
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+
+          <button class="action-btn purple" onclick="copyReferral()">
+            📋 COPY
+          </button>
+
+          <button class="action-btn" onclick="shareReferral()">
+            🚀 DIRECT SHARE
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="box-rect">
+
+        <div style="font-weight:900;margin-bottom:8px">
+          📜 Rules & Rewards
+        </div>
+
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">
+          • <b>Join Channels:</b> Earn <b>+300 PTS</b> when your referral verifies channels.<br>
+          • <b>Watch 2 Ads:</b> Earn <b>+200 PTS</b> when your referral watches 2 ads.<br>
+          • <i>Total: 500 PTS per active user.</i>
+        </div>
+
+      </div>
+
+      <div class="section-title">
+        🏆 Top Referrers Leaderboard
+      </div>
+
+      <div id="leaderboardList" class="box-rect">
+        Loading leaderboard...
+      </div>
+
+      <div class="section-title">
+        Your Referrals (<span id="refTotal">0</span>)
+      </div>
+
+      <div id="referralList" class="box-rect">
+        No referrals yet.
+      </div>
+
+    </section>
+
+    <section id="page-withdraw" class="page">
+
+      <div class="section-title">
+        💸 Automated BEP20 Withdrawal
+      </div>
+
+      <div class="box-rect">
+
+        <div style="text-align:center;font-size:12px;color:var(--muted)">
+          Available Balance
+        </div>
+
+        <div id="withdrawBalance" style="text-align:center;font-size:32px;font-weight:950;margin:6px 0">
+          0 PTS
+        </div>
+
+        <div style="text-align:center;font-size:12px;color:#4ade80;margin-bottom:14px">
+          Minimum: 10,000 PTS = 0.10 USDT
+        </div>
+
+        <label style="font-size:11px;color:var(--muted);font-weight:700">
+          DESTINATION BEP20 ADDRESS
+        </label>
+
+        <input
+          id="withdrawAddress"
+          class="input"
+          style="margin-top:6px"
+          placeholder="0x... BSC address"
+          autocomplete="off"
+        >
+
+        <button
+          id="withdrawBtn"
+          class="action-btn green"
+          onclick="withdraw()"
+        >
+          💸 WITHDRAW 0.10 USDT
+        </button>
+
+      </div>
+
+      <div class="box-rect">
+
+        <div style="font-weight:900;margin-bottom:6px">
+          📢 Payment Proofs
+        </div>
+
+        <div style="font-size:12px;color:var(--muted);line-height:1.55">
+          All payouts are broadcast automatically to our official proof channel:
+          <a
+            href="javascript:openTelegram('https://t.me/birr_gram')"
+            style="color:#60a5fa;text-decoration:none;font-weight:800"
+          >
+            @birr_gram
+          </a>.
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <nav id="bottomNav" class="bottom-nav hidden">
+
+    <div class="nav-inner">
+
+      <button
+        class="nav-btn active"
+        data-page="home"
+        onclick="showPage('home')"
+      >
+        <span class="nav-icon">🏠</span>
+        Home
+      </button>
+
+      <button
+        class="nav-btn"
+        data-page="tasks"
+        onclick="showPage('tasks')"
+      >
+        <span class="nav-icon">🎯</span>
+        Tasks
+      </button>
+
+      <button
+        class="nav-btn"
+        data-page="referrals"
+        onclick="showPage('referrals')"
+      >
+        <span class="nav-icon">👥</span>
+        Referral
+      </button>
+
+      <button
+        class="nav-btn"
+        data-page="withdraw"
+        onclick="showPage('withdraw')"
+      >
+        <span class="nav-icon">💸</span>
+        Withdraw
+      </button>
+
     </div>
 
-    <div class="sub-footer">
-      USDT HUB — We are coming next Monday with big fund and contest🫡!!
+  </nav>
+
+  <div id="toast" class="toast"></div>
+
+  <div id="depositModal" class="modal hidden">
+
+    <div class="modal-box">
+
+      <div style="font-size:18px;font-weight:900;margin-bottom:6px">
+        💳 Deposit USDT (BEP20)
+      </div>
+
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+        Send USDT (BEP20) to the address below ($1.00 = 100,000 PTS):
+      </div>
+
+      <div
+        id="depAddressText"
+        style="padding:10px;background:#071221;border-radius:12px;font-size:11px;word-break:break-all;margin-bottom:8px"
+      >
+        Loading...
+      </div>
+
+      <button
+        class="action-btn purple"
+        style="padding:8px;margin-bottom:12px"
+        onclick="copyDepositAddress()"
+      >
+        📋 COPY ADDRESS
+      </button>
+
+      <input
+        id="depositTxHash"
+        class="input"
+        placeholder="0x... Transaction Hash"
+      >
+
+      <button
+        class="action-btn green"
+        onclick="submitDeposit()"
+      >
+        SUBMIT TX
+      </button>
+
+      <button
+        class="action-btn"
+        style="background:#17263c;margin-top:8px"
+        onclick="closeDepositModal()"
+      >
+        CLOSE
+      </button>
+
     </div>
 
   </div>
 
-<script>
-"use strict";
-// Completely locks the app UI and stops navigation/interaction until Monday
-const tg = window.Telegram?.WebApp;
-if (tg) {
-  tg.ready();
-  tg.expand();
-  try { tg.setHeaderColor("#050b15"); tg.setBackgroundColor("#050b15"); } catch {}
-}
-</script>
+  <div id="taskModal" class="modal hidden">
+
+    <div class="modal-box">
+
+      <div style="font-size:18px;font-weight:900;margin-bottom:6px">
+        ➕ Create Community Task
+      </div>
+
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+        Costs 100,000 PTS ($1.00) — Free for Admin.
+      </div>
+
+      <input
+        id="taskTitle"
+        class="input"
+        placeholder="Channel / Bot Title"
+      >
+
+      <input
+        id="taskLink"
+        class="input"
+        placeholder="https://t.me/example"
+      >
+
+      <input
+        id="taskChatId"
+        class="input"
+        placeholder="@username or Chat ID"
+      >
+
+      <select id="taskType" class="input">
+
+        <option value="channel">
+          Channel
+        </option>
+
+        <option value="bot">
+          Bot
+        </option>
+
+      </select>
+
+      <div style="display:flex;gap:8px">
+
+        <button
+          class="action-btn"
+          onclick="createTask()"
+        >
+          CREATE
+        </button>
+
+        <button
+          class="action-btn purple"
+          onclick="openDepositModal()"
+        >
+          💳 DEPOSIT
+        </button>
+
+      </div>
+
+      <button
+        class="action-btn"
+        style="background:#17263c;margin-top:8px"
+        onclick="closeCreateTask()"
+      >
+        CANCEL
+      </button>
+
+    </div>
+
+  </div>
+
+<!-- YOUR EXISTING JAVASCRIPT GOES HERE UNCHANGED -->
 
 </body>
-</html>
+  </html>
