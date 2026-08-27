@@ -226,7 +226,6 @@ async function verifyMembership(req, res) {
     { merge: true }
   );
 
-  // Referral Channel Verification Rule: Reward inviter 300 PTS ONLY when referred user joins channels
   if (u.referredBy) {
     const refDocRef = db.collection("referrals").doc(`${u.referredBy}_${uid}`);
     const refSnap = await refDocRef.get();
@@ -617,11 +616,6 @@ async function tasks(req, res) {
 
     const task = taskSnap.data();
     if (task.status !== "active") throw new Error("TASK_CLOSED");
-
-    const member = await getChatMember(task.chatId, uid);
-    if (!memberOK(member)) {
-      throw new Error("TELEGRAM_MEMBERSHIP_REQUIRED");
-    }
 
     let reward = 0;
 
