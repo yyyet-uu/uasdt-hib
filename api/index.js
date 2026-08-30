@@ -799,7 +799,7 @@ async function missions(
 
   if (!snap.exists) {
     throw new Error(
-      "User account not found."
+      "USER_NOT_FOUND"
     );
   }
 
@@ -843,11 +843,9 @@ async function claimStreak(
   const dYesterday =
     yesterday();
 
-  let streakReward = 50;
+  let streakReward = 0;
 
   let newStreak = 1;
-
-  const streakRewardsList = [50, 75, 100, 150, 200, 300, 500];
 
 
   await db.runTransaction(
@@ -858,7 +856,7 @@ async function claimStreak(
 
       if (!snap.exists) {
         throw new Error(
-          "User account not found."
+          "USER_NOT_FOUND"
         );
       }
 
@@ -871,7 +869,7 @@ async function claimStreak(
       ) {
 
         throw new Error(
-          "Daily streak already claimed today!"
+          "STREAK_ALREADY_CLAIMED_TODAY"
         );
       }
 
@@ -889,8 +887,15 @@ async function claimStreak(
           1;
       }
 
+      const streakRewardsList =
+        Array.isArray(CONFIG.DAILY_STREAK_REWARDS) && CONFIG.DAILY_STREAK_REWARDS.length > 0
+          ? CONFIG.DAILY_STREAK_REWARDS
+          : [50, 75, 100, 150, 200, 300, 500];
+
       streakReward =
-        streakRewardsList[newStreak - 1] || 50;
+        streakRewardsList[
+          newStreak - 1
+        ] || 50;
 
       const resetMission =
         u.missionDate !== dToday;
@@ -1007,7 +1012,9 @@ async function updateMission(
         await tx.get(userRef);
 
       if (!snap.exists) {
-        return;
+        throw new Error(
+          "USER_NOT_FOUND"
+        );
       }
 
       const u =
@@ -1210,7 +1217,7 @@ async function verifyMembership(
 
   if (!userDoc.exists) {
     throw new Error(
-      "User account not found."
+      "USER_NOT_FOUND"
     );
   }
 
@@ -1414,7 +1421,7 @@ async function claimWelcome(
   ) {
 
     throw new Error(
-      "Invalid BEP20 address."
+      "INVALID_ADDRESS"
     );
   }
 
@@ -1451,7 +1458,7 @@ async function claimWelcome(
 
       if (!userSnap.exists) {
         throw new Error(
-          "User account not found."
+          "USER_NOT_FOUND"
         );
       }
 
@@ -1461,21 +1468,21 @@ async function claimWelcome(
 
       if (!u.channelsVerified) {
         throw new Error(
-          "Please verify your channel membership first."
+          "CHANNELS_REQUIRED"
         );
       }
 
 
       if (u.welcomeBonusClaimed) {
         throw new Error(
-          "Welcome bonus already claimed!"
+          "WELCOME_ALREADY_CLAIMED"
         );
       }
 
 
       if (addressSnap.exists) {
         throw new Error(
-          "This wallet address has already been used."
+          "ADDRESS_ALREADY_USED"
         );
       }
 
@@ -1646,11 +1653,9 @@ async function claimWelcome(
     });
 
 
-    throw new Error(error?.message || "Failed to process welcome transfer.");
+    throw error;
   }
-}
-
-
+      }
 /* =========================================================
    ADS
 ========================================================= */
@@ -1682,7 +1687,7 @@ async function ads(
   ) {
 
     throw new Error(
-      "Invalid ad provider."
+      "INVALID_PROVIDER"
     );
   }
 
@@ -1721,7 +1726,7 @@ async function ads(
 
       if (!snap.exists) {
         throw new Error(
-          "User account not found."
+          "USER_NOT_FOUND"
         );
       }
 
@@ -1732,7 +1737,7 @@ async function ads(
 
       if (!u.channelsVerified) {
         throw new Error(
-          "Please verify your channel membership first."
+          "CHANNELS_REQUIRED"
         );
       }
 
@@ -1768,7 +1773,7 @@ async function ads(
       ) {
 
         throw new Error(
-          "Monetag daily ad limit reached."
+          "MONETAG_LIMIT"
         );
       }
 
@@ -1780,7 +1785,7 @@ async function ads(
       ) {
 
         throw new Error(
-          "Adsgram daily ad limit reached."
+          "ADSGRAM_LIMIT"
         );
       }
 
@@ -1792,7 +1797,7 @@ async function ads(
       ) {
 
         throw new Error(
-          "Hilltop daily ad limit reached."
+          "HILLTOP_LIMIT"
         );
       }
 
@@ -2158,7 +2163,7 @@ async function deposit(
     ) {
 
       throw new Error(
-        "Invalid transaction hash."
+        "INVALID_TX_HASH"
       );
     }
 
@@ -2183,7 +2188,7 @@ async function deposit(
         if (snap.exists) {
 
           throw new Error(
-            "Transaction hash already submitted."
+            "TX_ALREADY_SUBMITTED"
           );
         }
 
@@ -2221,7 +2226,7 @@ async function deposit(
 
 
   throw new Error(
-    "Unknown deposit action."
+    "UNKNOWN_DEPOSIT_ACTION"
   );
 }
 
@@ -2257,7 +2262,7 @@ async function promo(
   ) {
 
     throw new Error(
-      "Invalid promo code."
+      "INVALID_CODE"
     );
   }
 
@@ -2292,7 +2297,7 @@ async function promo(
       if (!u.exists) {
 
         throw new Error(
-          "User account not found."
+          "USER_NOT_FOUND"
         );
       }
 
@@ -2300,7 +2305,7 @@ async function promo(
       if (claim.exists) {
 
         throw new Error(
-          "Promo code already claimed!"
+          "ALREADY_CLAIMED"
         );
       }
 
@@ -2467,7 +2472,7 @@ async function referral(
     if (!snap.exists) {
 
       throw new Error(
-        "User account not found."
+        "USER_NOT_FOUND"
       );
     }
 
@@ -2548,7 +2553,7 @@ async function referral(
 
 
   throw new Error(
-    "Unknown referral action."
+    "UNKNOWN_ACTION"
   );
 }
 /* =========================================================
@@ -2661,7 +2666,7 @@ async function tasks(
     ) {
 
       throw new Error(
-        "Missing task information fields."
+        "TASK_DATA_REQUIRED"
       );
     }
 
@@ -2690,7 +2695,7 @@ async function tasks(
         if (!userSnap.exists) {
 
           throw new Error(
-            "User account not found."
+            "USER_NOT_FOUND"
           );
         }
 
@@ -2717,7 +2722,7 @@ async function tasks(
         ) {
 
           throw new Error(
-            "Insufficient balance to create task."
+            "INSUFFICIENT_POINTS"
           );
         }
 
@@ -2817,7 +2822,7 @@ async function tasks(
     if (!taskId) {
 
       throw new Error(
-        "Task ID required."
+        "TASK_ID_REQUIRED"
       );
     }
 
@@ -2880,7 +2885,7 @@ async function tasks(
         ) {
 
           throw new Error(
-            "Task or user not found."
+            "NOT_FOUND"
           );
         }
 
@@ -2890,7 +2895,7 @@ async function tasks(
         ) {
 
           throw new Error(
-            "Task already completed!"
+            "ALREADY_COMPLETED"
           );
         }
 
@@ -2905,7 +2910,7 @@ async function tasks(
         ) {
 
           throw new Error(
-            "Task is closed."
+            "TASK_CLOSED"
           );
         }
 
@@ -2930,7 +2935,7 @@ async function tasks(
         ) {
 
           throw new Error(
-            "Task limit reached."
+            "TASK_LIMIT_REACHED"
           );
         }
 
@@ -3084,7 +3089,7 @@ async function tasks(
 
 
   throw new Error(
-    "Unknown task action."
+    "UNKNOWN_ACTION"
   );
 }
 
@@ -3116,7 +3121,7 @@ async function withdraw(
   ) {
 
     throw new Error(
-      "Invalid BEP20 wallet address."
+      "INVALID_ADDRESS"
     );
   }
 
@@ -3145,7 +3150,7 @@ async function withdraw(
   ) {
 
     throw new Error(
-      "Invalid points rate configured."
+      "INVALID_POINTS_RATE"
     );
   }
 
@@ -3196,7 +3201,7 @@ async function withdraw(
     ) {
 
       throw new Error(
-        "Invalid withdrawal amount."
+        "INVALID_AMOUNT"
       );
     }
 
@@ -3216,7 +3221,7 @@ async function withdraw(
     if (amount === null) {
 
       throw new Error(
-        "Withdrawal amount required."
+        "AMOUNT_REQUIRED"
       );
     }
 
@@ -3235,7 +3240,7 @@ async function withdraw(
   ) {
 
     throw new Error(
-      "Minimum withdrawal amount not reached."
+      "MINIMUM_NOT_REACHED"
     );
   }
 
@@ -3246,7 +3251,7 @@ async function withdraw(
   ) {
 
     throw new Error(
-      "Invalid withdrawal amount."
+      "INVALID_AMOUNT"
     );
   }
 
@@ -3289,7 +3294,7 @@ async function withdraw(
       if (!snap.exists) {
 
         throw new Error(
-          "User account not found."
+          "USER_NOT_FOUND"
         );
       }
 
@@ -3307,7 +3312,7 @@ async function withdraw(
       ) {
 
         throw new Error(
-          "Please verify your channel membership first."
+          "CHANNELS_REQUIRED"
         );
       }
 
@@ -3327,7 +3332,7 @@ async function withdraw(
       ) {
 
         throw new Error(
-          "You need at least 2 referrals to withdraw."
+          "TWO_REFERRALS_REQUIRED"
         );
       }
 
@@ -3342,7 +3347,7 @@ async function withdraw(
       ) {
 
         throw new Error(
-          "You can only withdraw once per day."
+          "WITHDRAWAL_LIMIT_TODAY"
         );
       }
 
@@ -3358,7 +3363,7 @@ async function withdraw(
       ) {
 
         throw new Error(
-          "Insufficient balance for this withdrawal."
+          "INSUFFICIENT_BALANCE"
         );
       }
 
@@ -3540,11 +3545,9 @@ async function withdraw(
     );
 
 
-    throw new Error(error?.message || "Blockchain transfer failed.");
+    throw error;
   }
-}
-
-
+      }
 /* =========================================================
    DAILY NOTIFICATION CRON
 ========================================================= */
@@ -3600,7 +3603,7 @@ async function dailyCron(
         false,
 
       error:
-        "Unauthorized cron execution."
+        "UNAUTHORIZED"
     });
   }
 
