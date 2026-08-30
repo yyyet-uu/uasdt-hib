@@ -1127,17 +1127,11 @@ a{
 .logo-orb{background:linear-gradient(145deg,#16a34a,#22c55e 48%,#06b6d4);box-shadow:0 0 60px rgba(34,197,94,.35),inset 0 2px 7px rgba(255,255,255,.4)}
 .loader-line span{background:linear-gradient(90deg,#16a34a,#22c55e,#06b6d4)}
 .balance-card{border-color:rgba(34,197,94,.32);background:radial-gradient(circle at 100% 0%,rgba(34,197,94,.20),transparent 38%),radial-gradient(circle at 0% 100%,rgba(37,99,235,.15),transparent 42%),linear-gradient(145deg,#102d25,#07162e)}
-.premium-badge{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.25);color:#86efac;font-size:9px;font-weight:1000;letter-spacing:.4px}
 .daily-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
 .daily-countdown{padding:8px 10px;border-radius:12px;background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.22);color:#86efac;font-size:10px;font-weight:1000;font-variant-numeric:tabular-nums;white-space:nowrap}
-.major-task{position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;padding:15px;margin-bottom:10px;border-radius:20px;border:1px solid rgba(34,197,94,.20);background:linear-gradient(145deg,rgba(12,31,27,.98),rgba(7,15,27,.98));box-shadow:0 12px 30px rgba(0,0,0,.25)}
-.major-task:before{content:"";position:absolute;inset:auto -30px -50px auto;width:130px;height:130px;background:rgba(34,197,94,.12);filter:blur(25px);border-radius:50%}
-.major-icon{width:46px;height:46px;flex:none;display:grid;place-items:center;border-radius:15px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.18);font-size:22px}
-.major-main{min-width:0;flex:1}.major-title{font-size:12px;font-weight:1000}.major-sub{margin-top:3px;color:var(--muted);font-size:9px;line-height:1.4}.major-reward{color:#86efac;font-size:10px;font-weight:1000;margin-bottom:6px;text-align:right}
-.major-btn{width:auto;min-width:92px;padding:10px 12px;border-radius:13px;background:linear-gradient(145deg,#22c55e,#15803d);font-size:9px;font-weight:1000;box-shadow:0 4px 0 #14532d}
 .withdraw-amount-wrap{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.amount-unit{padding:0 12px;height:47px;display:flex;align-items:center;border-radius:15px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.18);color:#86efac;font-size:10px;font-weight:1000}
 .skip-btn{margin-top:8px;background:transparent;box-shadow:none;border:1px solid var(--line2);color:var(--muted)}
-@media(max-width:360px){.daily-countdown{font-size:9px}.major-task{padding:12px}.major-btn{min-width:78px;padding:9px 8px}}
+@media(max-width:360px){.daily-countdown{font-size:9px}}
 
 </style>
 </head>
@@ -2024,20 +2018,6 @@ a{
     </button>
 
   </div>
-
-  <div class="card" style="border-color:rgba(34,197,94,.20);background:linear-gradient(145deg,rgba(10,29,24,.96),rgba(7,14,27,.98))">
-      <div class="daily-head">
-        <div><div class="card-title">🚀 Major Missions</div><div class="small-text">Complete each mission and earn 200 points.</div></div>
-        <div class="premium-badge">+400 PTS</div>
-      </div>
-      <div class="major-task" id="major-youtube">
-        <div class="major-icon">▶️</div><div class="major-main"><div class="major-title">Subscribe to USDT HUB</div><div class="major-sub">YouTube • @usdt-hub</div></div><div><div class="major-reward">+200 PTS</div><button class="major-btn" onclick="openMajorTask('youtube')">OPEN</button></div>
-      </div>
-      <div class="major-task" id="major-tiktok">
-        <div class="major-icon">🎵</div><div class="major-main"><div class="major-title">Follow USDT HUB</div><div class="major-sub">TikTok • @usdt.hub7</div></div><div><div class="major-reward">+200 PTS</div><button class="major-btn" onclick="openMajorTask('tiktok')">OPEN</button></div>
-      </div>
-      <div class="small-text" style="margin-top:6px">After verification, completed missions are removed from this list.</div>
-    </div>
 
     <div id="tasksList">
     <div class="card" style="text-align:center">
@@ -4783,13 +4763,6 @@ function skipWelcomeBonus(){
   showToast('Welcome bonus skipped. You can start earning now.','success');
 }
 
-function openMajorTask(type){
-  const urls={youtube:'https://youtube.com/@usdt-hub',tiktok:'https://www.tiktok.com/@usdt.hub7'};
-  const url=urls[type]; if(!url) return;
-  openTelegram(url);
-  showToast('Complete the task, then return for verification.','');
-}
-
 function updateDailyMissionCountdown(){
   const el=$('dailyMissionCountdown'); if(!el) return;
   const now=new Date(), next=new Date(now); next.setHours(24,0,0,0);
@@ -4893,4 +4866,4 @@ document
 </script>
 
 </body>
-  </html>
+</html>
