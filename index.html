@@ -4752,7 +4752,7 @@ async function withdraw(){
   if(!Number.isFinite(amountUSDT) || amountUSDT < minUSDT){ triggerHaptic('error'); showToast(`Minimum withdrawal is ${minUSDT.toFixed(2)} USDT.`,'error'); return; }
 
   const points=Math.floor(amountUSDT*Number(CONFIG.POINTS_PER_USDT || 100000));
-  if(Number(currentUser?.balance || 0) < points){ showToast('Insufficient balance for this amount.','error'); return; }
+  if(Number(currentUser?.balance || 0) < points){ triggerHaptic('error'); showToast('Insufficient balance for this amount.','error'); return; }
 
   const btn=$('withdrawBtn'); btn.disabled=true; btn.textContent='⏳ PROCESSING...';
   try{
