@@ -20,6 +20,10 @@ import {
 import { CONFIG } from "../lib/config.js";
 
 
+/* =========================================================
+   HELPERS
+========================================================= */
+
 function getPath(req) {
   const rawUrl = String(req.url || "");
   return rawUrl.split("?")[0].replace(/\/+$/, "") || "/";
@@ -65,7 +69,7 @@ function getUser(req) {
 
 
 function getVipTier(totalPts = 0) {
-  const tiers = Object.values(CONFIG.VIP_TIERS)
+  const tiers = Object.values(CONFIG.VIP_TIERS || {})
     .sort((a, b) => b.minPts - a.minPts);
 
   for (const tier of tiers) {
@@ -74,8 +78,66 @@ function getVipTier(totalPts = 0) {
     }
   }
 
-  return CONFIG.VIP_TIERS.BRONZE;
+  return (
+    CONFIG.VIP_TIERS?.BRONZE || {
+      name: "Bronze",
+      multiplier: 1
+    }
+  );
 }
+
+
+/* =========================================================
+   DEFAULT REWARDS
+   These can be overridden from config.js
+========================================================= */
+
+const MISSION_REWARDS = {
+  watchAds:
+    Number(CONFIG.MISSION_WATCH_ADS_REWARD ?? 100),
+
+  completeTasks:
+    Number(CONFIG.MISSION_COMPLETE_TASKS_REWARD ?? 100),
+
+  inviteFriend:
+    Number(CONFIG.MISSION_INVITE_REWARD ?? 150),
+
+  dailyCheckIn:
+    Number(CONFIG.MISSION_CHECKIN_REWARD ?? 100),
+
+  allCompleted:
+    Number(CONFIG.MISSION_ALL_REWARD ?? 300)
+};
+
+
+const REFERRAL_MILESTONES = [
+  {
+    referrals: 3,
+    reward: Number(
+      CONFIG.REFERRAL_MILESTONE_3 ??
+      500
+    ),
+    name: "Starter"
+  },
+
+  {
+    referrals: 10,
+    reward: Number(
+      CONFIG.REFERRAL_MILESTONE_10 ??
+      1500
+    ),
+    name: "Builder"
+  },
+
+  {
+    referrals: 25,
+    reward: Number(
+      CONFIG.REFERRAL_MILESTONE_25 ??
+      5000
+    ),
+    name: "Legend"
+  }
+];
 
 
 /* =========================================================
@@ -83,35 +145,54 @@ function getVipTier(totalPts = 0) {
 ========================================================= */
 
 async function userHandler(req, res) {
+
   let { user, startParam } = getUser(req);
 
   const uid = String(user.id);
 
   if (!startParam && req.body?.startParam) {
-    startParam = String(req.body.startParam).trim();
+    startParam =
+      String(req.body.startParam).trim();
   }
 
-  const userRef = db.collection("users").doc(uid);
-  const existing = await userRef.get();
+  const userRef =
+    db.collection("users").doc(uid);
+
+  const existing =
+    await userRef.get();
+
 
   if (existing.exists) {
-    const userData = existing.data();
 
-    const vip = getVipTier(
-      Number(userData.balance || 0)
-    );
+    const userData =
+      existing.data();
+
+    const vip =
+      getVipTier(
+        Number(userData.balance || 0)
+      );
+
 
     return res.status(200).json({
+
       success: true,
+
       newUser: false,
 
       user: {
         ...userData,
 
-        vipTier: vip.name,
-        vipMultiplier: vip.multiplier,
+        vipTier:
+          vip.name,
 
-        botUsername: CONFIG.BOT_USERNAME,
+        vipMultiplier:
+          vip.multiplier,
+
+        botUsername:
+          CONFIG.BOT_USERNAME,
+
+        supportUsername:
+          CONFIG.SUPPORT_USERNAME,
 
         isAdmin:
           uid === String(CONFIG.ADMIN_ID)
@@ -126,24 +207,29 @@ async function userHandler(req, res) {
 
   let inviterId = null;
 
+
   if (
     startParam &&
     String(startParam).startsWith("ref_")
   ) {
+
     const possible =
       String(startParam)
         .slice(4)
         .trim();
 
+
     if (
       possible &&
       possible !== uid
     ) {
+
       const inviterDoc =
         await db
           .collection("users")
           .doc(possible)
           .get();
+
 
       if (inviterDoc.exists) {
         inviterId = possible;
@@ -157,7 +243,9 @@ async function userHandler(req, res) {
   ----------------------------- */
 
   const userData = {
-    telegramId: uid,
+
+    telegramId:
+      uid,
 
     firstName:
       user.first_name || "",
@@ -168,41 +256,107 @@ async function userHandler(req, res) {
     username:
       user.username || "",
 
-    balance: 0,
+    balance:
+      0,
 
-    adsWatched: 0,
+    adsWatched:
+      0,
 
-    monetagAds: 0,
-    adsgramAds: 0,
-    hilltopAds: 0,
+    monetagAds:
+      0,
 
-    monetagToday: 0,
-    adsgramToday: 0,
-    hilltopToday: 0,
+    adsgramAds:
+      0,
 
-    adDate: null,
+    hilltopAds:
+      0,
 
-    tasksCompleted: 0,
+    monetagToday:
+      0,
 
-    referrals: 0,
-    referralPoints: 0,
+    adsgramToday:
+      0,
 
-    welcomeBonusClaimed: false,
-    welcomeBonusStatus: "none",
-    welcomeAddress: null,
+    hilltopToday:
+      0,
 
-    channelsVerified: false,
-    appUnlocked: false,
+    adDate:
+      null,
 
-    streakDay: 0,
-    lastStreakDate: null,
+    tasksCompleted:
+      0,
 
-    withdrawals: 0,
-    lastWithdrawalId: null,
+    referrals:
+      0,
 
-    referralCode: `ref_${uid}`,
+    referralPoints:
+      0,
 
-    referredBy: inviterId,
+    /* Referral milestones */
+    milestone3Claimed:
+      false,
+
+    milestone10Claimed:
+      false,
+
+    milestone25Claimed:
+      false,
+
+    /* Welcome */
+    welcomeBonusClaimed:
+      false,
+
+    welcomeBonusStatus:
+      "none",
+
+    welcomeAddress:
+      null,
+
+    /* Channels */
+    channelsVerified:
+      false,
+
+    appUnlocked:
+      false,
+
+    /* Streak */
+    streakDay:
+      0,
+
+    lastStreakDate:
+      null,
+
+    /* Missions */
+    missionDate:
+      null,
+
+    missionAds:
+      0,
+
+    missionTasks:
+      0,
+
+    missionInvites:
+      0,
+
+    missionCheckin:
+      false,
+
+    missionAllCompleted:
+      false,
+
+    /* Withdraw */
+    withdrawals:
+      0,
+
+    lastWithdrawalId:
+      null,
+
+    referralCode:
+      `ref_${uid}`,
+
+    referredBy:
+      inviterId,
 
     createdAt:
       FieldValue.serverTimestamp(),
@@ -212,7 +366,9 @@ async function userHandler(req, res) {
   };
 
 
-  const batch = db.batch();
+  const batch =
+    db.batch();
+
 
   batch.create(
     userRef,
@@ -220,24 +376,34 @@ async function userHandler(req, res) {
   );
 
 
+  /* -----------------------------
+     REFERRAL RECORD
+  ----------------------------- */
+
   if (inviterId) {
 
     const referralRef =
       db
         .collection("referrals")
-        .doc(`${inviterId}_${uid}`);
+        .doc(
+          `${inviterId}_${uid}`
+        );
 
 
     batch.create(
       referralRef,
       {
+
         inviterId,
 
-        referredUserId: uid,
+        referredUserId:
+          uid,
 
-        channelRewarded: false,
+        channelRewarded:
+          false,
 
-        adsRewarded: false,
+        adsRewarded:
+          false,
 
         createdAt:
           FieldValue.serverTimestamp()
@@ -250,6 +416,7 @@ async function userHandler(req, res) {
         .collection("users")
         .doc(inviterId),
       {
+
         referrals:
           FieldValue.increment(1),
 
@@ -261,7 +428,8 @@ async function userHandler(req, res) {
 
     notifyNewReferral(
       inviterId,
-      user.first_name || "New Explorer"
+      user.first_name ||
+        "New Explorer"
     );
   }
 
@@ -270,17 +438,26 @@ async function userHandler(req, res) {
 
 
   return res.status(200).json({
+
     success: true,
+
     newUser: true,
 
     user: {
+
       ...userData,
 
-      vipTier: "Bronze",
-      vipMultiplier: 1.0,
+      vipTier:
+        "Bronze",
+
+      vipMultiplier:
+        1,
 
       botUsername:
         CONFIG.BOT_USERNAME,
+
+      supportUsername:
+        CONFIG.SUPPORT_USERNAME,
 
       isAdmin:
         uid === String(CONFIG.ADMIN_ID)
@@ -290,22 +467,303 @@ async function userHandler(req, res) {
 
 
 /* =========================================================
-   DAILY STREAK
+   REFERRAL MILESTONES
 ========================================================= */
 
-async function claimStreak(req, res) {
-
-  const { user } = getUser(req);
-
-  const uid = String(user.id);
+async function checkReferralMilestones(
+  uid
+) {
 
   const userRef =
     db.collection("users").doc(uid);
 
-  const dToday = today();
-  const dYesterday = yesterday();
+
+  let earned = [];
+
+
+  await db.runTransaction(
+    async tx => {
+
+      const snap =
+        await tx.get(userRef);
+
+
+      if (!snap.exists) {
+        return;
+      }
+
+
+      const u =
+        snap.data();
+
+
+      const count =
+        Number(u.referrals || 0);
+
+
+      for (
+        const milestone
+        of REFERRAL_MILESTONES
+      ) {
+
+        if (
+          count <
+          milestone.referrals
+        ) {
+          continue;
+        }
+
+
+        let field;
+
+
+        if (
+          milestone.referrals === 3
+        ) {
+          field =
+            "milestone3Claimed";
+        }
+
+        else if (
+          milestone.referrals === 10
+        ) {
+          field =
+            "milestone10Claimed";
+        }
+
+        else if (
+          milestone.referrals === 25
+        ) {
+          field =
+            "milestone25Claimed";
+        }
+
+
+        if (!field || u[field]) {
+          continue;
+        }
+
+
+        tx.update(
+          userRef,
+          {
+
+            [field]:
+              true,
+
+            balance:
+              FieldValue.increment(
+                milestone.reward
+              ),
+
+            referralPoints:
+              FieldValue.increment(
+                milestone.reward
+              ),
+
+            updatedAt:
+              FieldValue.serverTimestamp()
+          }
+        );
+
+
+        earned.push({
+          name:
+            milestone.name,
+
+          referrals:
+            milestone.referrals,
+
+          reward:
+            milestone.reward
+        });
+      }
+    }
+  );
+
+
+  for (const milestone of earned) {
+
+    notifyReferralBonus(
+      uid,
+
+      `Referral milestone: ${milestone.referrals} friends`,
+
+      milestone.reward
+    );
+  }
+
+
+  return earned;
+}
+
+
+/* =========================================================
+   DAILY MISSIONS
+========================================================= */
+
+function missionStatus(user) {
+
+  const d = today();
+
+
+  const reset =
+    user.missionDate !== d;
+
+
+  const ads =
+    reset
+      ? 0
+      : Number(user.missionAds || 0);
+
+
+  const tasks =
+    reset
+      ? 0
+      : Number(user.missionTasks || 0);
+
+
+  const invites =
+    reset
+      ? 0
+      : Number(user.missionInvites || 0);
+
+
+  const checkin =
+    reset
+      ? false
+      : Boolean(user.missionCheckin);
+
+
+  return {
+
+    date:
+      d,
+
+    ads: {
+      current: ads,
+      target: 5,
+      completed:
+        ads >= 5,
+      reward:
+        MISSION_REWARDS.watchAds
+    },
+
+    tasks: {
+      current: tasks,
+      target: 3,
+      completed:
+        tasks >= 3,
+      reward:
+        MISSION_REWARDS.completeTasks
+    },
+
+    invites: {
+      current: invites,
+      target: 1,
+      completed:
+        invites >= 1,
+      reward:
+        MISSION_REWARDS.inviteFriend
+    },
+
+    checkin: {
+      current:
+        checkin ? 1 : 0,
+
+      target: 1,
+
+      completed:
+        checkin,
+
+      reward:
+        MISSION_REWARDS.dailyCheckIn
+    },
+
+    allCompleted:
+      ads >= 5 &&
+      tasks >= 3 &&
+      invites >= 1 &&
+      checkin,
+
+    allReward:
+      MISSION_REWARDS.allCompleted
+  };
+}
+
+
+/* =========================================================
+   MISSIONS ENDPOINT
+========================================================= */
+
+async function missions(req, res) {
+
+  const { user } =
+    getUser(req);
+
+  const uid =
+    String(user.id);
+
+
+  const userRef =
+    db.collection("users").doc(uid);
+
+
+  const snap =
+    await userRef.get();
+
+
+  if (!snap.exists) {
+    throw new Error(
+      "USER_NOT_FOUND"
+    );
+  }
+
+
+  const u =
+    snap.data();
+
+
+  const status =
+    missionStatus(u);
+
+
+  return res.status(200).json({
+
+    success: true,
+
+    missions:
+      status
+  });
+}
+
+
+/* =========================================================
+   DAILY STREAK / CHECK-IN
+========================================================= */
+
+async function claimStreak(req, res) {
+
+  const { user } =
+    getUser(req);
+
+  const uid =
+    String(user.id);
+
+
+  const userRef =
+    db.collection("users").doc(uid);
+
+
+  const dToday =
+    today();
+
+  const dYesterday =
+    yesterday();
+
 
   let streakReward = 0;
+
   let newStreak = 1;
 
 
@@ -315,16 +773,23 @@ async function claimStreak(req, res) {
       const snap =
         await tx.get(userRef);
 
+
       if (!snap.exists) {
-        throw new Error("USER_NOT_FOUND");
+        throw new Error(
+          "USER_NOT_FOUND"
+        );
       }
 
-      const u = snap.data();
+
+      const u =
+        snap.data();
 
 
       if (
-        u.lastStreakDate === dToday
+        u.lastStreakDate ===
+        dToday
       ) {
+
         throw new Error(
           "STREAK_ALREADY_CLAIMED_TODAY"
         );
@@ -332,24 +797,33 @@ async function claimStreak(req, res) {
 
 
       if (
-        u.lastStreakDate === dYesterday
+        u.lastStreakDate ===
+        dYesterday
       ) {
+
         newStreak =
           ((u.streakDay || 0) % 7) + 1;
+
       } else {
+
         newStreak = 1;
       }
 
 
       streakReward =
-        CONFIG.DAILY_STREAK_REWARDS[
+        CONFIG.DAILY_STREAK_REWARDS?.[
           newStreak - 1
         ] || 50;
+
+
+      const resetMission =
+        u.missionDate !== dToday;
 
 
       tx.update(
         userRef,
         {
+
           balance:
             FieldValue.increment(
               streakReward
@@ -361,6 +835,21 @@ async function claimStreak(req, res) {
           lastStreakDate:
             dToday,
 
+          missionDate:
+            dToday,
+
+          missionCheckin:
+            true,
+
+          ...(resetMission
+            ? {
+                missionAds: 0,
+                missionTasks: 0,
+                missionInvites: 0,
+                missionAllCompleted: false
+              }
+            : {}),
+
           updatedAt:
             FieldValue.serverTimestamp()
         }
@@ -369,11 +858,214 @@ async function claimStreak(req, res) {
   );
 
 
+  /*
+   * Check whether the check-in
+   * completed the full mission.
+   */
+
+  const updated =
+    await userRef.get();
+
+
+  const mission =
+    missionStatus(
+      updated.data()
+    );
+
+
+  let allBonus = 0;
+
+
+  if (
+    mission.allCompleted &&
+    !updated.data()
+      .missionAllCompleted
+  ) {
+
+    allBonus =
+      MISSION_REWARDS.allCompleted;
+
+
+    await userRef.update({
+
+      balance:
+        FieldValue.increment(
+          allBonus
+        ),
+
+      missionAllCompleted:
+        true,
+
+      updatedAt:
+        FieldValue.serverTimestamp()
+    });
+  }
+
+
   return res.status(200).json({
+
     success: true,
-    streakDay: newStreak,
-    reward: streakReward
+
+    streakDay:
+      newStreak,
+
+    reward:
+      streakReward,
+
+    missionBonus:
+      allBonus
   });
+}
+
+
+/* =========================================================
+   MISSION REWARD HELPER
+========================================================= */
+
+async function updateMission(
+  uid,
+  type
+) {
+
+  const userRef =
+    db.collection("users").doc(uid);
+
+
+  let allBonus = 0;
+
+
+  await db.runTransaction(
+    async tx => {
+
+      const snap =
+        await tx.get(userRef);
+
+
+      if (!snap.exists) {
+        throw new Error(
+          "USER_NOT_FOUND"
+        );
+      }
+
+
+      const u =
+        snap.data();
+
+
+      const d =
+        today();
+
+
+      const reset =
+        u.missionDate !== d;
+
+
+      let missionAds =
+        reset
+          ? 0
+          : Number(u.missionAds || 0);
+
+
+      let missionTasks =
+        reset
+          ? 0
+          : Number(u.missionTasks || 0);
+
+
+      let missionInvites =
+        reset
+          ? 0
+          : Number(u.missionInvites || 0);
+
+
+      let missionCheckin =
+        reset
+          ? false
+          : Boolean(u.missionCheckin);
+
+
+      let missionAllCompleted =
+        reset
+          ? false
+          : Boolean(
+              u.missionAllCompleted
+            );
+
+
+      if (type === "ad") {
+        missionAds++;
+      }
+
+
+      if (type === "task") {
+        missionTasks++;
+      }
+
+
+      if (type === "invite") {
+        missionInvites++;
+      }
+
+
+      if (type === "checkin") {
+        missionCheckin = true;
+      }
+
+
+      const complete =
+        missionAds >= 5 &&
+        missionTasks >= 3 &&
+        missionInvites >= 1 &&
+        missionCheckin;
+
+
+      const update = {
+
+        missionDate:
+          d,
+
+        missionAds,
+
+        missionTasks,
+
+        missionInvites,
+
+        missionCheckin,
+
+        missionAllCompleted,
+
+        updatedAt:
+          FieldValue.serverTimestamp()
+      };
+
+
+      if (
+        complete &&
+        !missionAllCompleted
+      ) {
+
+        allBonus =
+          MISSION_REWARDS.allCompleted;
+
+        update.balance =
+          FieldValue.increment(
+            allBonus
+          );
+
+        update.missionAllCompleted =
+          true;
+      }
+
+
+      tx.update(
+        userRef,
+        update
+      );
+    }
+  );
+
+
+  return allBonus;
 }
 
 
@@ -381,28 +1073,25 @@ async function claimStreak(req, res) {
    MANDATORY CHANNEL VERIFICATION
 ========================================================= */
 
-async function verifyMembership(req, res) {
+async function verifyMembership(
+  req,
+  res
+) {
 
-  const { user } = getUser(req);
+  const { user } =
+    getUser(req);
 
-  const uid = String(user.id);
+  const uid =
+    String(user.id);
 
 
   /*
-   * Check EVERY channel.
-   *
-   * If there are 2 channels:
-   *
-   * Channel 1 = joined
-   * Channel 2 = joined
-   *
-   * Only then:
-   *
-   * joined = true
+   * BOTH channels are checked.
    */
 
   const results =
     await Promise.all(
+
       CONFIG.CHANNELS.map(
         async channel => {
 
@@ -412,7 +1101,9 @@ async function verifyMembership(req, res) {
               uid
             );
 
+
           return {
+
             channel,
 
             joined:
@@ -430,23 +1121,26 @@ async function verifyMembership(req, res) {
   const joined =
     results.length > 0 &&
     results.every(
-      result => result.joined
+      result =>
+        result.joined
     );
 
 
   /*
-   * ONE CHANNEL NOT JOINED
-   * = APP REMAINS LOCKED
+   * If even ONE channel
+   * is missing, keep app locked.
    */
 
   if (!joined) {
 
     return res.status(200).json({
+
       success: true,
 
       joined: false,
 
-      channels: results,
+      channels:
+        results,
 
       requiredChannels:
         CONFIG.CHANNELS
@@ -457,25 +1151,34 @@ async function verifyMembership(req, res) {
   const userRef =
     db.collection("users").doc(uid);
 
+
   const userDoc =
     await userRef.get();
 
 
   if (!userDoc.exists) {
-    throw new Error("USER_NOT_FOUND");
+    throw new Error(
+      "USER_NOT_FOUND"
+    );
   }
 
 
-  const u = userDoc.data();
+  const u =
+    userDoc.data();
 
 
   await userRef.set(
     {
-      channelsVerified: true,
-      appUnlocked: true,
+
+      channelsVerified:
+        true,
+
+      appUnlocked:
+        true,
 
       updatedAt:
         FieldValue.serverTimestamp()
+
     },
     {
       merge: true
@@ -492,7 +1195,9 @@ async function verifyMembership(req, res) {
     const refDocRef =
       db
         .collection("referrals")
-        .doc(`${u.referredBy}_${uid}`);
+        .doc(
+          `${u.referredBy}_${uid}`
+        );
 
 
     const refSnap =
@@ -501,18 +1206,23 @@ async function verifyMembership(req, res) {
 
     if (
       refSnap.exists &&
-      !refSnap.data().channelRewarded
+      !refSnap.data()
+        .channelRewarded
     ) {
 
       await db.runTransaction(
         async tx => {
 
           const freshRef =
-            await tx.get(refDocRef);
+            await tx.get(
+              refDocRef
+            );
+
 
           if (!freshRef.exists) {
             return;
           }
+
 
           const referralData =
             freshRef.data();
@@ -528,7 +1238,9 @@ async function verifyMembership(req, res) {
           tx.update(
             refDocRef,
             {
-              channelRewarded: true,
+
+              channelRewarded:
+                true,
 
               updatedAt:
                 FieldValue.serverTimestamp()
@@ -541,6 +1253,7 @@ async function verifyMembership(req, res) {
               .collection("users")
               .doc(u.referredBy),
             {
+
               balance:
                 FieldValue.increment(
                   CONFIG.REFERRAL_CHANNEL_JOIN
@@ -576,7 +1289,8 @@ async function verifyMembership(req, res) {
 
     joined: true,
 
-    channels: results,
+    channels:
+      results,
 
     requiredChannels:
       CONFIG.CHANNELS
@@ -588,12 +1302,17 @@ async function verifyMembership(req, res) {
    WELCOME BONUS
 ========================================================= */
 
-async function claimWelcome(req, res) {
+async function claimWelcome(
+  req,
+  res
+) {
 
   const { user } =
     getUser(req);
 
-  const uid = String(user.id);
+  const uid =
+    String(user.id);
+
 
   const address =
     String(
@@ -636,6 +1355,7 @@ async function claimWelcome(req, res) {
       const userSnap =
         await tx.get(userRef);
 
+
       const addressSnap =
         await tx.get(addressRef);
 
@@ -675,9 +1395,12 @@ async function claimWelcome(req, res) {
       tx.set(
         addressRef,
         {
-          userId: uid,
 
-          address: normalized,
+          userId:
+            uid,
+
+          address:
+            normalized,
 
           payoutId:
             payoutRef.id,
@@ -691,16 +1414,21 @@ async function claimWelcome(req, res) {
       tx.set(
         payoutRef,
         {
-          type: "welcome",
 
-          userId: uid,
+          type:
+            "welcome",
 
-          address: normalized,
+          userId:
+            uid,
+
+          address:
+            normalized,
 
           amount:
             CONFIG.WELCOME_USDT,
 
-          status: "processing",
+          status:
+            "processing",
 
           createdAt:
             FieldValue.serverTimestamp()
@@ -711,7 +1439,9 @@ async function claimWelcome(req, res) {
       tx.update(
         userRef,
         {
-          welcomeBonusClaimed: true,
+
+          welcomeBonusClaimed:
+            true,
 
           welcomeBonusStatus:
             "processing",
@@ -719,7 +1449,8 @@ async function claimWelcome(req, res) {
           welcomeAddress:
             normalized,
 
-          appUnlocked: true,
+          appUnlocked:
+            true,
 
           updatedAt:
             FieldValue.serverTimestamp()
@@ -738,28 +1469,27 @@ async function claimWelcome(req, res) {
       );
 
 
-    await payoutRef.update(
-      {
-        status: "paid",
+    await payoutRef.update({
 
-        txHash:
-          payment.txHash,
+      status:
+        "paid",
 
-        paidAt:
-          FieldValue.serverTimestamp()
-      }
-    );
+      txHash:
+        payment.txHash,
+
+      paidAt:
+        FieldValue.serverTimestamp()
+    });
 
 
-    await userRef.update(
-      {
-        welcomeBonusStatus:
-          "paid",
+    await userRef.update({
 
-        updatedAt:
-          FieldValue.serverTimestamp()
-      }
-    );
+      welcomeBonusStatus:
+        "paid",
+
+      updatedAt:
+        FieldValue.serverTimestamp()
+    });
 
 
     notifyWelcomeBonus(
@@ -771,26 +1501,29 @@ async function claimWelcome(req, res) {
     );
 
 
-    broadcastPaymentProof(
-      {
-        type: "welcome",
+    broadcastPaymentProof({
 
-        userId: uid,
+      type:
+        "welcome",
 
-        amountUSDT:
-          CONFIG.WELCOME_USDT,
+      userId:
+        uid,
 
-        txHash:
-          payment.txHash,
+      amountUSDT:
+        CONFIG.WELCOME_USDT,
 
-        address: normalized
-      }
-    );
+      txHash:
+        payment.txHash,
+
+      address:
+        normalized
+    });
 
 
     return res.status(200).json({
 
-      success: true,
+      success:
+        true,
 
       amount:
         CONFIG.WELCOME_USDT,
@@ -801,29 +1534,28 @@ async function claimWelcome(req, res) {
 
   } catch (error) {
 
-    await payoutRef.update(
-      {
-        status: "failed",
+    await payoutRef.update({
 
-        error:
-          error?.message ||
-          String(error),
+      status:
+        "failed",
 
-        updatedAt:
-          FieldValue.serverTimestamp()
-      }
-    );
+      error:
+        error?.message ||
+        String(error),
+
+      updatedAt:
+        FieldValue.serverTimestamp()
+    });
 
 
-    await userRef.update(
-      {
-        welcomeBonusStatus:
-          "failed",
+    await userRef.update({
 
-        updatedAt:
-          FieldValue.serverTimestamp()
-      }
-    );
+      welcomeBonusStatus:
+        "failed",
+
+      updatedAt:
+        FieldValue.serverTimestamp()
+    });
 
 
     throw error;
@@ -835,12 +1567,17 @@ async function claimWelcome(req, res) {
    ADS
 ========================================================= */
 
-async function ads(req, res) {
+async function ads(
+  req,
+  res
+) {
 
   const { user } =
     getUser(req);
 
-  const uid = String(user.id);
+  const uid =
+    String(user.id);
+
 
   const provider =
     String(
@@ -855,6 +1592,7 @@ async function ads(req, res) {
       "hilltop"
     ].includes(provider)
   ) {
+
     throw new Error(
       "INVALID_PROVIDER"
     );
@@ -864,21 +1602,27 @@ async function ads(req, res) {
   const userRef =
     db.collection("users").doc(uid);
 
-  const d = today();
+
+  const d =
+    today();
 
 
   let result;
 
-  let shouldRewardInviter = false;
+  let shouldRewardInviter =
+    false;
 
-  let inviterId = null;
+  let inviterId =
+    null;
 
 
   const HILLTOP_LIMIT =
     CONFIG.HILLTOP_LIMIT || 15;
 
+
   const monetagLimit =
     CONFIG.MONETAG_LIMIT || 30;
+
 
   const adsgramLimit =
     CONFIG.ADSGRAM_LIMIT || 25;
@@ -898,12 +1642,9 @@ async function ads(req, res) {
       }
 
 
-      const u = snap.data();
+      const u =
+        snap.data();
 
-
-      /*
-       * Mandatory channels
-       */
 
       if (!u.channelsVerified) {
         throw new Error(
@@ -914,26 +1655,34 @@ async function ads(req, res) {
 
       let monetagToday =
         u.adDate === d
-          ? Number(u.monetagToday || 0)
+          ? Number(
+              u.monetagToday || 0
+            )
           : 0;
 
 
       let adsgramToday =
         u.adDate === d
-          ? Number(u.adsgramToday || 0)
+          ? Number(
+              u.adsgramToday || 0
+            )
           : 0;
 
 
       let hilltopToday =
         u.adDate === d
-          ? Number(u.hilltopToday || 0)
+          ? Number(
+              u.hilltopToday || 0
+            )
           : 0;
 
 
       if (
         provider === "monetag" &&
-        monetagToday >= monetagLimit
+        monetagToday >=
+          monetagLimit
       ) {
+
         throw new Error(
           "MONETAG_LIMIT"
         );
@@ -942,8 +1691,10 @@ async function ads(req, res) {
 
       if (
         provider === "adsgram" &&
-        adsgramToday >= adsgramLimit
+        adsgramToday >=
+          adsgramLimit
       ) {
+
         throw new Error(
           "ADSGRAM_LIMIT"
         );
@@ -952,32 +1703,45 @@ async function ads(req, res) {
 
       if (
         provider === "hilltop" &&
-        hilltopToday >= HILLTOP_LIMIT
+        hilltopToday >=
+          HILLTOP_LIMIT
       ) {
+
         throw new Error(
           "HILLTOP_LIMIT"
         );
       }
 
 
-      if (provider === "monetag") {
+      if (
+        provider === "monetag"
+      ) {
+
         monetagToday++;
+
       } else if (
         provider === "adsgram"
       ) {
+
         adsgramToday++;
+
       } else {
+
         hilltopToday++;
       }
 
 
       const totalAds =
-        Number(u.adsWatched || 0) + 1;
+        Number(
+          u.adsWatched || 0
+        ) + 1;
 
 
       const vip =
         getVipTier(
-          Number(u.balance || 0)
+          Number(
+            u.balance || 0
+          )
         );
 
 
@@ -988,9 +1752,26 @@ async function ads(req, res) {
         );
 
 
+      const missionReset =
+        u.missionDate !== d;
+
+
+      const currentMissionAds =
+        missionReset
+          ? 0
+          : Number(
+              u.missionAds || 0
+            );
+
+
+      const missionAds =
+        currentMissionAds + 1;
+
+
       tx.update(
         userRef,
         {
+
           balance:
             FieldValue.increment(
               finalReward
@@ -1008,7 +1789,34 @@ async function ads(req, res) {
 
           hilltopToday,
 
-          adDate: d,
+          adDate:
+            d,
+
+          missionDate:
+            d,
+
+          missionAds,
+
+          missionTasks:
+            missionReset
+              ? 0
+              : Number(
+                  u.missionTasks || 0
+                ),
+
+          missionInvites:
+            missionReset
+              ? 0
+              : Number(
+                  u.missionInvites || 0
+                ),
+
+          missionCheckin:
+            missionReset
+              ? false
+              : Boolean(
+                  u.missionCheckin
+                ),
 
           updatedAt:
             FieldValue.serverTimestamp()
@@ -1021,7 +1829,8 @@ async function ads(req, res) {
         totalAds >= 2
       ) {
 
-        shouldRewardInviter = true;
+        shouldRewardInviter =
+          true;
 
         inviterId =
           u.referredBy;
@@ -1039,7 +1848,9 @@ async function ads(req, res) {
 
         hilltopToday,
 
-        totalAds
+        totalAds,
+
+        missionAds
       };
     }
   );
@@ -1057,7 +1868,9 @@ async function ads(req, res) {
     const refDocRef =
       db
         .collection("referrals")
-        .doc(`${inviterId}_${uid}`);
+        .doc(
+          `${inviterId}_${uid}`
+        );
 
 
     const refSnap =
@@ -1066,14 +1879,17 @@ async function ads(req, res) {
 
     if (
       refSnap.exists &&
-      !refSnap.data().adsRewarded
+      !refSnap.data()
+        .adsRewarded
     ) {
 
       await db.runTransaction(
         async tx => {
 
           const freshRef =
-            await tx.get(refDocRef);
+            await tx.get(
+              refDocRef
+            );
 
 
           if (!freshRef.exists) {
@@ -1082,7 +1898,8 @@ async function ads(req, res) {
 
 
           if (
-            freshRef.data().adsRewarded
+            freshRef.data()
+              .adsRewarded
           ) {
             return;
           }
@@ -1091,7 +1908,9 @@ async function ads(req, res) {
           tx.update(
             refDocRef,
             {
-              adsRewarded: true,
+
+              adsRewarded:
+                true,
 
               updatedAt:
                 FieldValue.serverTimestamp()
@@ -1104,6 +1923,7 @@ async function ads(req, res) {
               .collection("users")
               .doc(inviterId),
             {
+
               balance:
                 FieldValue.increment(
                   CONFIG.REFERRAL_ADS_WATCHED
@@ -1133,9 +1953,68 @@ async function ads(req, res) {
   }
 
 
+  /*
+   * Check referral milestones.
+   */
+
+  if (inviterId) {
+    await checkReferralMilestones(
+      inviterId
+    );
+  }
+
+
+  /*
+   * Mission full-completion bonus.
+   */
+
+  const missionUser =
+    await userRef.get();
+
+
+  const mission =
+    missionStatus(
+      missionUser.data()
+    );
+
+
+  let missionBonus = 0;
+
+
+  if (
+    mission.allCompleted &&
+    !missionUser.data()
+      .missionAllCompleted
+  ) {
+
+    missionBonus =
+      MISSION_REWARDS.allCompleted;
+
+
+    await userRef.update({
+
+      balance:
+        FieldValue.increment(
+          missionBonus
+        ),
+
+      missionAllCompleted:
+        true,
+
+      updatedAt:
+        FieldValue.serverTimestamp()
+    });
+  }
+
+
   return res.status(200).json({
-    success: true,
-    ...result
+
+    success:
+      true,
+
+    ...result,
+
+    missionBonus
   });
 }
 
@@ -1144,12 +2023,17 @@ async function ads(req, res) {
    DEPOSIT
 ========================================================= */
 
-async function deposit(req, res) {
+async function deposit(
+  req,
+  res
+) {
 
   const { user } =
     getUser(req);
 
-  const uid = String(user.id);
+  const uid =
+    String(user.id);
+
 
   const action =
     String(
@@ -1157,11 +2041,14 @@ async function deposit(req, res) {
     ).toLowerCase();
 
 
-  if (action === "info") {
+  if (
+    action === "info"
+  ) {
 
     return res.status(200).json({
 
-      success: true,
+      success:
+        true,
 
       depositAddress:
         CONFIG.DEPOSIT_ADDRESS,
@@ -1172,7 +2059,9 @@ async function deposit(req, res) {
   }
 
 
-  if (action === "submit") {
+  if (
+    action === "submit"
+  ) {
 
     const txHash =
       String(
@@ -1184,6 +2073,7 @@ async function deposit(req, res) {
       !txHash ||
       txHash.length < 10
     ) {
+
       throw new Error(
         "INVALID_TX_HASH"
       );
@@ -1193,14 +2083,18 @@ async function deposit(req, res) {
     const depositRef =
       db
         .collection("deposits")
-        .doc(txHash.toLowerCase());
+        .doc(
+          txHash.toLowerCase()
+        );
 
 
     await db.runTransaction(
       async tx => {
 
         const snap =
-          await tx.get(depositRef);
+          await tx.get(
+            depositRef
+          );
 
 
         if (snap.exists) {
@@ -1213,12 +2107,15 @@ async function deposit(req, res) {
         tx.create(
           depositRef,
           {
-            userId: uid,
+
+            userId:
+              uid,
 
             txHash:
               txHash.toLowerCase(),
 
-            status: "pending",
+            status:
+              "pending",
 
             createdAt:
               FieldValue.serverTimestamp()
@@ -1230,7 +2127,8 @@ async function deposit(req, res) {
 
     return res.status(200).json({
 
-      success: true,
+      success:
+        true,
 
       message:
         "Deposit submitted for blockchain verification"
@@ -1248,12 +2146,16 @@ async function deposit(req, res) {
    PROMO
 ========================================================= */
 
-async function promo(req, res) {
+async function promo(
+  req,
+  res
+) {
 
   const { user } =
     getUser(req);
 
-  const uid = String(user.id);
+  const uid =
+    String(user.id);
 
 
   const code =
@@ -1265,8 +2167,11 @@ async function promo(req, res) {
 
 
   if (
-    !CONFIG.PROMO_CODES.includes(code)
+    !CONFIG.PROMO_CODES?.includes(
+      code
+    )
   ) {
+
     throw new Error(
       "INVALID_CODE"
     );
@@ -1276,7 +2181,9 @@ async function promo(req, res) {
   const claimRef =
     db
       .collection("promoClaims")
-      .doc(`${uid}_${code}`);
+      .doc(
+        `${uid}_${code}`
+      );
 
 
   const userRef =
@@ -1287,10 +2194,15 @@ async function promo(req, res) {
     async tx => {
 
       const claim =
-        await tx.get(claimRef);
+        await tx.get(
+          claimRef
+        );
+
 
       const u =
-        await tx.get(userRef);
+        await tx.get(
+          userRef
+        );
 
 
       if (!u.exists) {
@@ -1310,7 +2222,9 @@ async function promo(req, res) {
       tx.create(
         claimRef,
         {
-          userId: uid,
+
+          userId:
+            uid,
 
           code,
 
@@ -1326,6 +2240,7 @@ async function promo(req, res) {
       tx.update(
         userRef,
         {
+
           balance:
             FieldValue.increment(
               CONFIG.PROMO_REWARD
@@ -1341,7 +2256,8 @@ async function promo(req, res) {
 
   return res.status(200).json({
 
-    success: true,
+    success:
+      true,
 
     reward:
       CONFIG.PROMO_REWARD
@@ -1353,12 +2269,16 @@ async function promo(req, res) {
    REFERRALS
 ========================================================= */
 
-async function referral(req, res) {
+async function referral(
+  req,
+  res
+) {
 
   const { user } =
     getUser(req);
 
-  const uid = String(user.id);
+  const uid =
+    String(user.id);
 
 
   const action =
@@ -1367,7 +2287,9 @@ async function referral(req, res) {
     ).toLowerCase();
 
 
-  if (action === "list") {
+  if (
+    action === "list"
+  ) {
 
     const snap =
       await db
@@ -1382,12 +2304,15 @@ async function referral(req, res) {
 
     return res.status(200).json({
 
-      success: true,
+      success:
+        true,
 
       referrals:
         snap.docs.map(
           doc => ({
-            id: doc.id,
+            id:
+              doc.id,
+
             ...doc.data()
           })
         )
@@ -1395,7 +2320,9 @@ async function referral(req, res) {
   }
 
 
-  if (action === "leaderboard") {
+  if (
+    action === "leaderboard"
+  ) {
 
     const snap =
       await db
@@ -1410,7 +2337,8 @@ async function referral(req, res) {
 
     return res.status(200).json({
 
-      success: true,
+      success:
+        true,
 
       leaderboard:
         snap.docs.map(
@@ -1438,6 +2366,94 @@ async function referral(req, res) {
   }
 
 
+  if (
+    action === "milestones"
+  ) {
+
+    const snap =
+      await db
+        .collection("users")
+        .doc(uid)
+        .get();
+
+
+    if (!snap.exists) {
+      throw new Error(
+        "USER_NOT_FOUND"
+      );
+    }
+
+
+    const u =
+      snap.data();
+
+
+    const count =
+      Number(
+        u.referrals || 0
+      );
+
+
+    return res.status(200).json({
+
+      success:
+        true,
+
+      referrals:
+        count,
+
+      milestones:
+        REFERRAL_MILESTONES.map(
+          milestone => {
+
+            let claimed =
+              false;
+
+
+            if (
+              milestone.referrals === 3
+            ) {
+              claimed =
+                Boolean(
+                  u.milestone3Claimed
+                );
+            }
+
+            if (
+              milestone.referrals === 10
+            ) {
+              claimed =
+                Boolean(
+                  u.milestone10Claimed
+                );
+            }
+
+            if (
+              milestone.referrals === 25
+            ) {
+              claimed =
+                Boolean(
+                  u.milestone25Claimed
+                );
+            }
+
+
+            return {
+
+              ...milestone,
+
+              claimed,
+
+              unlocked:
+                count >=
+                milestone.referrals
+            };
+          }
+        )
+    });
+  }
+
+
   throw new Error(
     "UNKNOWN_ACTION"
   );
@@ -1448,12 +2464,16 @@ async function referral(req, res) {
    TASKS
 ========================================================= */
 
-async function tasks(req, res) {
+async function tasks(
+  req,
+  res
+) {
 
   const { user } =
     getUser(req);
 
-  const uid = String(user.id);
+  const uid =
+    String(user.id);
 
 
   const action =
@@ -1462,7 +2482,9 @@ async function tasks(req, res) {
     ).toLowerCase();
 
 
-  if (action === "list") {
+  if (
+    action === "list"
+  ) {
 
     const tasksSnap =
       await db
@@ -1500,7 +2522,10 @@ async function tasks(req, res) {
       tasksSnap.docs
         .map(
           doc => ({
-            id: doc.id,
+
+            id:
+              doc.id,
+
             ...doc.data()
           })
         )
@@ -1514,7 +2539,8 @@ async function tasks(req, res) {
 
     return res.status(200).json({
 
-      success: true,
+      success:
+        true,
 
       tasks:
         availableTasks
@@ -1526,7 +2552,9 @@ async function tasks(req, res) {
      CREATE TASK
   ----------------------------- */
 
-  if (action === "create") {
+  if (
+    action === "create"
+  ) {
 
     const {
       title,
@@ -1541,6 +2569,7 @@ async function tasks(req, res) {
       !link ||
       !chatId
     ) {
+
       throw new Error(
         "TASK_DATA_REQUIRED"
       );
@@ -1559,7 +2588,9 @@ async function tasks(req, res) {
       async tx => {
 
         const userSnap =
-          await tx.get(userRef);
+          await tx.get(
+            userRef
+          );
 
 
         if (!userSnap.exists) {
@@ -1575,14 +2606,21 @@ async function tasks(req, res) {
 
         const isAdmin =
           uid ===
-          String(CONFIG.ADMIN_ID);
+          String(
+            CONFIG.ADMIN_ID
+          );
 
 
         if (
           !isAdmin &&
-          Number(u.balance || 0) <
-          CONFIG.TASK_CREATE_COST
+          Number(
+            u.balance || 0
+          ) <
+          Number(
+            CONFIG.TASK_CREATE_COST
+          )
         ) {
+
           throw new Error(
             "INSUFFICIENT_POINTS"
           );
@@ -1594,9 +2632,12 @@ async function tasks(req, res) {
           tx.update(
             userRef,
             {
+
               balance:
                 FieldValue.increment(
-                  -CONFIG.TASK_CREATE_COST
+                  -Number(
+                    CONFIG.TASK_CREATE_COST
+                  )
                 ),
 
               updatedAt:
@@ -1609,7 +2650,9 @@ async function tasks(req, res) {
         tx.create(
           taskRef,
           {
-            ownerId: uid,
+
+            ownerId:
+              uid,
 
             title:
               String(title)
@@ -1624,18 +2667,21 @@ async function tasks(req, res) {
 
             type:
               String(
-                type || "channel"
+                type ||
+                "channel"
               ),
 
             reward:
               CONFIG.TASK_REWARD,
 
-            completions: 0,
+            completions:
+              0,
 
             maxCompletions:
               CONFIG.TASK_LIMIT,
 
-            status: "active",
+            status:
+              "active",
 
             createdAt:
               FieldValue.serverTimestamp(),
@@ -1650,7 +2696,8 @@ async function tasks(req, res) {
 
     return res.status(200).json({
 
-      success: true,
+      success:
+        true,
 
       taskId:
         taskRef.id
@@ -1662,7 +2709,9 @@ async function tasks(req, res) {
      COMPLETE TASK
   ----------------------------- */
 
-  if (action === "complete") {
+  if (
+    action === "complete"
+  ) {
 
     const taskId =
       String(
@@ -1685,8 +2734,12 @@ async function tasks(req, res) {
 
     const completionRef =
       db
-        .collection("taskCompletions")
-        .doc(`${uid}_${taskId}`);
+        .collection(
+          "taskCompletions"
+        )
+        .doc(
+          `${uid}_${taskId}`
+        );
 
 
     const userRef =
@@ -1695,59 +2748,89 @@ async function tasks(req, res) {
         .doc(uid);
 
 
-    const taskSnap =
-      await taskRef.get();
-
-
-    if (!taskSnap.exists) {
-      throw new Error(
-        "TASK_NOT_FOUND"
-      );
-    }
-
-
-    const task =
-      taskSnap.data();
-
-
-    if (
-      task.status !== "active"
-    ) {
-      throw new Error(
-        "TASK_CLOSED"
-      );
-    }
-
-
     let reward = 0;
+
+    let missionBonus = 0;
 
 
     await db.runTransaction(
       async tx => {
 
-        const freshTask =
-          await tx.get(taskRef);
+        const taskSnap =
+          await tx.get(
+            taskRef
+          );
+
 
         const completion =
-          await tx.get(completionRef);
+          await tx.get(
+            completionRef
+          );
+
 
         const userSnap =
-          await tx.get(userRef);
+          await tx.get(
+            userRef
+          );
 
 
         if (
-          !freshTask.exists ||
+          !taskSnap.exists ||
           !userSnap.exists
         ) {
+
           throw new Error(
             "NOT_FOUND"
           );
         }
 
 
-        if (completion.exists) {
+        if (
+          completion.exists
+        ) {
+
           throw new Error(
             "ALREADY_COMPLETED"
+          );
+        }
+
+
+        const task =
+          taskSnap.data();
+
+
+        if (
+          task.status !==
+          "active"
+        ) {
+
+          throw new Error(
+            "TASK_CLOSED"
+          );
+        }
+
+
+        const currentCompletions =
+          Number(
+            task.completions || 0
+          );
+
+
+        const maxCompletions =
+          Number(
+            task.maxCompletions ||
+            CONFIG.TASK_LIMIT ||
+            50
+          );
+
+
+        if (
+          currentCompletions >=
+          maxCompletions
+        ) {
+
+          throw new Error(
+            "TASK_LIMIT_REACHED"
           );
         }
 
@@ -1758,10 +2841,36 @@ async function tasks(req, res) {
           );
 
 
+        const u =
+          userSnap.data();
+
+
+        const d =
+          today();
+
+
+        const resetMission =
+          u.missionDate !== d;
+
+
+        const currentMissionTasks =
+          resetMission
+            ? 0
+            : Number(
+                u.missionTasks || 0
+              );
+
+
+        const missionTasks =
+          currentMissionTasks + 1;
+
+
         tx.create(
           completionRef,
           {
-            userId: uid,
+
+            userId:
+              uid,
 
             taskId,
 
@@ -1776,13 +2885,42 @@ async function tasks(req, res) {
         tx.update(
           userRef,
           {
+
             balance:
               FieldValue.increment(
                 reward
               ),
 
             tasksCompleted:
-              FieldValue.increment(1),
+              FieldValue.increment(
+                1
+              ),
+
+            missionDate:
+              d,
+
+            missionAds:
+              resetMission
+                ? 0
+                : Number(
+                    u.missionAds || 0
+                  ),
+
+            missionTasks,
+
+            missionInvites:
+              resetMission
+                ? 0
+                : Number(
+                    u.missionInvites || 0
+                  ),
+
+            missionCheckin:
+              resetMission
+                ? false
+                : Boolean(
+                    u.missionCheckin
+                  ),
 
             updatedAt:
               FieldValue.serverTimestamp()
@@ -1790,20 +2928,57 @@ async function tasks(req, res) {
         );
 
 
+        const newCompletions =
+          currentCompletions + 1;
+
+
         /*
-         * Keep your existing behavior:
-         * task disappears after completion.
+         * IMPORTANT:
+         * Do NOT delete the task.
+         * Close it only when max completions
+         * are reached.
          */
-        tx.delete(taskRef);
+
+        tx.update(
+          taskRef,
+          {
+
+            completions:
+              newCompletions,
+
+            status:
+              newCompletions >=
+              maxCompletions
+                ? "completed"
+                : "active",
+
+            updatedAt:
+              FieldValue.serverTimestamp()
+          }
+        );
       }
     );
 
 
+    /*
+     * Check daily mission.
+     */
+
+    missionBonus =
+      await updateMission(
+        uid,
+        "task"
+      );
+
+
     return res.status(200).json({
 
-      success: true,
+      success:
+        true,
 
-      reward
+      reward,
+
+      missionBonus
     });
   }
 
@@ -1818,12 +2993,16 @@ async function tasks(req, res) {
    WITHDRAW
 ========================================================= */
 
-async function withdraw(req, res) {
+async function withdraw(
+  req,
+  res
+) {
 
   const { user } =
     getUser(req);
 
-  const uid = String(user.id);
+  const uid =
+    String(user.id);
 
 
   const address =
@@ -1833,6 +3012,7 @@ async function withdraw(req, res) {
 
 
   if (!ethers.isAddress(address)) {
+
     throw new Error(
       "INVALID_ADDRESS"
     );
@@ -1840,7 +3020,9 @@ async function withdraw(req, res) {
 
 
   const destination =
-    ethers.getAddress(address);
+    ethers.getAddress(
+      address
+    );
 
 
   const minPoints =
@@ -1874,7 +3056,9 @@ async function withdraw(req, res) {
     async tx => {
 
       const snap =
-        await tx.get(userRef);
+        await tx.get(
+          userRef
+        );
 
 
       if (!snap.exists) {
@@ -1889,6 +3073,7 @@ async function withdraw(req, res) {
 
 
       if (!u.channelsVerified) {
+
         throw new Error(
           "CHANNELS_REQUIRED"
         );
@@ -1896,9 +3081,12 @@ async function withdraw(req, res) {
 
 
       if (
-        Number(u.balance || 0) <
+        Number(
+          u.balance || 0
+        ) <
         minPoints
       ) {
+
         throw new Error(
           "MINIMUM_NOT_REACHED"
         );
@@ -1908,13 +3096,16 @@ async function withdraw(req, res) {
       tx.update(
         userRef,
         {
+
           balance:
             FieldValue.increment(
               -minPoints
             ),
 
           withdrawals:
-            FieldValue.increment(1),
+            FieldValue.increment(
+              1
+            ),
 
           lastWithdrawalId:
             withdrawalRef.id,
@@ -1928,7 +3119,9 @@ async function withdraw(req, res) {
       tx.create(
         withdrawalRef,
         {
-          userId: uid,
+
+          userId:
+            uid,
 
           address:
             destination,
@@ -1963,17 +3156,17 @@ async function withdraw(req, res) {
       );
 
 
-    await withdrawalRef.update(
-      {
-        status: "paid",
+    await withdrawalRef.update({
 
-        txHash:
-          payment.txHash,
+      status:
+        "paid",
 
-        paidAt:
-          FieldValue.serverTimestamp()
-      }
-    );
+      txHash:
+        payment.txHash,
+
+      paidAt:
+        FieldValue.serverTimestamp()
+    });
 
 
     notifyWithdrawalSuccess(
@@ -1985,29 +3178,31 @@ async function withdraw(req, res) {
     );
 
 
-    broadcastPaymentProof(
-      {
-        type: "withdraw",
+    broadcastPaymentProof({
 
-        userId: uid,
+      type:
+        "withdraw",
 
-        amountUSDT:
-          Number(
-            amount.toFixed(2)
-          ),
+      userId:
+        uid,
 
-        txHash:
-          payment.txHash,
+      amountUSDT:
+        Number(
+          amount.toFixed(2)
+        ),
 
-        address:
-          destination
-      }
-    );
+      txHash:
+        payment.txHash,
+
+      address:
+        destination
+    });
 
 
     return res.status(200).json({
 
-      success: true,
+      success:
+        true,
 
       amount:
         Number(
@@ -2029,6 +3224,7 @@ async function withdraw(req, res) {
         tx.update(
           userRef,
           {
+
             balance:
               FieldValue.increment(
                 minPoints
@@ -2043,6 +3239,7 @@ async function withdraw(req, res) {
         tx.update(
           withdrawalRef,
           {
+
             status:
               "failed",
 
@@ -2064,10 +3261,45 @@ async function withdraw(req, res) {
 
 
 /* =========================================================
+   SUPPORT
+========================================================= */
+
+async function support(
+  req,
+  res
+) {
+
+  const { user } =
+    getUser(req);
+
+
+  return res.status(200).json({
+
+    success:
+      true,
+
+    username:
+      CONFIG.SUPPORT_USERNAME,
+
+    url:
+      `https://t.me/${String(
+        CONFIG.SUPPORT_USERNAME
+      ).replace(/^@/, "")}`,
+
+    message:
+      "Need help? Contact USDT Hub Support."
+  });
+}
+
+
+/* =========================================================
    TELEGRAM BOT
 ========================================================= */
 
-async function telegram(req, res) {
+async function telegram(
+  req,
+  res
+) {
 
   const update =
     req.body || {};
@@ -2108,33 +3340,41 @@ async function telegram(req, res) {
 
     const launchUrl =
       startParam
-        ? `${baseUrl}?startapp=${encodeURIComponent(startParam)}`
+        ? `${baseUrl}?startapp=${encodeURIComponent(
+            startParam
+          )}`
         : baseUrl;
 
 
     const welcomeMessage = [
 
-      `💎 <b>WELCOME TO USDT HUB, ${String(firstName).toUpperCase()}!</b> 💎`,
+      `💎 <b>WELCOME TO USDT HUB, ${String(
+        firstName
+      ).toUpperCase()}!</b> 💎`,
 
-      `<i>The #1 Automated Micro-Earning Hub on Telegram.</i>`,
+      `<i>Your Telegram micro-earning hub.</i>`,
 
       ``,
 
       `━━━━━━━━━━━━━━━━━━━━`,
 
-      `🎁 <b>0.01 USDT Welcome Gift:</b> Instant BEP20 blockchain payout`,
+      `🎁 <b>0.01 USDT Welcome Gift</b>`,
 
-      `📺 <b>Daily Ad Mining:</b> Earn PTS from available ad providers`,
+      `📺 <b>Daily Ad Mining</b>`,
 
-      `👥 <b>Referral Rewards:</b> Earn bonuses from your referrals`,
+      `👥 <b>Referral Rewards & Milestones</b>`,
 
-      `💸 <b>Direct BEP20 Payouts:</b> Auto-sent to your wallet`,
+      `🎯 <b>Daily Missions</b>`,
+
+      `🔥 <b>Daily Streaks</b>`,
+
+      `💸 <b>BEP20 Withdrawals</b>`,
 
       `━━━━━━━━━━━━━━━━━━━━`,
 
       ``,
 
-      `⚡ <b>Quick Exchange Rate:</b>`,
+      `⚡ <b>Exchange Rate</b>`,
 
       `<code>10,000 PTS = 0.10 USDT</code>`,
 
@@ -2142,7 +3382,7 @@ async function telegram(req, res) {
 
       ``,
 
-      `🔒 <b>IMPORTANT:</b> You must join BOTH official channels before using the app.`,
+      `🔒 <b>IMPORTANT:</b> Join BOTH official channels before using the app.`,
 
       ``,
 
@@ -2157,12 +3397,15 @@ async function telegram(req, res) {
       welcomeMessage,
 
       {
+
         reply_markup: {
 
           inline_keyboard: [
 
             [
+
               {
+
                 text:
                   "🚀 OPEN USDT HUB APP",
 
@@ -2171,10 +3414,13 @@ async function telegram(req, res) {
                     launchUrl
                 }
               }
+
             ],
 
             [
+
               {
+
                 text:
                   "📢 Channel 1",
 
@@ -2183,22 +3429,32 @@ async function telegram(req, res) {
               },
 
               {
+
                 text:
                   "💎 Channel 2",
 
                 url:
                   "https://t.me/usdt_g_ram"
               }
+
             ],
 
             [
+
               {
+
                 text:
                   "💬 Community & Support",
 
                 url:
-                  `https://t.me/${CONFIG.SUPPORT_USERNAME}`
+                  `https://t.me/${String(
+                    CONFIG.SUPPORT_USERNAME
+                  ).replace(
+                    /^@/,
+                    ""
+                  )}`
               }
+
             ]
 
           ]
@@ -2209,7 +3465,9 @@ async function telegram(req, res) {
 
 
   return res.status(200).json({
-    success: true
+
+    success:
+      true
   });
 }
 
@@ -2258,7 +3516,8 @@ export default async function handler(
 
         return res.status(200).json({
 
-          success: true,
+          success:
+            true,
 
           message:
             "USDT Hub API Online"
@@ -2282,7 +3541,8 @@ export default async function handler(
 
       return res.status(200).json({
 
-        success: true,
+        success:
+          true,
 
         ...info
       });
@@ -2297,7 +3557,11 @@ export default async function handler(
       path === "/api/telegram" ||
       endpoint === "telegram"
     ) {
-      return telegram(req, res);
+
+      return telegram(
+        req,
+        res
+      );
     }
 
 
@@ -2309,6 +3573,7 @@ export default async function handler(
       path === "/api/user" ||
       endpoint === "user"
     ) {
+
       return userHandler(
         req,
         res
@@ -2324,7 +3589,24 @@ export default async function handler(
       path === "/api/claim-streak" ||
       endpoint === "claim-streak"
     ) {
+
       return claimStreak(
+        req,
+        res
+      );
+    }
+
+
+    /* -----------------------------
+       MISSIONS
+    ----------------------------- */
+
+    if (
+      path === "/api/missions" ||
+      endpoint === "missions"
+    ) {
+
+      return missions(
         req,
         res
       );
@@ -2337,8 +3619,10 @@ export default async function handler(
 
     if (
       path === "/api/verify-membership" ||
-      endpoint === "verify-membership"
+      endpoint ===
+        "verify-membership"
     ) {
+
       return verifyMembership(
         req,
         res
@@ -2352,8 +3636,10 @@ export default async function handler(
 
     if (
       path === "/api/claim-welcome" ||
-      endpoint === "claim-welcome"
+      endpoint ===
+        "claim-welcome"
     ) {
+
       return claimWelcome(
         req,
         res
@@ -2369,6 +3655,7 @@ export default async function handler(
       path === "/api/ads" ||
       endpoint === "ads"
     ) {
+
       return ads(
         req,
         res
@@ -2384,6 +3671,7 @@ export default async function handler(
       path === "/api/deposit" ||
       endpoint === "deposit"
     ) {
+
       return deposit(
         req,
         res
@@ -2399,6 +3687,7 @@ export default async function handler(
       path === "/api/promo" ||
       endpoint === "promo"
     ) {
+
       return promo(
         req,
         res
@@ -2414,6 +3703,7 @@ export default async function handler(
       path === "/api/referral" ||
       endpoint === "referral"
     ) {
+
       return referral(
         req,
         res
@@ -2429,6 +3719,7 @@ export default async function handler(
       path === "/api/tasks" ||
       endpoint === "tasks"
     ) {
+
       return tasks(
         req,
         res
@@ -2444,7 +3735,24 @@ export default async function handler(
       path === "/api/withdraw" ||
       endpoint === "withdraw"
     ) {
+
       return withdraw(
+        req,
+        res
+      );
+    }
+
+
+    /* -----------------------------
+       SUPPORT
+    ----------------------------- */
+
+    if (
+      path === "/api/support" ||
+      endpoint === "support"
+    ) {
+
+      return support(
         req,
         res
       );
@@ -2453,7 +3761,8 @@ export default async function handler(
 
     return res.status(404).json({
 
-      success: false,
+      success:
+        false,
 
       error:
         `API route not found: ${path}`
@@ -2470,7 +3779,8 @@ export default async function handler(
 
     return res.status(200).json({
 
-      success: false,
+      success:
+        false,
 
       error:
         error?.message ||
