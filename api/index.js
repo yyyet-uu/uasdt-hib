@@ -887,13 +887,8 @@ async function claimStreak(
           1;
       }
 
-      const streakRewardsList =
-        Array.isArray(CONFIG.DAILY_STREAK_REWARDS) && CONFIG.DAILY_STREAK_REWARDS.length > 0
-          ? CONFIG.DAILY_STREAK_REWARDS
-          : [50, 75, 100, 150, 200, 300, 500];
-
       streakReward =
-        streakRewardsList[
+        CONFIG.DAILY_STREAK_REWARDS?.[
           newStreak - 1
         ] || 50;
 
@@ -2633,12 +2628,70 @@ async function tasks(
         );
 
 
+    /*
+     * Major tasks
+     */
+
+    const majorTasks = [
+
+      {
+        id:
+          "major_youtube",
+
+        title:
+          "Subscribe to USDT HUB on YouTube",
+
+        link:
+          "https://youtube.com/@usdt-hub",
+
+        type:
+          "youtube",
+
+        reward:
+          200,
+
+        major:
+          true
+      },
+
+      {
+        id:
+          "major_tiktok",
+
+        title:
+          "Follow @usdt.hub7 on TikTok",
+
+        link:
+          "https://www.tiktok.com/@usdt.hub7",
+
+        type:
+          "tiktok",
+
+        reward:
+          200,
+
+        major:
+          true
+      }
+
+    ].filter(
+      task =>
+        !completedTaskIds.has(
+          task.id
+        )
+    );
+
+
     return res.status(200).json({
 
       success:
         true,
 
-      tasks: availableTasks
+      tasks:
+        [
+          ...majorTasks,
+          ...availableTasks
+        ]
     });
   }
 
@@ -2827,6 +2880,13 @@ async function tasks(
     }
 
 
+    const isMajorTask =
+      taskId ===
+        "major_youtube" ||
+      taskId ===
+        "major_tiktok";
+
+
     const taskRef =
       db
         .collection("tasks")
@@ -2852,6 +2912,141 @@ async function tasks(
     let reward = 0;
 
     let missionBonus = 0;
+
+
+    /* -----------------------------
+       MAJOR YOUTUBE/TIKTOK TASK
+    ----------------------------- */
+
+    if (isMajorTask) {
+
+      await db.runTransaction(
+        async tx => {
+
+          const userSnap =
+            await tx.get(
+              userRef
+            );
+
+
+          const completionSnap =
+            await tx.get(
+              completionRef
+            );
+
+
+          if (!userSnap.exists) {
+
+            throw new Error(
+              "USER_NOT_FOUND"
+            );
+          }
+
+
+          if (
+            completionSnap.exists
+          ) {
+
+            throw new Error(
+              "ALREADY_COMPLETED"
+            );
+          }
+
+
+          const u =
+            userSnap.data();
+
+
+          if (
+            !u.channelsVerified
+          ) {
+
+            throw new Error(
+              "CHANNELS_REQUIRED"
+            );
+          }
+
+
+          /*
+           * Telegram cannot directly prove an arbitrary
+           * user's YouTube subscription or TikTok follow.
+           *
+           * The one-time Firestore completion record
+           * prevents repeated rewards.
+           */
+
+          reward =
+            200;
+
+
+          tx.create(
+            completionRef,
+            {
+
+              userId:
+                uid,
+
+              taskId,
+
+              reward,
+
+              verified:
+                false,
+
+              externalPlatform:
+                taskId ===
+                  "major_youtube"
+                  ? "youtube"
+                  : "tiktok",
+
+              createdAt:
+                FieldValue.serverTimestamp()
+            }
+          );
+
+
+          tx.update(
+            userRef,
+            {
+
+              balance:
+                FieldValue.increment(
+                  reward
+                ),
+
+              tasksCompleted:
+                FieldValue.increment(
+                  1
+                ),
+
+              updatedAt:
+                FieldValue.serverTimestamp()
+            }
+          );
+        }
+      );
+
+
+      missionBonus =
+        await updateMission(
+          uid,
+          "task"
+        );
+
+
+      return res.status(200).json({
+
+        success:
+          true,
+
+        reward,
+
+        missionBonus,
+
+        majorTask:
+          true
+      });
+    }
 
 
     /* -----------------------------
@@ -4379,4 +4574,4 @@ export default async function handler(
         String(error)
     });
   }
-}
+          }
