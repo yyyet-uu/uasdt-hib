@@ -29,11 +29,9 @@ function getPath(req) {
   return rawUrl.split("?")[0].replace(/\/+$/, "") || "/";
 }
 
-
 function today() {
   return new Date().toISOString().slice(0, 10);
 }
-
 
 function yesterday() {
   const d = new Date();
@@ -43,28 +41,48 @@ function yesterday() {
 
 function nextUtcMidnightMs() {
   const now = new Date();
-  const next = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate() + 1,
-    0, 0, 0, 0
-  ));
+
+  const next = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + 1,
+      0,
+      0,
+      0,
+      0
+    )
+  );
+
   return next.getTime();
 }
 
 function normalizeUsdtAmount(value) {
   const n = Number(value);
-  if (!Number.isFinite(n) || n <= 0) return null;
+
+  if (!Number.isFinite(n) || n <= 0) {
+    return null;
+  }
+
   return Math.round(n * 1e8) / 1e8;
 }
 
 function getDailyPromoCode() {
-  const codes = Array.isArray(CONFIG.PROMO_CODES) ? CONFIG.PROMO_CODES : [];
-  if (!codes.length) return null;
-  const dayNumber = Math.floor(Date.now() / 86400000);
-  return String(codes[dayNumber % codes.length]).toUpperCase();
-}
+  const codes = Array.isArray(CONFIG.PROMO_CODES)
+    ? CONFIG.PROMO_CODES
+    : [];
 
+  if (!codes.length) {
+    return null;
+  }
+
+  const dayNumber =
+    Math.floor(Date.now() / 86400000);
+
+  return String(
+    codes[dayNumber % codes.length]
+  ).toUpperCase();
+}
 
 function memberOK(member) {
   return [
@@ -74,27 +92,34 @@ function memberOK(member) {
   ].includes(member?.status);
 }
 
-
 function getUser(req) {
   const initData = getInitData(req);
 
   if (!initData) {
-    throw new Error("TELEGRAM_INIT_DATA_MISSING");
+    throw new Error(
+      "TELEGRAM_INIT_DATA_MISSING"
+    );
   }
 
-  const result = validateInitData(initData);
+  const result =
+    validateInitData(initData);
 
   if (!result?.user) {
-    throw new Error("INVALID_TELEGRAM_USER");
+    throw new Error(
+      "INVALID_TELEGRAM_USER"
+    );
   }
 
   return result;
 }
 
-
 function getVipTier(totalPts = 0) {
-  const tiers = Object.values(CONFIG.VIP_TIERS || {})
-    .sort((a, b) => b.minPts - a.minPts);
+  const tiers =
+    Object.values(CONFIG.VIP_TIERS || {})
+      .sort(
+        (a, b) =>
+          b.minPts - a.minPts
+      );
 
   for (const tier of tiers) {
     if (totalPts >= tier.minPts) {
@@ -113,24 +138,33 @@ function getVipTier(totalPts = 0) {
 
 /* =========================================================
    DEFAULT REWARDS
-   These can be overridden from config.js
 ========================================================= */
 
 const MISSION_REWARDS = {
   watchAds:
-    Number(CONFIG.MISSION_WATCH_ADS_REWARD ?? 100),
+    Number(
+      CONFIG.MISSION_WATCH_ADS_REWARD ?? 100
+    ),
 
   completeTasks:
-    Number(CONFIG.MISSION_COMPLETE_TASKS_REWARD ?? 100),
+    Number(
+      CONFIG.MISSION_COMPLETE_TASKS_REWARD ?? 100
+    ),
 
   inviteFriend:
-    Number(CONFIG.MISSION_INVITE_REWARD ?? 150),
+    Number(
+      CONFIG.MISSION_INVITE_REWARD ?? 150
+    ),
 
   dailyCheckIn:
-    Number(CONFIG.MISSION_CHECKIN_REWARD ?? 100),
+    Number(
+      CONFIG.MISSION_CHECKIN_REWARD ?? 100
+    ),
 
   allCompleted:
-    Number(CONFIG.MISSION_ALL_REWARD ?? 300)
+    Number(
+      CONFIG.MISSION_ALL_REWARD ?? 300
+    )
 };
 
 
@@ -138,8 +172,7 @@ const REFERRAL_MILESTONES = [
   {
     referrals: 3,
     reward: Number(
-      CONFIG.REFERRAL_MILESTONE_3 ??
-      500
+      CONFIG.REFERRAL_MILESTONE_3 ?? 500
     ),
     name: "Starter"
   },
@@ -147,8 +180,7 @@ const REFERRAL_MILESTONES = [
   {
     referrals: 10,
     reward: Number(
-      CONFIG.REFERRAL_MILESTONE_10 ??
-      1500
+      CONFIG.REFERRAL_MILESTONE_10 ?? 1500
     ),
     name: "Builder"
   },
@@ -156,8 +188,7 @@ const REFERRAL_MILESTONES = [
   {
     referrals: 25,
     reward: Number(
-      CONFIG.REFERRAL_MILESTONE_25 ??
-      5000
+      CONFIG.REFERRAL_MILESTONE_25 ?? 5000
     ),
     name: "Legend"
   }
@@ -170,13 +201,20 @@ const REFERRAL_MILESTONES = [
 
 async function userHandler(req, res) {
 
-  let { user, startParam } = getUser(req);
+  let { user, startParam } =
+    getUser(req);
 
-  const uid = String(user.id);
+  const uid =
+    String(user.id);
 
-  if (!startParam && req.body?.startParam) {
+  if (
+    !startParam &&
+    req.body?.startParam
+  ) {
     startParam =
-      String(req.body.startParam).trim();
+      String(
+        req.body.startParam
+      ).trim();
   }
 
   const userRef =
@@ -185,7 +223,6 @@ async function userHandler(req, res) {
   const existing =
     await userRef.get();
 
-
   if (existing.exists) {
 
     const userData =
@@ -193,9 +230,10 @@ async function userHandler(req, res) {
 
     const vip =
       getVipTier(
-        Number(userData.balance || 0)
+        Number(
+          userData.balance || 0
+        )
       );
-
 
     return res.status(200).json({
 
@@ -219,7 +257,8 @@ async function userHandler(req, res) {
           CONFIG.SUPPORT_USERNAME,
 
         isAdmin:
-          uid === String(CONFIG.ADMIN_ID)
+          uid ===
+          String(CONFIG.ADMIN_ID)
       }
     });
   }
@@ -231,17 +270,16 @@ async function userHandler(req, res) {
 
   let inviterId = null;
 
-
   if (
     startParam &&
-    String(startParam).startsWith("ref_")
+    String(startParam)
+      .startsWith("ref_")
   ) {
 
     const possible =
       String(startParam)
         .slice(4)
         .trim();
-
 
     if (
       possible &&
@@ -253,7 +291,6 @@ async function userHandler(req, res) {
           .collection("users")
           .doc(possible)
           .get();
-
 
       if (inviterDoc.exists) {
         inviterId = possible;
@@ -316,7 +353,6 @@ async function userHandler(req, res) {
     referralPoints:
       0,
 
-    /* Referral milestones */
     milestone3Claimed:
       false,
 
@@ -326,31 +362,30 @@ async function userHandler(req, res) {
     milestone25Claimed:
       false,
 
-    /* Welcome */
     welcomeBonusClaimed:
       false,
 
     welcomeBonusStatus:
       "none",
 
+    welcomeBonusSkipped:
+      false,
+
     welcomeAddress:
       null,
 
-    /* Channels */
     channelsVerified:
       false,
 
     appUnlocked:
       false,
 
-    /* Streak */
     streakDay:
       0,
 
     lastStreakDate:
       null,
 
-    /* Missions */
     missionDate:
       null,
 
@@ -369,11 +404,13 @@ async function userHandler(req, res) {
     missionAllCompleted:
       false,
 
-    /* Withdraw */
     withdrawals:
       0,
 
     lastWithdrawalId:
+      null,
+
+    lastWithdrawalDate:
       null,
 
     referralCode:
@@ -393,7 +430,6 @@ async function userHandler(req, res) {
   const batch =
     db.batch();
 
-
   batch.create(
     userRef,
     userData
@@ -412,7 +448,6 @@ async function userHandler(req, res) {
         .doc(
           `${inviterId}_${uid}`
         );
-
 
     batch.create(
       referralRef,
@@ -434,7 +469,6 @@ async function userHandler(req, res) {
       }
     );
 
-
     batch.update(
       db
         .collection("users")
@@ -448,7 +482,6 @@ async function userHandler(req, res) {
           FieldValue.serverTimestamp()
       }
     );
-
 
     notifyNewReferral(
       inviterId,
@@ -484,7 +517,8 @@ async function userHandler(req, res) {
         CONFIG.SUPPORT_USERNAME,
 
       isAdmin:
-        uid === String(CONFIG.ADMIN_ID)
+        uid ===
+        String(CONFIG.ADMIN_ID)
     }
   });
 }
@@ -501,7 +535,6 @@ async function checkReferralMilestones(
   const userRef =
     db.collection("users").doc(uid);
 
-
   let earned = [];
 
 
@@ -511,18 +544,17 @@ async function checkReferralMilestones(
       const snap =
         await tx.get(userRef);
 
-
       if (!snap.exists) {
         return;
       }
 
-
       const u =
         snap.data();
 
-
       const count =
-        Number(u.referrals || 0);
+        Number(
+          u.referrals || 0
+        );
 
 
       for (
@@ -537,9 +569,7 @@ async function checkReferralMilestones(
           continue;
         }
 
-
         let field;
-
 
         if (
           milestone.referrals === 3
@@ -562,11 +592,12 @@ async function checkReferralMilestones(
             "milestone25Claimed";
         }
 
-
-        if (!field || u[field]) {
+        if (
+          !field ||
+          u[field]
+        ) {
           continue;
         }
-
 
         tx.update(
           userRef,
@@ -590,8 +621,8 @@ async function checkReferralMilestones(
           }
         );
 
-
         earned.push({
+
           name:
             milestone.name,
 
@@ -606,7 +637,10 @@ async function checkReferralMilestones(
   );
 
 
-  for (const milestone of earned) {
+  for (
+    const milestone
+    of earned
+  ) {
 
     notifyReferralBonus(
       uid,
@@ -616,7 +650,6 @@ async function checkReferralMilestones(
       milestone.reward
     );
   }
-
 
   return earned;
 }
@@ -628,35 +661,39 @@ async function checkReferralMilestones(
 
 function missionStatus(user) {
 
-  const d = today();
-
+  const d =
+    today();
 
   const reset =
     user.missionDate !== d;
 
-
   const ads =
     reset
       ? 0
-      : Number(user.missionAds || 0);
-
+      : Number(
+          user.missionAds || 0
+        );
 
   const tasks =
     reset
       ? 0
-      : Number(user.missionTasks || 0);
-
+      : Number(
+          user.missionTasks || 0
+        );
 
   const invites =
     reset
       ? 0
-      : Number(user.missionInvites || 0);
-
+      : Number(
+          user.missionInvites || 0
+        );
 
   const checkin =
     reset
       ? false
-      : Boolean(user.missionCheckin);
+      : Boolean(
+          user.missionCheckin
+        );
 
 
   return {
@@ -664,38 +701,61 @@ function missionStatus(user) {
     date:
       d,
 
+    resetAt:
+      nextUtcMidnightMs(),
+
     ads: {
-      current: ads,
-      target: 5,
+
+      current:
+        ads,
+
+      target:
+        5,
+
       completed:
         ads >= 5,
+
       reward:
         MISSION_REWARDS.watchAds
     },
 
     tasks: {
-      current: tasks,
-      target: 3,
+
+      current:
+        tasks,
+
+      target:
+        3,
+
       completed:
         tasks >= 3,
+
       reward:
         MISSION_REWARDS.completeTasks
     },
 
     invites: {
-      current: invites,
-      target: 2,
+
+      current:
+        invites,
+
+      target:
+        2,
+
       completed:
         invites >= 2,
+
       reward:
         MISSION_REWARDS.inviteFriend
     },
 
     checkin: {
+
       current:
         checkin ? 1 : 0,
 
-      target: 1,
+      target:
+        1,
 
       completed:
         checkin,
@@ -720,7 +780,10 @@ function missionStatus(user) {
    MISSIONS ENDPOINT
 ========================================================= */
 
-async function missions(req, res) {
+async function missions(
+  req,
+  res
+) {
 
   const { user } =
     getUser(req);
@@ -728,14 +791,11 @@ async function missions(req, res) {
   const uid =
     String(user.id);
 
-
   const userRef =
     db.collection("users").doc(uid);
 
-
   const snap =
     await userRef.get();
-
 
   if (!snap.exists) {
     throw new Error(
@@ -743,14 +803,11 @@ async function missions(req, res) {
     );
   }
 
-
   const u =
     snap.data();
 
-
   const status =
     missionStatus(u);
-
 
   return res.status(200).json({
 
@@ -766,7 +823,10 @@ async function missions(req, res) {
    DAILY STREAK / CHECK-IN
 ========================================================= */
 
-async function claimStreak(req, res) {
+async function claimStreak(
+  req,
+  res
+) {
 
   const { user } =
     getUser(req);
@@ -774,17 +834,14 @@ async function claimStreak(req, res) {
   const uid =
     String(user.id);
 
-
   const userRef =
     db.collection("users").doc(uid);
-
 
   const dToday =
     today();
 
   const dYesterday =
     yesterday();
-
 
   let streakReward = 0;
 
@@ -797,17 +854,14 @@ async function claimStreak(req, res) {
       const snap =
         await tx.get(userRef);
 
-
       if (!snap.exists) {
         throw new Error(
           "USER_NOT_FOUND"
         );
       }
 
-
       const u =
         snap.data();
-
 
       if (
         u.lastStreakDate ===
@@ -819,7 +873,6 @@ async function claimStreak(req, res) {
         );
       }
 
-
       if (
         u.lastStreakDate ===
         dYesterday
@@ -830,19 +883,17 @@ async function claimStreak(req, res) {
 
       } else {
 
-        newStreak = 1;
+        newStreak =
+          1;
       }
-
 
       streakReward =
         CONFIG.DAILY_STREAK_REWARDS?.[
           newStreak - 1
         ] || 50;
 
-
       const resetMission =
         u.missionDate !== dToday;
-
 
       tx.update(
         userRef,
@@ -882,20 +933,13 @@ async function claimStreak(req, res) {
   );
 
 
-  /*
-   * Check whether the check-in
-   * completed the full mission.
-   */
-
   const updated =
     await userRef.get();
-
 
   const mission =
     missionStatus(
       updated.data()
     );
-
 
   let allBonus = 0;
 
@@ -908,7 +952,6 @@ async function claimStreak(req, res) {
 
     allBonus =
       MISSION_REWARDS.allCompleted;
-
 
     await userRef.update({
 
@@ -954,7 +997,6 @@ async function updateMission(
   const userRef =
     db.collection("users").doc(uid);
 
-
   let allBonus = 0;
 
 
@@ -964,49 +1006,48 @@ async function updateMission(
       const snap =
         await tx.get(userRef);
 
-
       if (!snap.exists) {
         throw new Error(
           "USER_NOT_FOUND"
         );
       }
 
-
       const u =
         snap.data();
-
 
       const d =
         today();
 
-
       const reset =
         u.missionDate !== d;
-
 
       let missionAds =
         reset
           ? 0
-          : Number(u.missionAds || 0);
-
+          : Number(
+              u.missionAds || 0
+            );
 
       let missionTasks =
         reset
           ? 0
-          : Number(u.missionTasks || 0);
-
+          : Number(
+              u.missionTasks || 0
+            );
 
       let missionInvites =
         reset
           ? 0
-          : Number(u.missionInvites || 0);
-
+          : Number(
+              u.missionInvites || 0
+            );
 
       let missionCheckin =
         reset
           ? false
-          : Boolean(u.missionCheckin);
-
+          : Boolean(
+              u.missionCheckin
+            );
 
       let missionAllCompleted =
         reset
@@ -1020,27 +1061,27 @@ async function updateMission(
         missionAds++;
       }
 
-
-      if (type === "tas
-          k") {
+      if (type === "task") {
         missionTasks++;
       }
-
 
       if (type === "invite") {
         missionInvites++;
       }
-
 
       if (type === "checkin") {
         missionCheckin = true;
       }
 
 
+      /* IMPORTANT:
+         Withdrawal/missions require 2 invites.
+      */
+
       const complete =
         missionAds >= 5 &&
         missionTasks >= 3 &&
-        missionInvites >= 1 &&
+        missionInvites >= 2 &&
         missionCheckin;
 
 
@@ -1110,10 +1151,6 @@ async function verifyMembership(
     String(user.id);
 
 
-  /*
-   * BOTH channels are checked.
-   */
-
   const results =
     await Promise.all(
 
@@ -1125,7 +1162,6 @@ async function verifyMembership(
               channel,
               uid
             );
-
 
           return {
 
@@ -1151,11 +1187,6 @@ async function verifyMembership(
     );
 
 
-  /*
-   * If even ONE channel
-   * is missing, keep app locked.
-   */
-
   if (!joined) {
 
     return res.status(200).json({
@@ -1176,17 +1207,14 @@ async function verifyMembership(
   const userRef =
     db.collection("users").doc(uid);
 
-
   const userDoc =
     await userRef.get();
-
 
   if (!userDoc.exists) {
     throw new Error(
       "USER_NOT_FOUND"
     );
   }
-
 
   const u =
     userDoc.data();
@@ -1224,7 +1252,6 @@ async function verifyMembership(
           `${u.referredBy}_${uid}`
         );
 
-
     const refSnap =
       await refDocRef.get();
 
@@ -1243,22 +1270,18 @@ async function verifyMembership(
               refDocRef
             );
 
-
           if (!freshRef.exists) {
             return;
           }
 
-
           const referralData =
             freshRef.data();
-
 
           if (
             referralData.channelRewarded
           ) {
             return;
           }
-
 
           tx.update(
             refDocRef,
@@ -1271,7 +1294,6 @@ async function verifyMembership(
                 FieldValue.serverTimestamp()
             }
           );
-
 
           tx.update(
             db
@@ -1338,19 +1360,50 @@ async function claimWelcome(
   const uid =
     String(user.id);
 
+  const action =
+    String(
+      req.body?.action || "claim"
+    ).toLowerCase();
 
-  const action = String(req.body?.action || "claim").toLowerCase();
+
+  /* -----------------------------
+     OPTIONAL / SKIP
+  ----------------------------- */
 
   if (action === "skip") {
-    const userRef = db.collection("users").doc(uid);
-    await userRef.set({
-      welcomeBonusStatus: "skipped",
-      welcomeBonusSkipped: true,
-      appUnlocked: true,
-      updatedAt: FieldValue.serverTimestamp()
-    }, { merge: true });
-    return res.status(200).json({ success: true, skipped: true });
+
+    const userRef =
+      db.collection("users").doc(uid);
+
+    await userRef.set(
+      {
+
+        welcomeBonusStatus:
+          "skipped",
+
+        welcomeBonusSkipped:
+          true,
+
+        appUnlocked:
+          true,
+
+        updatedAt:
+          FieldValue.serverTimestamp()
+
+      },
+      {
+        merge: true
+      }
+    );
+
+    return res.status(200).json({
+
+      success: true,
+
+      skipped: true
+    });
   }
+
 
   const address =
     String(
@@ -1358,7 +1411,10 @@ async function claimWelcome(
     ).trim();
 
 
-  if (!ethers.isAddress(address)) {
+  if (
+    !ethers.isAddress(address)
+  ) {
+
     throw new Error(
       "INVALID_ADDRESS"
     );
@@ -1372,14 +1428,12 @@ async function claimWelcome(
   const userRef =
     db.collection("users").doc(uid);
 
-
   const addressRef =
     db
       .collection("welcomeClaims")
       .doc(
         normalized.toLowerCase()
       );
-
 
   const payoutRef =
     db
@@ -1393,7 +1447,6 @@ async function claimWelcome(
       const userSnap =
         await tx.get(userRef);
 
-
       const addressSnap =
         await tx.get(addressRef);
 
@@ -1403,7 +1456,6 @@ async function claimWelcome(
           "USER_NOT_FOUND"
         );
       }
-
 
       const u =
         userSnap.data();
@@ -1598,9 +1650,7 @@ async function claimWelcome(
 
     throw error;
   }
-}
-
-
+      }
 /* =========================================================
    ADS
 ========================================================= */
@@ -1640,10 +1690,8 @@ async function ads(
   const userRef =
     db.collection("users").doc(uid);
 
-
   const d =
     today();
-
 
   let result;
 
@@ -1657,10 +1705,8 @@ async function ads(
   const HILLTOP_LIMIT =
     CONFIG.HILLTOP_LIMIT || 15;
 
-
   const monetagLimit =
     CONFIG.MONETAG_LIMIT || 30;
-
 
   const adsgramLimit =
     CONFIG.ADSGRAM_LIMIT || 25;
@@ -1996,6 +2042,7 @@ async function ads(
    */
 
   if (inviterId) {
+
     await checkReferralMilestones(
       inviterId
     );
@@ -2009,12 +2056,10 @@ async function ads(
   const missionUser =
     await userRef.get();
 
-
   const mission =
     missionStatus(
       missionUser.data()
     );
-
 
   let missionBonus = 0;
 
@@ -2080,8 +2125,7 @@ async function deposit(
 
 
   if (
-    action === "in
-    fo"
+    action === "info"
   ) {
 
     return res.status(200).json({
@@ -2137,6 +2181,7 @@ async function deposit(
 
 
         if (snap.exists) {
+
           throw new Error(
             "TX_ALREADY_SUBMITTED"
           );
@@ -2245,6 +2290,7 @@ async function promo(
 
 
       if (!u.exists) {
+
         throw new Error(
           "USER_NOT_FOUND"
         );
@@ -2252,6 +2298,7 @@ async function promo(
 
 
       if (claim.exists) {
+
         throw new Error(
           "ALREADY_CLAIMED"
         );
@@ -2349,6 +2396,7 @@ async function referral(
       referrals:
         snap.docs.map(
           doc => ({
+
             id:
               doc.id,
 
@@ -2417,6 +2465,7 @@ async function referral(
 
 
     if (!snap.exists) {
+
       throw new Error(
         "USER_NOT_FOUND"
       );
@@ -2452,24 +2501,29 @@ async function referral(
             if (
               milestone.referrals === 3
             ) {
+
               claimed =
                 Boolean(
                   u.milestone3Claimed
                 );
             }
 
+
             if (
               milestone.referrals === 10
             ) {
+
               claimed =
                 Boolean(
                   u.milestone10Claimed
                 );
             }
 
+
             if (
               milestone.referrals === 25
             ) {
+
               claimed =
                 Boolean(
                   u.milestone25Claimed
@@ -2497,8 +2551,6 @@ async function referral(
     "UNKNOWN_ACTION"
   );
 }
-
-
 /* =========================================================
    TASKS
 ========================================================= */
@@ -2561,37 +2613,85 @@ async function tasks(
       tasksSnap.docs
         .map(
           doc => ({
-            id: doc.id,
+
+            id:
+              doc.id,
+
             ...doc.data()
           })
         )
         .filter(
           task =>
-            !completedTaskIds.has(task.id)
+            !completedTaskIds.has(
+              task.id
+            )
         );
 
+
+    /*
+     * Major tasks
+     */
+
     const majorTasks = [
+
       {
-        id: "major_youtube",
-        title: "Subscribe to USDT HUB on YouTube",
-        link: "https://youtube.com/@usdt-hub",
-        type: "youtube",
-        reward: 200,
-        major: true
+        id:
+          "major_youtube",
+
+        title:
+          "Subscribe to USDT HUB on YouTube",
+
+        link:
+          "https://youtube.com/@usdt-hub",
+
+        type:
+          "youtube",
+
+        reward:
+          200,
+
+        major:
+          true
       },
+
       {
-        id: "major_tiktok",
-        title: "Follow @usdt.hub7 on TikTok",
-        link: "https://www.tiktok.com/@usdt.hub7",
-        type: "tiktok",
-        reward: 200,
-        major: true
+        id:
+          "major_tiktok",
+
+        title:
+          "Follow @usdt.hub7 on TikTok",
+
+        link:
+          "https://www.tiktok.com/@usdt.hub7",
+
+        type:
+          "tiktok",
+
+        reward:
+          200,
+
+        major:
+          true
       }
-    ].filter(task => !completedTaskIds.has(task.id));
+
+    ].filter(
+      task =>
+        !completedTaskIds.has(
+          task.id
+        )
+    );
+
 
     return res.status(200).json({
-      success: true,
-      tasks: [...majorTasks, ...availableTasks]
+
+      success:
+        true,
+
+      tasks:
+        [
+          ...majorTasks,
+          ...availableTasks
+        ]
     });
   }
 
@@ -2625,11 +2725,15 @@ async function tasks(
 
 
     const taskRef =
-      db.collection("tasks").doc();
+      db
+        .collection("tasks")
+        .doc();
 
 
     const userRef =
-      db.collection("users").doc(uid);
+      db
+        .collection("users")
+        .doc(uid);
 
 
     await db.runTransaction(
@@ -2642,6 +2746,7 @@ async function tasks(
 
 
         if (!userSnap.exists) {
+
           throw new Error(
             "USER_NOT_FOUND"
           );
@@ -2768,6 +2873,7 @@ async function tasks(
 
 
     if (!taskId) {
+
       throw new Error(
         "TASK_ID_REQUIRED"
       );
@@ -2775,8 +2881,11 @@ async function tasks(
 
 
     const isMajorTask =
-      taskId === "major_youtube" ||
-      taskId === "major_tiktok";
+      taskId ===
+        "major_youtube" ||
+      taskId ===
+        "major_tiktok";
+
 
     const taskRef =
       db
@@ -2801,49 +2910,148 @@ async function tasks(
 
 
     let reward = 0;
+
     let missionBonus = 0;
 
-    if (isMajorTask) {
-      const majorRef = db.collection("taskCompletions").doc(`${uid}_${taskId}`);
-      const userRefMajor = db.collection("users").doc(uid);
-      await db.runTransaction(async tx => {
-        const [userSnap, completionSnap] = await Promise.all([
-          tx.get(userRefMajor),
-          tx.get(majorRef)
-        ]);
-        if (!userSnap.exists) throw new Error("USER_NOT_FOUND");
-        if (completionSnap.exists) throw new Error("ALREADY_COMPLETED");
-        const u = userSnap.data();
-        if (!u.channelsVerified) throw new Error("CHANNELS_REQUIRED");
 
-        // YouTube/TikTok do not expose a reliable server-side subscription/follow
-        // check for an arbitrary Telegram user. The client must therefore complete
-        // the external action before calling this endpoint; the one-time Firestore
-        // record prevents duplicate rewards.
-        reward = 200;
-        tx.create(majorRef, {
-          userId: uid,
-          taskId,
-          reward,
-          verified: false,
-          externalPlatform: taskId === "major_youtube" ? "youtube" : "tiktok",
-          createdAt: FieldValue.serverTimestamp()
-        });
-        tx.update(userRefMajor, {
-          balance: FieldValue.increment(reward),
-          tasksCompleted: FieldValue.increment(1),
-          updatedAt: FieldValue.serverTimestamp()
-        });
-      });
-      missionBonus = await updateMission(uid, "task");
+    /* -----------------------------
+       MAJOR YOUTUBE/TIKTOK TASK
+    ----------------------------- */
+
+    if (isMajorTask) {
+
+      await db.runTransaction(
+        async tx => {
+
+          const userSnap =
+            await tx.get(
+              userRef
+            );
+
+
+          const completionSnap =
+            await tx.get(
+              completionRef
+            );
+
+
+          if (!userSnap.exists) {
+
+            throw new Error(
+              "USER_NOT_FOUND"
+            );
+          }
+
+
+          if (
+            completionSnap.exists
+          ) {
+
+            throw new Error(
+              "ALREADY_COMPLETED"
+            );
+          }
+
+
+          const u =
+            userSnap.data();
+
+
+          if (
+            !u.channelsVerified
+          ) {
+
+            throw new Error(
+              "CHANNELS_REQUIRED"
+            );
+          }
+
+
+          /*
+           * Telegram cannot directly prove an arbitrary
+           * user's YouTube subscription or TikTok follow.
+           *
+           * The one-time Firestore completion record
+           * prevents repeated rewards.
+           */
+
+          reward =
+            200;
+
+
+          tx.create(
+            completionRef,
+            {
+
+              userId:
+                uid,
+
+              taskId,
+
+              reward,
+
+              verified:
+                false,
+
+              externalPlatform:
+                taskId ===
+                  "major_youtube"
+                  ? "youtube"
+                  : "tiktok",
+
+              createdAt:
+                FieldValue.serverTimestamp()
+            }
+          );
+
+
+          tx.update(
+            userRef,
+            {
+
+              balance:
+                FieldValue.increment(
+                  reward
+                ),
+
+              tasksCompleted:
+                FieldValue.increment(
+                  1
+                ),
+
+              updatedAt:
+                FieldValue.serverTimestamp()
+            }
+          );
+        }
+      );
+
+
+      missionBonus =
+        await updateMission(
+          uid,
+          "task"
+        );
+
 
       return res.status(200).json({
-        success: true,
+
+        success:
+          true,
+
         reward,
+
         missionBonus,
-        majorTask: true
+
+        majorTask:
+          true
       });
     }
+
+
+    /* -----------------------------
+       NORMAL TASK
+    ----------------------------- */
 
     await db.runTransaction(
       async tx => {
@@ -2957,6 +3165,11 @@ async function tasks(
           currentMissionTasks + 1;
 
 
+        /*
+         * Completion record makes this task disappear
+         * from this user's list.
+         */
+
         tx.create(
           completionRef,
           {
@@ -3024,12 +3237,15 @@ async function tasks(
           currentCompletions + 1;
 
 
-        /* Keep the task document for other users; this user's completion
-         * record makes it disappear from their task list. */
+        /*
+         * Keep the task for other users.
+         * This user's completion record removes it
+         * from their task list.
+         */
 
         tx.update(
           taskRef,
-                   {
+          {
 
             completions:
               newCompletions,
@@ -3047,10 +3263,6 @@ async function tasks(
       }
     );
 
-
-    /*
-     * Check daily mission.
-     */
 
     missionBonus =
       await updateMission(
@@ -3085,198 +3297,736 @@ async function withdraw(
   req,
   res
 ) {
-  const { user } = getUser(req);
-  const uid = String(user.id);
 
-  const address = String(req.body?.address || "").trim();
-  if (!ethers.isAddress(address)) throw new Error("INVALID_ADDRESS");
-  const destination = ethers.getAddress(address);
+  const { user } =
+    getUser(req);
 
-  const pointsPerUSDT = Number(CONFIG.POINTS_PER_USDT);
-  const minPoints = Number(CONFIG.WITHDRAW_MIN_POINTS);
-  if (!Number.isFinite(pointsPerUSDT) || pointsPerUSDT <= 0) {
-    throw new Error("INVALID_POINTS_RATE");
+  const uid =
+    String(user.id);
+
+
+  const address =
+    String(
+      req.body?.address || ""
+    ).trim();
+
+
+  if (
+    !ethers.isAddress(address)
+  ) {
+
+    throw new Error(
+      "INVALID_ADDRESS"
+    );
   }
 
-  // Frontend can send either amountUSDT/amount (USDT) or points.
-  const requestedPointsRaw = req.body?.points;
-  const requestedUsdtRaw = req.body?.amountUSDT ?? req.body?.amount;
+
+  const destination =
+    ethers.getAddress(address);
+
+
+  const pointsPerUSDT =
+    Number(
+      CONFIG.POINTS_PER_USDT
+    );
+
+
+  const minPoints =
+    Number(
+      CONFIG.WITHDRAW_MIN_POINTS
+    );
+
+
+  if (
+    !Number.isFinite(
+      pointsPerUSDT
+    ) ||
+    pointsPerUSDT <= 0
+  ) {
+
+    throw new Error(
+      "INVALID_POINTS_RATE"
+    );
+  }
+
+
+  /*
+   * Frontend may send:
+   *
+   * amountUSDT / amount
+   *
+   * OR
+   *
+   * points
+   */
+
+  const requestedPointsRaw =
+    req.body?.points;
+
+
+  const requestedUsdtRaw =
+    req.body?.amountUSDT ??
+    req.body?.amount;
+
+
   let points;
+
   let amount;
 
-  if (requestedPointsRaw !== undefined && requestedPointsRaw !== null && requestedPointsRaw !== "") {
-    points = Math.floor(Number(requestedPointsRaw));
-    if (!Number.isFinite(points) || points <= 0) throw new Error("INVALID_AMOUNT");
-    amount = points / pointsPerUSDT;
+
+  if (
+    requestedPointsRaw !==
+      undefined &&
+    requestedPointsRaw !==
+      null &&
+    requestedPointsRaw !== ""
+  ) {
+
+    points =
+      Math.floor(
+        Number(
+          requestedPointsRaw
+        )
+      );
+
+
+    if (
+      !Number.isFinite(points) ||
+      points <= 0
+    ) {
+
+      throw new Error(
+        "INVALID_AMOUNT"
+      );
+    }
+
+
+    amount =
+      points /
+      pointsPerUSDT;
+
   } else {
-    amount = normalizeUsdtAmount(requestedUsdtRaw);
-    if (amount === null) throw new Error("AMOUNT_REQUIRED");
-    points = Math.ceil(amount * pointsPerUSDT);
+
+    amount =
+      normalizeUsdtAmount(
+        requestedUsdtRaw
+      );
+
+
+    if (amount === null) {
+
+      throw new Error(
+        "AMOUNT_REQUIRED"
+      );
+    }
+
+
+    points =
+      Math.ceil(
+        amount *
+        pointsPerUSDT
+      );
   }
 
-  if (points < minPoints) throw new Error("MINIMUM_NOT_REACHED");
-  if (!Number.isFinite(amount) || amount <= 0) throw new Error("INVALID_AMOUNT");
 
-  // Prevent floating point mismatches: charge whole points and derive USDT from them.
-  amount = Number((points / pointsPerUSDT).toFixed(8));
+  if (
+    points <
+    minPoints
+  ) {
 
-  const userRef = db.collection("users").doc(uid);
-  const withdrawalRef = db.collection("withdrawals").doc();
-  const todayDate = today();
+    throw new Error(
+      "MINIMUM_NOT_REACHED"
+    );
+  }
 
-  await db.runTransaction(async tx => {
-    const snap = await tx.get(userRef);
-    if (!snap.exists) throw new Error("USER_NOT_FOUND");
-    const u = snap.data();
 
-    if (!u.channelsVerified) throw new Error("CHANNELS_REQUIRED");
+  if (
+    !Number.isFinite(amount) ||
+    amount <= 0
+  ) {
 
-    const referralCount = Number(u.referrals || 0);
-    if (referralCount < 2) throw new Error("TWO_REFERRALS_REQUIRED");
+    throw new Error(
+      "INVALID_AMOUNT"
+    );
+  }
 
-    if (u.lastWithdrawalDate === todayDate) {
-      throw new Error("WITHDRAWAL_LIMIT_TODAY");
+
+  /*
+   * Charge whole points only.
+   * USDT amount is derived from points.
+   */
+
+  amount =
+    Number(
+      (
+        points /
+        pointsPerUSDT
+      ).toFixed(8)
+    );
+
+
+  const userRef =
+    db.collection("users").doc(uid);
+
+
+  const withdrawalRef =
+    db
+      .collection("withdrawals")
+      .doc();
+
+
+  const todayDate =
+    today();
+
+
+  await db.runTransaction(
+    async tx => {
+
+      const snap =
+        await tx.get(userRef);
+
+
+      if (!snap.exists) {
+
+        throw new Error(
+          "USER_NOT_FOUND"
+        );
+      }
+
+
+      const u =
+        snap.data();
+
+
+      /*
+       * Both mandatory channels.
+       */
+
+      if (
+        !u.channelsVerified
+      ) {
+
+        throw new Error(
+          "CHANNELS_REQUIRED"
+        );
+      }
+
+
+      /*
+       * Two valid referrals required.
+       */
+
+      const referralCount =
+        Number(
+          u.referrals || 0
+        );
+
+
+      if (
+        referralCount < 2
+      ) {
+
+        throw new Error(
+          "TWO_REFERRALS_REQUIRED"
+        );
+      }
+
+
+      /*
+       * Only one withdrawal per UTC day.
+       */
+
+      if (
+        u.lastWithdrawalDate ===
+        todayDate
+      ) {
+
+        throw new Error(
+          "WITHDRAWAL_LIMIT_TODAY"
+        );
+      }
+
+
+      /*
+       * Enough points.
+       */
+
+      if (
+        Number(
+          u.balance || 0
+        ) < points
+      ) {
+
+        throw new Error(
+          "INSUFFICIENT_BALANCE"
+        );
+      }
+
+
+      /*
+       * Reserve the balance before payout.
+       */
+
+      tx.update(
+        userRef,
+        {
+
+          balance:
+            FieldValue.increment(
+              -points
+            ),
+
+          withdrawals:
+            FieldValue.increment(
+              1
+            ),
+
+          lastWithdrawalId:
+            withdrawalRef.id,
+
+          lastWithdrawalDate:
+            todayDate,
+
+          updatedAt:
+            FieldValue.serverTimestamp()
+        }
+      );
+
+
+      tx.create(
+        withdrawalRef,
+        {
+
+          userId:
+            uid,
+
+          address:
+            destination,
+
+          points,
+
+          amountUSDT:
+            amount,
+
+          status:
+            "processing",
+
+          createdAt:
+            FieldValue.serverTimestamp()
+        }
+      );
     }
+  );
 
-    if (Number(u.balance || 0) < points) {
-      throw new Error("INSUFFICIENT_BALANCE");
-    }
-
-    tx.update(userRef, {
-      balance: FieldValue.increment(-points),
-      withdrawals: FieldValue.increment(1),
-      lastWithdrawalId: withdrawalRef.id,
-      lastWithdrawalDate: todayDate,
-      updatedAt: FieldValue.serverTimestamp()
-    });
-
-    tx.create(withdrawalRef, {
-      userId: uid,
-      address: destination,
-      points,
-      amountUSDT: amount,
-      status: "processing",
-      createdAt: FieldValue.serverTimestamp()
-    });
-  });
 
   try {
-    const payment = await sendUSDT(destination, amount);
+
+    const payment =
+      await sendUSDT(
+        destination,
+        amount
+      );
+
 
     await withdrawalRef.update({
-      status: "paid",
-      txHash: payment.txHash,
-      paidAt: FieldValue.serverTimestamp()
+
+      status:
+        "paid",
+
+      txHash:
+        payment.txHash,
+
+      paidAt:
+        FieldValue.serverTimestamp()
     });
 
-    await notifyWithdrawalSuccess(uid, amount.toFixed(8), payment.txHash);
+
+    await notifyWithdrawalSuccess(
+      uid,
+
+      amount.toFixed(8),
+
+      payment.txHash
+    );
+
+
     await broadcastPaymentProof({
-      type: "withdraw",
-      userId: uid,
-      amountUSDT: amount,
-      txHash: payment.txHash,
-      address: destination
+
+      type:
+        "withdraw",
+
+      userId:
+        uid,
+
+      amountUSDT:
+        amount,
+
+      txHash:
+        payment.txHash,
+
+      address:
+        destination
     });
+
 
     return res.status(200).json({
-      success: true,
+
+      success:
+        true,
+
       amount,
+
       points,
-      txHash: payment.txHash,
-      nextWithdrawalDate: todayDate
+
+      txHash:
+        payment.txHash,
+
+      nextWithdrawalDate:
+        todayDate
     });
+
   } catch (error) {
-    await db.runTransaction(async tx => {
-      tx.update(userRef, {
-        balance: FieldValue.increment(points),
-        withdrawals: FieldValue.increment(-1),
-        lastWithdrawalId: null,
-        lastWithdrawalDate: null,
-        updatedAt: FieldValue.serverTimestamp()
-      });
-      tx.update(withdrawalRef, {
-        status: "failed",
-        error: error?.message || String(error),
-        updatedAt: FieldValue.serverTimestamp()
-      });
-    });
+
+    /*
+     * Payout failed:
+     * restore the user's points.
+     */
+
+    await db.runTransaction(
+      async tx => {
+
+        tx.update(
+          userRef,
+          {
+
+            balance:
+              FieldValue.increment(
+                points
+              ),
+
+            withdrawals:
+              FieldValue.increment(
+                -1
+              ),
+
+            lastWithdrawalId:
+              null,
+
+            lastWithdrawalDate:
+              null,
+
+            updatedAt:
+              FieldValue.serverTimestamp()
+          }
+        );
+
+
+        tx.update(
+          withdrawalRef,
+          {
+
+            status:
+              "failed",
+
+            error:
+              error?.message ||
+              String(error),
+
+            updatedAt:
+              FieldValue.serverTimestamp()
+          }
+        );
+      }
+    );
+
+
     throw error;
   }
-}
-
-
+      }
 /* =========================================================
    DAILY NOTIFICATION CRON
-   Configure Vercel Cron to call /api/cron/daily every 5 minutes.
 ========================================================= */
 
-async function dailyCron(req, res) {
-  const secret = String(process.env.CRON_SECRET || "");
-  const auth = String(req.headers?.authorization || "");
-  const supplied = auth.startsWith("Bearer ") ? auth.slice(7) : String(req.query?.secret || "");
-  if (!secret || supplied !== secret) {
-    return res.status(401).json({ success: false, error: "UNAUTHORIZED" });
+/*
+ * Configure Vercel Cron to call:
+ *
+ * /api/cron/daily
+ *
+ * The endpoint requires:
+ *
+ * Authorization: Bearer YOUR_CRON_SECRET
+ *
+ * The cron should run frequently enough to catch:
+ *
+ * 1. Morning daily-bonus message
+ * 2. Promo code one hour later
+ */
+
+async function dailyCron(
+  req,
+  res
+) {
+
+  const secret =
+    String(
+      process.env.CRON_SECRET || ""
+    );
+
+
+  const auth =
+    String(
+      req.headers?.authorization || ""
+    );
+
+
+  const supplied =
+    auth.startsWith("Bearer ")
+      ? auth.slice(7)
+      : String(
+          req.query?.secret || ""
+        );
+
+
+  if (
+    !secret ||
+    supplied !== secret
+  ) {
+
+    return res.status(401).json({
+
+      success:
+        false,
+
+      error:
+        "UNAUTHORIZED"
+    });
   }
 
-  const now = Date.now();
-  const currentDate = today();
-  const promoCode = getDailyPromoCode();
-  const usersSnap = await db.collection("users").limit(5000).get();
+
+  const now =
+    Date.now();
+
+
+  const currentDate =
+    today();
+
+
+  const promoCode =
+    getDailyPromoCode();
+
+
+  const usersSnap =
+    await db
+      .collection("users")
+      .limit(5000)
+      .get();
+
+
   let morningSent = 0;
+
   let promoSent = 0;
 
-  for (const doc of usersSnap.docs) {
-    const u = doc.data();
-    const uid = doc.id;
 
-    // Morning bonus notification. One per UTC day.
-    if (u.dailyBonusMessageDate !== currentDate) {
-      const sent = await sendMessage(uid,
-        `🎁 <b>YOUR DAILY BONUS IS WAITING!</b> 🎁\n\n` +
-        `🔥 Don’t miss your daily reward!\n\n` +
-        `💰 Claim your bonus today and keep earning with USDT HUB.\n\n` +
-        `⏰ Open the bot now and claim it before you forget!\n\n` +
-        `🚀 Claim. Earn. Repeat.`,
-        { reply_markup: { inline_keyboard: [[{ text: "🎁 CLAIM DAILY BONUS", web_app: { url: CONFIG.WEBAPP_URL } }]] } }
-      );
+  for (
+    const doc
+    of usersSnap.docs
+  ) {
+
+    const u =
+      doc.data();
+
+    const uid =
+      doc.id;
+
+
+    /*
+     * Morning bonus message
+     */
+
+    if (
+      u.dailyBonusMessageDate !==
+      currentDate
+    ) {
+
+      const sent =
+        await sendMessage(
+
+          uid,
+
+          `🎁 <b>YOUR DAILY BONUS IS WAITING!</b> 🎁\n\n` +
+
+          `🔥 Don’t miss your daily reward!\n\n` +
+
+          `💰 Claim your bonus today and keep earning with USDT HUB.\n\n` +
+
+          `⏰ Open the bot now and claim it before you forget!\n\n` +
+
+          `🚀 Claim. Earn. Repeat.`,
+
+          {
+
+            reply_markup: {
+
+              inline_keyboard: [
+
+                [
+
+                  {
+
+                    text:
+                      "🎁 CLAIM DAILY BONUS",
+
+                    web_app: {
+
+                      url:
+                        CONFIG.WEBAPP_URL
+                    }
+                  }
+
+                ]
+
+              ]
+            }
+          }
+        );
+
+
       if (sent?.ok) {
+
         await doc.ref.update({
-          dailyBonusMessageDate: currentDate,
-          dailyPromoScheduledAt: now + 60 * 60 * 1000,
-          dailyPromoCode: promoCode,
-          updatedAt: FieldValue.serverTimestamp()
+
+          dailyBonusMessageDate:
+            currentDate,
+
+          dailyPromoScheduledAt:
+            now +
+            60 *
+            60 *
+            1000,
+
+          dailyPromoCode:
+            promoCode,
+
+          updatedAt:
+            FieldValue.serverTimestamp()
         });
+
+
         morningSent++;
       }
     }
 
-    // Promo is sent one hour after the morning message.
-    const scheduled = Number(u.dailyPromoScheduledAt || 0);
-    if (scheduled && scheduled <= now && u.dailyPromoSentDate !== currentDate && promoCode) {
-      const code = String(u.dailyPromoCode || promoCode).toUpperCase();
-      const sent = await sendMessage(uid,
-        `🎟️ <b>YOUR DAILY PROMO CODE IS HERE!</b>\n\n` +
-        `🎁 Code: <code>${code}</code>\n` +
-        `💰 Reward: <b>+${Number(CONFIG.PROMO_REWARD || 0)} PTS</b>\n\n` +
-        `Open USDT HUB and claim it now!`,
-        { reply_markup: { inline_keyboard: [[{ text: "🎟️ CLAIM PROMO", web_app: { url: `${CONFIG.WEBAPP_URL}?promo=${encodeURIComponent(code)}` } }]] } }
+
+    /*
+     * Promo message one hour later.
+     */
+
+    const scheduled =
+      Number(
+        u.dailyPromoScheduledAt ||
+        0
       );
+
+
+    if (
+      scheduled &&
+      scheduled <= now &&
+      u.dailyPromoSentDate !==
+        currentDate &&
+      promoCode
+    ) {
+
+      const code =
+        String(
+          u.dailyPromoCode ||
+          promoCode
+        ).toUpperCase();
+
+
+      const sent =
+        await sendMessage(
+
+          uid,
+
+          `🎟️ <b>YOUR DAILY PROMO CODE IS HERE!</b>\n\n` +
+
+          `🎁 Code: <code>${code}</code>\n` +
+
+          `💰 Reward: <b>+${Number(
+            CONFIG.PROMO_REWARD || 0
+          )} PTS</b>\n\n` +
+
+          `Open USDT HUB and claim it now!`,
+
+          {
+
+            reply_markup: {
+
+              inline_keyboard: [
+
+                [
+
+                  {
+
+                    text:
+                      "🎟️ CLAIM PROMO",
+
+                    web_app: {
+
+                      url:
+                        `${CONFIG.WEBAPP_URL}?promo=${encodeURIComponent(
+                          code
+                        )}`
+                    }
+                  }
+
+                ]
+
+              ]
+            }
+          }
+        );
+
+
       if (sent?.ok) {
+
         await doc.ref.update({
-          dailyPromoSentDate: currentDate,
-          dailyPromoScheduledAt: null,
-          updatedAt: FieldValue.serverTimestamp()
+
+          dailyPromoSentDate:
+            currentDate,
+
+          dailyPromoScheduledAt:
+            null,
+
+          updatedAt:
+            FieldValue.serverTimestamp()
         });
+
+
         promoSent++;
       }
     }
   }
 
-  return res.status(200).json({ success: true, date: currentDate, morningSent, promoSent });
+
+  return res.status(200).json({
+
+    success:
+      true,
+
+    date:
+      currentDate,
+
+    morningSent,
+
+    promoSent
+  });
 }
 
 
-${marker}
+/* =========================================================
+   SUPPORT
+========================================================= */
 
 async function support(
   req,
@@ -3298,7 +4048,10 @@ async function support(
     url:
       `https://t.me/${String(
         CONFIG.SUPPORT_USERNAME
-      ).replace(/^@/, "")}`,
+      ).replace(
+        /^@/,
+        ""
+      )}`,
 
     message:
       "Need help? Contact USDT Hub Support."
@@ -3354,9 +4107,11 @@ async function telegram(
 
     const launchUrl =
       startParam
+
         ? `${baseUrl}?startapp=${encodeURIComponent(
             startParam
           )}`
+
         : baseUrl;
 
 
@@ -3406,6 +4161,7 @@ async function telegram(
 
 
     await sendMessage(
+
       chatId,
 
       welcomeMessage,
@@ -3424,6 +4180,7 @@ async function telegram(
                   "🚀 OPEN USDT HUB APP",
 
                 web_app: {
+
                   url:
                     launchUrl
                 }
@@ -3765,7 +4522,11 @@ export default async function handler(
       path === "/api/cron/daily" ||
       endpoint === "cron-daily"
     ) {
-      return dailyCron(req, res);
+
+      return dailyCron(
+        req,
+        res
+      );
     }
 
 
@@ -3813,6 +4574,4 @@ export default async function handler(
         String(error)
     });
   }
-    }
-
- 
+          }
