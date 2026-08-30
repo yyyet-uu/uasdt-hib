@@ -3090,7 +3090,7 @@ async function apiRequest(endpoint,body={}){
   }catch{
 
     throw new Error(
-      "Server returned an invalid response."
+      text || "Server returned an invalid response."
     );
 
   }
@@ -3100,10 +3100,18 @@ async function apiRequest(endpoint,body={}){
     data?.success===false
   ){
 
-    throw new Error(
-      data?.error ||
-      `HTTP_${response.status}`
-    );
+    let errMsg = data?.error || `HTTP_${response.status}`;
+    
+    // Map backend error codes to user-friendly exact messages
+    if (errMsg === "ALREADY_CLAIMED") errMsg = "Promo code already claimed!";
+    else if (errMsg === "INVALID_CODE") errMsg = "Invalid promo code.";
+    else if (errMsg === "WITHDRAWAL_LIMIT_TODAY") errMsg = "You can only withdraw once per day.";
+    else if (errMsg === "TWO_REFERRALS_REQUIRED") errMsg = "You need at least 2 referrals to withdraw.";
+    else if (errMsg === "INSUFFICIENT_BALANCE") errMsg = "Insufficient balance for this amount.";
+    else if (errMsg === "STREAK_ALREADY_CLAIMED_TODAY") errMsg = "Streak already claimed today!";
+    else if (errMsg === "CHANNELS_REQUIRED") errMsg = "Please verify your channel membership first.";
+
+    throw new Error(errMsg);
 
   }
 
