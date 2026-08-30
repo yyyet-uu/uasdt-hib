@@ -4,27 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
   <meta name="theme-color" content="#030712">
-  <meta name="apple-mobile-web-app-capable" content="yes">
   <title>USDT Hub</title>
 
   <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
   <script src="//libtl.com/sdk.js" data-zone="11601754" data-sdk="show_11601754"></script>
 
   <style>
-    /* ULTRA-ATTRACTIVE 3D TACTILE CSS */
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     :root{
-      --bg:#030712;--card:rgba(13,25,45,.88);--card2:rgba(18,34,58,.95);
-      --line:rgba(255,255,255,.12);--text:#f8fafc;--muted:#94a3b8;
-      --blue:#3b82f6;--green:#22c55e;--red:#ef4444;--yellow:#facc15;--purple:#8b5cf6;--orange:#f97316;
-      --shadow:0 25px 50px rgba(0,0,0,.7);
+      --bg:#030712;--card:rgba(13,25,45,.9);--line:rgba(255,255,255,.12);
+      --text:#f8fafc;--muted:#94a3b8;--blue:#3b82f6;--green:#22c55e;--yellow:#facc15;--purple:#8b5cf6;
+      --shadow:0 30px 60px rgba(0,0,0,.8);
     }
     html,body{
       margin:0;padding:0;width:100%;min-height:100%;
-      background:radial-gradient(circle at 15% 10%,rgba(59,130,246,.2),transparent 45%),radial-gradient(circle at 85% 90%,rgba(139,92,246,.15),transparent 45%),var(--bg);
+      background:radial-gradient(circle at 15% 10%,rgba(59,130,246,.25),transparent 45%),radial-gradient(circle at 85% 90%,rgba(139,92,246,.2),transparent 45%),var(--bg);
       color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;overflow-x:hidden;
     }
-    body{min-height:100vh;padding-bottom:115px}
+    body{min-height:100vh;padding-bottom:120px}
     button,input,select{font:inherit}
     button{border:0;cursor:pointer;color:white}
     .hidden{display:none!important}
@@ -37,50 +34,29 @@
     }
     .aads-label{font-size:10px;font-weight:950;color:var(--muted);margin-bottom:6px;letter-spacing:1px}
 
-    .browser-view{
-      max-width:460px;margin:40px auto;padding:32px 24px;text-align:center;
-      background:var(--card);border:1px solid var(--line);border-radius:30px;box-shadow:var(--shadow);
+    .browser-view, .loading-screen, .lock-screen, .welcome-screen{
+      position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#030712;flex-direction:column;padding:24px;
     }
+    .lock-screen, .welcome-screen{overflow:auto;background:radial-gradient(circle at 50% 0%,rgba(37,99,235,.4),transparent 60%),#030712}
 
-    .loading-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#030712}
     .logo-orb{
-      width:90px;height:90px;margin:auto;border-radius:30px;display:grid;place-items:center;
-      font-size:40px;font-weight:950;background:linear-gradient(135deg,#3b82f6,#06b6d4,#8b5cf6);
-      box-shadow:0 0 60px rgba(59,130,246,.6),inset 0 2px 8px rgba(255,255,255,.5);
+      width:96px;height:96px;margin:auto;border-radius:32px;display:grid;place-items:center;
+      font-size:42px;font-weight:950;background:linear-gradient(135deg,#3b82f6,#06b6d4,#8b5cf6);
+      box-shadow:0 0 70px rgba(59,130,246,.7),inset 0 2px 10px rgba(255,255,255,.6);
       animation:pulseOrb 2s infinite ease-in-out;
     }
-    @keyframes pulseOrb{0%,100%{transform:scale(1);box-shadow:0 0 45px rgba(59,130,246,.5)}50%{transform:scale(1.08);box-shadow:0 0 85px rgba(6,182,212,.8)}}
-
-    .lock-screen,.welcome-screen{position:fixed;inset:0;z-index:9000;overflow:auto;padding:26px 16px;background:radial-gradient(circle at 50% 0%,rgba(37,99,235,.35),transparent 55%),#030712}
-    .lock-wrap,.welcome-wrap{max-width:460px;margin:20px auto}
-    .lock-logo,.welcome-icon{
-      width:84px;height:84px;border-radius:28px;display:grid;place-items:center;margin:0 auto 18px;font-size:36px;
-      background:linear-gradient(135deg,#2563eb,#06b6d4);box-shadow:0 15px 40px rgba(37,99,235,.5),inset 0 2px 6px rgba(255,255,255,.4);
-    }
-    .welcome-icon{background:linear-gradient(135deg,#16a34a,#22c55e);box-shadow:0 15px 40px rgba(34,197,94,.5),inset 0 2px 6px rgba(255,255,255,.4)}
-    .join-card,.address-card{
-      padding:20px;border:1px solid var(--line);
-      background:linear-gradient(145deg,rgba(16,34,58,.95),rgba(8,18,35,.98));
-      border-radius:24px;margin-bottom:14px;box-shadow:0 12px 35px rgba(0,0,0,.6);
-    }
-    .join-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .channel-icon{
-      width:48px;height:48px;border-radius:16px;display:grid;place-items:center;
-      background:rgba(59,130,246,.2);font-size:22px;box-shadow:inset 0 1px 4px rgba(255,255,255,.3);
-    }
+    @keyframes pulseOrb{0%,100%{transform:scale(1);box-shadow:0 0 50px rgba(59,130,246,.6)}50%{transform:scale(1.08);box-shadow:0 0 90px rgba(6,182,212,.9)}}
 
     .app{width:100%;max-width:640px;margin:auto;padding:14px 14px 35px}
     .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
     .brand{display:flex;align-items:center;gap:12px}
     .brand-logo{
-      width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:22px;font-weight:950;
-      background:linear-gradient(135deg,#2563eb,#06b6d4);box-shadow:0 8px 25px rgba(37,99,235,.5),inset 0 2px 6px rgba(255,255,255,.4);
+      width:50px;height:50px;border-radius:18px;display:grid;place-items:center;font-size:24px;font-weight:950;
+      background:linear-gradient(135deg,#2563eb,#06b6d4);box-shadow:0 10px 30px rgba(37,99,235,.6),inset 0 2px 6px rgba(255,255,255,.5);
     }
     .profile-pill{
-      display:flex;align-items:center;gap:6px;
-      background:linear-gradient(145deg,rgba(18,36,60,.9),rgba(10,21,38,.9));
-      border:1px solid var(--line);padding:8px 14px;border-radius:24px;font-size:11px;font-weight:950;
-      box-shadow:0 6px 18px rgba(0,0,0,.4);
+      display:flex;align-items:center;gap:6px;background:linear-gradient(145deg,rgba(18,36,60,.95),rgba(10,21,38,.95));
+      border:1px solid var(--line);padding:8px 16px;border-radius:26px;font-size:11px;font-weight:950;box-shadow:0 8px 20px rgba(0,0,0,.5);
     }
 
     .page{display:none;animation:pageIn .25s cubic-bezier(.16,1,.3,1)}
@@ -88,25 +64,23 @@
     @keyframes pageIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
 
     .box-rect{
-      padding:22px;border:1px solid var(--line);border-radius:28px;
-      background:linear-gradient(145deg,rgba(15,30,52,.92),rgba(8,18,35,.96));
-      box-shadow:0 18px 40px rgba(0,0,0,.6),inset 0 1px 1px rgba(255,255,255,.12);
-      margin-bottom:16px;backdrop-filter:blur(12px);
+      padding:24px;border:1px solid var(--line);border-radius:30px;
+      background:linear-gradient(145deg,rgba(15,30,52,.94),rgba(8,18,35,.98));
+      box-shadow:0 20px 45px rgba(0,0,0,.7),inset 0 1px 2px rgba(255,255,255,.15);
+      margin-bottom:16px;backdrop-filter:blur(15px);
     }
     .balance-box{
-      background:radial-gradient(circle at 90% 0%,rgba(34,211,238,.3),transparent 55%),linear-gradient(145deg,#133368,#091a38);
-      border-color:rgba(96,165,250,.4);
-      box-shadow:0 22px 50px rgba(11,30,62,.7),inset 0 1px 3px rgba(255,255,255,.25);
+      background:radial-gradient(circle at 90% 0%,rgba(34,211,238,.35),transparent 60%),linear-gradient(145deg,#133368,#091a38);
+      border-color:rgba(96,165,250,.5);box-shadow:0 25px 60px rgba(11,30,62,.8),inset 0 2px 4px rgba(255,255,255,.3);
     }
-    .balance-num{font-size:40px;font-weight:950;line-height:1;margin:6px 0 4px;letter-spacing:-1px;text-shadow:0 3px 12px rgba(0,0,0,.6)}
-    .section-title{font-size:16px;font-weight:950;margin:22px 4px 10px;display:flex;justify-content:space-between;align-items:center;letter-spacing:.3px}
-    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .balance-num{font-size:42px;font-weight:950;line-height:1;margin:6px 0 6px;letter-spacing:-1px;text-shadow:0 3px 15px rgba(0,0,0,.7)}
+    .section-title{font-size:16px;font-weight:950;margin:24px 4px 12px;display:flex;justify-content:space-between;align-items:center;letter-spacing:.3px}
+    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
     .stat-tile{
-      padding:16px;background:linear-gradient(145deg,rgba(10,23,41,.9),rgba(5,13,26,.95));
-      border:1px solid var(--line);border-radius:20px;box-shadow:0 8px 22px rgba(0,0,0,.4),inset 0 1px 1px rgba(255,255,255,.06);
+      padding:18px;background:linear-gradient(145deg,rgba(10,23,41,.92),rgba(5,13,26,.98));
+      border:1px solid var(--line);border-radius:22px;box-shadow:0 10px 25px rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.08);
     }
 
-    /* 3D LIVE TACTILE BUTTONS */
     .action-btn{
       width:100%;padding:16px;border-radius:18px;font-weight:950;letter-spacing:.5px;
       background:linear-gradient(145deg,#3b82f6,#1d4ed8);
@@ -128,88 +102,51 @@
     }
     .action-btn.purple:active{box-shadow:0 2px 0 #5b21b6,0 5px 12px rgba(139,92,246,.35),inset 0 1px 3px rgba(0,0,0,.3)}
 
-    .action-btn.orange{
-      background:linear-gradient(145deg,#f97316,#c2410c);
-      box-shadow:0 7px 0 #9a3412,0 14px 28px rgba(249,115,22,.45),inset 0 2px 5px rgba(255,255,255,.35);
-    }
-    .action-btn.orange:active{box-shadow:0 2px 0 #9a3412,0 5px 12px rgba(249,115,22,.35),inset 0 1px 3px rgba(0,0,0,.3)}
-
-    .join-btn{
-      padding:11px 18px;border-radius:14px;background:linear-gradient(145deg,#3b82f6,#1d4ed8);
-      font-weight:950;font-size:12px;box-shadow:0 5px 0 #1e3a8a,0 10px 20px rgba(0,0,0,.4);
-      transition:all .1s ease;transform:translateY(0);
-    }
-    .join-btn:active{transform:translateY(4px);box-shadow:0 1px 0 #1e3a8a,0 4px 10px rgba(0,0,0,.3)}
-
     .input{
-      width:100%;padding:15px 18px;border-radius:16px;border:1px solid var(--line);
-      background:rgba(5,13,26,.92);color:white;outline:none;margin-bottom:12px;
-      box-shadow:inset 0 3px 6px rgba(0,0,0,.6);transition:all .2s;
+      width:100%;padding:16px 18px;border-radius:18px;border:1px solid var(--line);
+      background:rgba(5,13,26,.95);color:white;outline:none;margin-bottom:14px;
+      box-shadow:inset 0 3px 8px rgba(0,0,0,.7);transition:all .2s;
     }
-    .input:focus{border-color:#3b82f6;box-shadow:0 0 18px rgba(59,130,246,.35),inset 0 3px 6px rgba(0,0,0,.6)}
-
-    .streak-container{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-top:12px}
-    .streak-node{
-      flex:1;min-width:48px;padding:10px 4px;background:rgba(10,23,41,.9);
-      border:1px solid var(--line);border-radius:16px;text-align:center;font-size:10px;
-      box-shadow:0 5px 12px rgba(0,0,0,.35);
-    }
-    .streak-node.active{
-      border-color:#facc15;background:linear-gradient(145deg,rgba(250,204,21,.3),rgba(202,138,4,.2));
-      color:#facc15;font-weight:950;box-shadow:0 6px 18px rgba(250,204,21,.3),inset 0 1px 3px rgba(255,255,255,.5);
-    }
+    .input:focus{border-color:#3b82f6;box-shadow:0 0 20px rgba(59,130,246,.4),inset 0 3px 8px rgba(0,0,0,.7)}
 
     .ad-card{
-      padding:20px;border-radius:24px;background:linear-gradient(145deg,rgba(12,26,46,.92),rgba(6,15,29,.96));
-      border:1px solid var(--line);margin-bottom:14px;box-shadow:0 12px 30px rgba(0,0,0,.5);
+      padding:22px;border-radius:26px;background:linear-gradient(145deg,rgba(12,26,46,.94),rgba(6,15,29,.98));
+      border:1px solid var(--line);margin-bottom:16px;box-shadow:0 14px 35px rgba(0,0,0,.6);
     }
     .progress-bar-bg{
-      width:100%;height:10px;background:rgba(0,0,0,.5);border-radius:12px;margin:12px 0;
-      overflow:hidden;box-shadow:inset 0 2px 5px rgba(0,0,0,.7);
+      width:100%;height:10px;background:rgba(0,0,0,.6);border-radius:12px;margin:12px 0;
+      overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,.8);
     }
     .progress-fill{
       height:100%;background:linear-gradient(90deg,#3b82f6,#22d3ee);border-radius:12px;
-      box-shadow:0 0 15px rgba(34,211,238,.7);transition:width .4s cubic-bezier(.2,0,0,1);
+      box-shadow:0 0 18px rgba(34,211,238,.8);transition:width .4s cubic-bezier(.2,0,0,1);
     }
 
-    /* 3D FLOATING BOTTOM NAVIGATION */
     .bottom-nav{
       position:fixed;z-index:1000;bottom:0;left:0;right:0;padding:10px 8px calc(10px + env(safe-area-inset-bottom));
-      background:rgba(3,7,18,.94);backdrop-filter:blur(25px);border-top:1px solid rgba(255,255,255,.1);
-      display:flex;justify-content:center;box-shadow:0 -12px 35px rgba(0,0,0,.7);
+      background:rgba(3,7,18,.95);backdrop-filter:blur(30px);border-top:1px solid rgba(255,255,255,.12);
+      display:flex;justify-content:center;box-shadow:0 -15px 40px rgba(0,0,0,.8);
     }
     .nav-inner{width:100%;max-width:640px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
     .nav-btn{
-      padding:8px 2px;border-radius:16px;background:transparent;color:#64748b;
-      font-size:10px;font-weight:950;transition:all .2s;
+      padding:8px 2px;border-radius:16px;background:transparent;color:#64748b;font-size:10px;font-weight:950;transition:all .2s;
     }
     .nav-btn.active{
-      color:#60a5fa;background:rgba(59,130,246,.18);
-      box-shadow:inset 0 1px 3px rgba(96,165,250,.4),0 4px 12px rgba(59,130,246,.2);
+      color:#60a5fa;background:rgba(59,130,246,.2);
+      box-shadow:inset 0 1px 4px rgba(96,165,250,.5),0 4px 15px rgba(59,130,246,.3);
     }
-    .nav-icon{font-size:22px;display:block;margin-bottom:3px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))}
+    .nav-icon{font-size:24px;display:block;margin-bottom:3px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.6))}
 
     .toast{
       position:fixed;z-index:11000;left:50%;bottom:95px;transform:translate(-50%,20px);
-      width:calc(100% - 30px);max-width:440px;padding:15px;border-radius:18px;
+      width:calc(100% - 30px);max-width:440px;padding:16px;border-radius:20px;
       background:linear-gradient(145deg,#112340,#091528);border:1px solid var(--line);
-      box-shadow:0 22px 55px rgba(0,0,0,.8);opacity:0;pointer-events:none;
-      transition:.25s cubic-bezier(.2,0,0,1);font-size:13px;text-align:center;font-weight:900;
+      box-shadow:0 25px 60px rgba(0,0,0,.9);opacity:0;pointer-events:none;
+      transition:.25s cubic-bezier(.2,0,0,1);font-size:13px;text-align:center;font-weight:950;
     }
     .toast.show{opacity:1;transform:translate(-50%,0)}
-    .toast.success{border-color:rgba(34,197,94,.6);box-shadow:0 22px 55px rgba(0,0,0,.8),0 0 25px rgba(34,197,94,.25)}
-    .toast.error{border-color:rgba(239,68,68,.6);box-shadow:0 22px 55px rgba(0,0,0,.8),0 0 25px rgba(239,68,68,.25)}
-
-    .modal{
-      position:fixed;inset:0;z-index:10500;display:flex;align-items:flex-end;justify-content:center;
-      padding:12px;background:rgba(3,7,18,.85);backdrop-filter:blur(14px);animation:fadeIn .2s;
-    }
-    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    .modal-box{
-      width:100%;max-width:480px;max-height:86vh;overflow:auto;padding:24px;border-radius:28px;
-      background:linear-gradient(145deg,#0e1e36,#081326);border:1px solid var(--line);
-      box-shadow:0 30px 70px rgba(0,0,0,.9);
-    }
+    .toast.success{border-color:rgba(34,197,94,.7);box-shadow:0 25px 60px rgba(0,0,0,.9),0 0 30px rgba(34,197,94,.3)}
+    .toast.error{border-color:rgba(239,68,68,.7);box-shadow:0 25px 60px rgba(0,0,0,.9),0 0 30px rgba(239,68,68,.3)}
   </style>
 </head>
 
@@ -222,78 +159,13 @@
     </div>
   </div>
 
-  <div id="browserView" class="browser-view hidden">
-    <div class="logo-orb" style="margin-bottom:16px">₮</div>
-    <h2 style="margin:0 0 8px;font-size:22px;font-weight:950">USDT Hub</h2>
-    <p style="color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:20px">
-      USDT Hub is an automated micro-earning platform with BEP20 payouts. Please open our official Telegram Mini App to start earning!
-    </p>
-    <button class="action-btn" onclick="window.location.href='https://t.me/Ussdt_hub_bot'">🚀 OPEN IN TELEGRAM</button>
-  </div>
-
   <div id="loadingScreen" class="loading-screen">
-    <div style="text-align:center">
-      <div class="logo-orb">₮</div>
-      <h2 style="margin:18px 0 6px;font-weight:950">USDT Hub</h2>
-      <p id="loadingText" style="color:var(--muted);margin:0;font-size:13px;font-weight:700">Loading verified account...</p>
-    </div>
+    <div class="logo-orb">₮</div>
+    <h2 style="margin:18px 0 6px;font-weight:950">USDT Hub</h2>
+    <p id="loadingText" style="color:var(--muted);font-weight:800;font-size:13px">Loading verified account...</p>
   </div>
 
-  <section id="lockScreen" class="lock-screen hidden">
-    <div class="lock-wrap">
-      <div class="lock-logo">🔒</div>
-      <h2 style="text-align:center;margin-bottom:8px;font-weight:950">Join to Continue</h2>
-      <div style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px;line-height:1.5">
-        Join both official channels to unlock the app and receive your 0.01 USDT bonus.
-      </div>
-
-      <div class="join-card">
-        <div class="join-row">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div class="channel-icon">📢</div>
-            <div>
-              <div style="font-weight:900">Birr Gram</div>
-              <div style="color:var(--muted);font-size:12px">@birr_gram</div>
-            </div>
-          </div>
-          <button class="join-btn" onclick="openTelegram('https://t.me/birr_gram')">JOIN</button>
-        </div>
-      </div>
-
-      <div class="join-card">
-        <div class="join-row">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div class="channel-icon">💎</div>
-            <div>
-              <div style="font-weight:900">USDT Gram</div>
-              <div style="color:var(--muted);font-size:12px">@usdt_g_ram</div>
-            </div>
-          </div>
-          <button class="join-btn" onclick="openTelegram('https://t.me/usdt_g_ram')">JOIN</button>
-        </div>
-      </div>
-
-      <button id="verifyBtn" class="action-btn" style="margin-top:12px" onclick="verifyChannels()">✅ VERIFY MEMBERSHIP</button>
-      <div id="verifyStatus" style="text-align:center;color:var(--muted);font-size:12px;margin-top:14px">Join both channels, then click verify.</div>
-    </div>
-  </section>
-
-  <section id="welcomeScreen" class="welcome-screen hidden">
-    <div class="welcome-wrap">
-      <div class="welcome-icon">🎁</div>
-      <h2 style="text-align:center;margin:0 0 8px;font-weight:950">Welcome Bonus</h2>
-      <div style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px;line-height:1.5">
-        Enter your BEP20 address. <b>0.01 USDT</b> will be sent automatically to your wallet.
-      </div>
-
-      <div class="address-card">
-        <label style="display:block;font-size:12px;font-weight:800;margin-bottom:8px;color:#cbd5e1">BEP20 / BNB Smart Chain Address</label>
-        <input id="welcomeAddress" class="input" placeholder="0x...">
-        <button id="claimBtn" class="action-btn green" onclick="claimWelcome()">🎁 CLAIM 0.01 USDT BONUS</button>
-      </div>
-    </div>
-  </section>
-
+  <!-- MAIN APP CONTAINER -->
   <main id="app" class="app hidden">
     <header class="topbar">
       <div class="brand">
@@ -307,11 +179,11 @@
         <div class="profile-pill">
           <span style="color:#facc15">★</span> <span id="vipBadge">Bronze</span>
         </div>
-        <button onclick="openTelegram('https://t.me/birr_gram')" style="background:rgba(30,41,59,.9);padding:8px 14px;border-radius:16px;font-size:11px;font-weight:900;border:1px solid var(--line);box-shadow:0 4px 10px rgba(0,0,0,.3)">📢 Proofs</button>
+        <button onclick="openTelegram('https://t.me/usdt_hub_payment_proof')" style="background:rgba(30,41,59,.9);padding:8px 14px;border-radius:16px;font-size:11px;font-weight:900;border:1px solid var(--line)">📢 Proofs</button>
       </div>
     </header>
 
-    <!-- PAGE 1: HOME -->
+    <!-- HOME PAGE -->
     <section id="page-home" class="page active">
       <div class="box-rect balance-box">
         <div style="display:flex;justify-content:space-between;align-items:center">
@@ -320,126 +192,102 @@
             <div class="balance-num"><span id="balance">0</span> <small style="font-size:15px;color:#9bb7df">PTS</small></div>
             <div style="font-size:12px;color:#4ade80;font-weight:900">≈ $<span id="balanceUsdt">0.00</span> USDT (10,000 PTS = $0.10)</div>
           </div>
-          <button onclick="showPage('withdraw')" style="background:linear-gradient(145deg,#22c55e,#15803d);box-shadow:0 5px 0 #166534,0 10px 20px rgba(34,197,94,.4);padding:12px 18px;border-radius:16px;font-weight:950;font-size:13px">💸 Withdraw</button>
+          <button onclick="showPage('withdraw')" style="background:linear-gradient(145deg,#22c55e,#15803d);box-shadow:0 6px 0 #166534,0 12px 25px rgba(34,197,94,.45);padding:12px 18px;border-radius:18px;font-weight:950">💸 Withdraw</button>
         </div>
       </div>
 
-      <div class="box-rect">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:950;font-size:14px">🔥 7-Day Login Streak</div>
-          <button id="claimStreakBtn" class="action-btn green" style="width:auto;padding:6px 14px;font-size:11px;box-shadow:0 4px 0 #166534,0 8px 15px rgba(34,197,94,.3)" onclick="claimDailyStreak()">CLAIM TODAY</button>
-        </div>
-        <div class="streak-container" id="streakTrack">
-          <div class="streak-node">D1<br><b>+50</b></div>
-          <div class="streak-node">D2<br><b>+75</b></div>
-          <div class="streak-node">D3<br><b>+100</b></div>
-          <div class="streak-node">D4<br><b>+150</b></div>
-          <div class="streak-node">D5<br><b>+200</b></div>
-          <div class="streak-node">D6<br><b>+300</b></div>
-          <div class="streak-node">D7<br><b>+500</b></div>
+      <!-- DAILY PROMO CODE DROP -->
+      <div class="box-rect" style="background:linear-gradient(135deg,rgba(139,92,246,.25),rgba(37,99,235,.15));border-color:rgba(139,92,246,.4)">
+        <div style="font-weight:950;font-size:15px;color:#c084fc;margin-bottom:6px">🎁 Daily 24H Promo Code Drop</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;font-weight:700">Claim your active 24-hour promo code to get +200 PTS instantly!</div>
+        <div style="display:flex;gap:10px">
+          <input id="promoCode" class="input" style="margin-bottom:0" placeholder="ENTER 24H CODE (e.g. USDTHUB2026)" autocomplete="off">
+          <button class="action-btn purple" style="width:auto;padding:0 24px" onclick="claimPromo()">CLAIM</button>
         </div>
       </div>
 
-      <div class="section-title">🎁 Redeem Promo Code (200 PTS)</div>
-      <div class="box-rect" style="display:flex;gap:10px">
-        <input id="promoCode" class="input" style="margin-bottom:0" placeholder="ENTER PROMO CODE" autocomplete="off">
-        <button class="action-btn green" style="width:auto;padding:0 22px" onclick="claimPromo()">CLAIM</button>
-      </div>
-
-      <div class="box-rect">
-        <div style="font-weight:950;margin-bottom:14px">📊 Your Activity Overview</div>
-        <div class="stats-grid">
-          <div class="stat-tile">
-            <div style="font-size:11px;color:var(--muted);font-weight:800">Ads Watched</div>
-            <div id="adsCount" style="font-size:20px;font-weight:950;margin-top:4px">0</div>
+      <!-- REFERRAL CONTEST BANNER -->
+      <div class="box-rect" style="border-color:rgba(250,204,21,.4);background:linear-gradient(135deg,rgba(250,204,21,.15),rgba(15,28,48,.9))">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-weight:950;font-size:15px;color:#facc15">🏆 Active Referral Contest</div>
+          <span style="background:rgba(250,204,21,.2);color:#facc15;padding:4px 10px;border-radius:12px;font-size:10px;font-weight:950">LIVE NOW</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;font-weight:700">Invite friends & top the leaderboard to win cash prizes!</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+          <div style="padding:10px;background:rgba(0,0,0,.4);border-radius:14px;border:1px solid rgba(250,204,21,.3)">
+            <div style="font-size:11px;color:var(--muted)">1st Place</div>
+            <div style="font-size:15px;font-weight:950;color:#facc15">$20.00</div>
           </div>
-          <div class="stat-tile">
-            <div style="font-size:11px;color:var(--muted);font-weight:800">Tasks Done</div>
-            <div id="taskCount" style="font-size:20px;font-weight:950;margin-top:4px">0</div>
+          <div style="padding:10px;background:rgba(0,0,0,.4);border-radius:14px;border:1px solid rgba(255,255,255,.2)">
+            <div style="font-size:11px;color:var(--muted)">2nd Place</div>
+            <div style="font-size:15px;font-weight:950;color:#cbd5e1">$10.00</div>
           </div>
-          <div class="stat-tile">
-            <div style="font-size:11px;color:var(--muted);font-weight:800">Referrals</div>
-            <div id="refCount" style="font-size:20px;font-weight:950;margin-top:4px">0</div>
-          </div>
-          <div class="stat-tile">
-            <div style="font-size:11px;color:var(--muted);font-weight:800">VIP Status</div>
-            <div id="vipStatusBox" style="font-size:15px;font-weight:950;margin-top:4px;color:#facc15">Bronze</div>
+          <div style="padding:10px;background:rgba(0,0,0,.4);border-radius:14px;border:1px solid rgba(249,115,22,.3)">
+            <div style="font-size:11px;color:var(--muted)">3rd Place</div>
+            <div style="font-size:15px;font-weight:950;color:#f97316">$5.00</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- PAGE 2: TASKS & ADS -->
+    <!-- TASKS & ADS PAGE -->
     <section id="page-tasks" class="page">
       <div class="section-title">
-        <span>📺 Mining Ads (75 PTS / ad)</span>
-        <span id="resetCountdown" style="font-size:11px;color:#facc15;font-weight:900">Resets in: --:--:--</span>
+        <span>📺 Mining Ads (50 PTS / ad)</span>
+        <span id="resetCountdown" style="font-size:11px;color:#facc15;font-weight:950">Resets in: --:--:--</span>
       </div>
 
       <div class="ad-card">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
-            <div style="font-weight:950">Monetag Direct Ads</div>
-            <div id="monetagCount" style="color:var(--muted);font-size:11px;font-weight:800">0 / 25 today</div>
+            <div style="font-weight:950">Monetag Direct Ads (Limit: 30)</div>
+            <div id="monetagCount" style="color:var(--muted);font-size:11px;font-weight:800">0 / 30 today</div>
           </div>
-          <button id="monetagBtn" style="padding:10px 18px;border-radius:14px;background:linear-gradient(145deg,#2563eb,#1d4ed8);font-weight:950;box-shadow:0 5px 0 #1e3a8a,0 8px 15px rgba(37,99,235,.4)" onclick="watchAd('monetag')">WATCH</button>
+          <button id="monetagBtn" class="action-btn" style="width:auto;padding:10px 18px" onclick="watchAd('monetag')">WATCH</button>
         </div>
         <div class="progress-bar-bg"><div id="monetagFill" class="progress-fill" style="width:0%"></div></div>
       </div>
 
-      <div class="ad-card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-weight:950">⚡ HilltopAds Direct Mining</div>
-            <div id="hilltopCount" style="color:var(--muted);font-size:11px;font-weight:800">0 / 15 today</div>
-          </div>
-          <button id="hilltopBtn" style="padding:10px 18px;border-radius:14px;background:linear-gradient(145deg,#f97316,#c2410c);font-weight:950;box-shadow:0 5px 0 #9a3412,0 8px 15px rgba(249,115,22,.4)" onclick="watchAd('hilltop')">WATCH</button>
-        </div>
-        <div class="progress-bar-bg"><div id="hilltopFill" class="progress-fill" style="width:0%;background:linear-gradient(90deg,#ea580c,#f97316);box-shadow:0 0 15px rgba(249,115,22,.6)"></div></div>
-      </div>
-
       <div class="section-title">
-        <span>🎯 Community Tasks</span>
-        <button class="action-btn" style="width:auto;padding:6px 14px;font-size:11px;box-shadow:0 4px 0 #1e3a8a,0 8px 15px rgba(37,99,235,.3)" onclick="openCreateTask()">➕ CREATE TASK</button>
+        <span>🎯 Community Tasks (3-Sec Timer)</span>
+        <button class="action-btn" style="width:auto;padding:6px 14px;font-size:11px" onclick="openCreateTask()">➕ CREATE</button>
       </div>
       <div id="tasksList"></div>
     </section>
 
-    <!-- PAGE 3: REFERRALS -->
+    <!-- REFERRAL PAGE -->
     <section id="page-referrals" class="page">
-      <div class="section-title">👥 Referral Center</div>
+      <div class="section-title">👥 Multi-Tier Referral Rewards</div>
       <div class="box-rect" style="text-align:center">
         <div style="font-size:12px;color:var(--muted);font-weight:800">Your Personal Referral Link</div>
         <div id="refLink" style="margin:12px 0;padding:14px;border-radius:16px;background:rgba(5,13,26,.9);border:1px dashed rgba(139,92,246,.5);font-weight:950;font-size:12px;word-break:break-all;color:#c084fc">Loading...</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <button class="action-btn purple" onclick="copyReferral()">📋 COPY</button>
-          <button class="action-btn" onclick="shareReferral()">🚀 DIRECT SHARE</button>
+          <button class="action-btn" onclick="shareReferral()">🚀 SHARE</button>
         </div>
       </div>
 
       <div class="box-rect">
-        <div style="font-weight:950;margin-bottom:10px">📜 Rules & Rewards</div>
+        <div style="font-weight:950;margin-bottom:10px">📜 Referral Milestone Rules</div>
         <div style="font-size:12px;color:var(--muted);line-height:1.7;font-weight:700">
-          • <b>Join Channels (+300 PTS):</b> Invited friend <u>must join channels</u> first. If they don't join, no points will be credited!<br>
-          • <b>Watch 2 Ads (+200 PTS):</b> Credited when your referral watches 2 ads.<br>
-          • <i>Total: 500 PTS per verified active user.</i>
+          • <b>Step 1 (+200 PTS):</b> Credited when your referral joins <a href="https://t.me/usdt_hub_payment_proof" style="color:#60a5fa">@usdt_hub_payment_proof</a>.<br>
+          • <b>Step 2 (+300 PTS):</b> Credited after your referral watches 2 ads.<br>
+          • <i>Requirement: You must have at least 2 active referrals who completed Step 2 to unlock withdrawals!</i>
         </div>
       </div>
 
-      <div class="section-title">🏆 Top Referrers Leaderboard</div>
+      <div class="section-title">🏆 Contest Leaderboard</div>
       <div id="leaderboardList" class="box-rect">Loading leaderboard...</div>
-
-      <div class="section-title">Your Referrals (<span id="refTotal">0</span>)</div>
-      <div id="referralList" class="box-rect">No referrals yet.</div>
     </section>
 
-    <!-- PAGE 4: WITHDRAW -->
+    <!-- WITHDRAW PAGE -->
     <section id="page-withdraw" class="page">
       <div class="section-title">💸 Automated BEP20 Withdrawal</div>
       <div class="box-rect">
         <div style="text-align:center;font-size:12px;color:var(--muted);font-weight:800">Available Balance</div>
-        <div id="withdrawBalance" style="text-align:center;font-size:34px;font-weight:950;margin:6px 0;text-shadow:0 2px 10px rgba(0,0,0,.5)">0 PTS</div>
-        <div style="text-align:center;font-size:12px;color:#4ade80;font-weight:900;margin-bottom:16px">Minimum: 10,000 PTS = 0.10 USDT</div>
+        <div id="withdrawBalance" style="text-align:center;font-size:34px;font-weight:950;margin:6px 0">0 PTS</div>
+        <div style="text-align:center;font-size:12px;color:#4ade80;font-weight:900;margin-bottom:6px">Minimum: 10,000 PTS = 0.10 USDT</div>
+        <div style="text-align:center;font-size:11px;color:#f87171;font-weight:900;margin-bottom:16px">🔒 Rule: Requires at least 2 active referrals (who watched 2 ads)!</div>
 
         <label style="font-size:11px;color:var(--muted);font-weight:800">DESTINATION BEP20 ADDRESS</label>
         <input id="withdrawAddress" class="input" style="margin-top:8px" placeholder="0x... BSC address" autocomplete="off">
@@ -447,15 +295,15 @@
       </div>
 
       <div class="box-rect">
-        <div style="font-weight:950;margin-bottom:8px">📢 Payment Proofs</div>
+        <div style="font-weight:950;margin-bottom:8px">💬 Support & Promotion</div>
         <div style="font-size:12px;color:var(--muted);line-height:1.6;font-weight:700">
-          All payouts are broadcast automatically to our official proof channel: <a href="javascript:openTelegram('https://t.me/birr_gram')" style="color:#60a5fa;text-decoration:none;font-weight:900">@birr_gram</a>.
+          Need promotion help or support? Contact our official manager: <a href="https://t.me/Usdt_hub_support" style="color:#60a5fa;font-weight:900">@Usdt_hub_support</a>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- BOTTOM NAVIGATION (4 Tabs) -->
+  <!-- BOTTOM NAVIGATION -->
   <nav id="bottomNav" class="bottom-nav hidden">
     <div class="nav-inner">
       <button class="nav-btn active" data-page="home" onclick="showPage('home')"><span class="nav-icon">🏠</span>Home</button>
@@ -467,336 +315,68 @@
 
   <div id="toast" class="toast"></div>
 
-  <div id="depositModal" class="modal hidden">
-    <div class="modal-box">
-      <div style="font-size:18px;font-weight:950;margin-bottom:8px">💳 Deposit USDT (BEP20)</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;font-weight:700">Send USDT (BEP20) to the address below ($1.00 = 100,000 PTS):</div>
-      <div id="depAddressText" style="padding:12px;background:rgba(5,13,26,.9);border-radius:14px;font-size:11px;word-break:break-all;margin-bottom:12px;border:1px solid var(--line);color:#38bdf8">Loading...</div>
-      <button class="action-btn purple" style="padding:10px;margin-bottom:14px" onclick="copyDepositAddress()">📋 COPY ADDRESS</button>
-      <input id="depositTxHash" class="input" placeholder="0x... Transaction Hash">
-      <button class="action-btn green" onclick="submitDeposit()">SUBMIT TX</button>
-      <button class="action-btn" style="background:rgba(30,41,59,.9);margin-top:10px;box-shadow:0 4px 0 #0f172a,0 8px 15px rgba(0,0,0,.4)" onclick="closeDepositModal()">CLOSE</button>
-    </div>
-  </div>
-
-  <div id="taskModal" class="modal hidden">
-    <div class="modal-box">
-      <div style="font-size:18px;font-weight:950;margin-bottom:8px">➕ Create Community Task</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;font-weight:700">Costs 100,000 PTS ($1.00) — Free for Admin.</div>
-      <input id="taskTitle" class="input" placeholder="Channel / Bot Title">
-      <input id="taskLink" class="input" placeholder="https://t.me/example">
-      <input id="taskChatId" class="input" placeholder="@username or Chat ID">
-      <select id="taskType" class="input">
-        <option value="channel">Channel</option>
-        <option value="bot">Bot</option>
-      </select>
-      <div style="display:flex;gap:10px;margin-top:4px">
-        <button class="action-btn" onclick="createTask()">CREATE</button>
-        <button class="action-btn purple" onclick="openDepositModal()">💳 DEPOSIT</button>
-      </div>
-      <button class="action-btn" style="background:rgba(30,41,59,.9);margin-top:10px;box-shadow:0 4px 0 #0f172a,0 8px 15px rgba(0,0,0,.4)" onclick="closeCreateTask()">CANCEL</button>
-    </div>
-  </div>
-
 <script>
 "use strict";
-
-const HILLTOP_DIRECT_URL = "https://sorrowfulpsychology.com/bS3hVo0.Pz3-p-v/bxmRVTJJZYDd0/3/MyzSQS2XOMTuIk5eLLT-cbz/N/DcYN5/MjzZMm";
-
 const tg = window.Telegram?.WebApp;
-if (tg) {
-  tg.ready();
-  tg.expand();
-  try { tg.setHeaderColor("#030712"); tg.setBackgroundColor("#030712"); } catch {}
-}
+if (tg) { tg.ready(); tg.expand(); }
 
 const INIT_DATA = tg?.initData || "";
 let currentUser = null;
 let appReady = false;
 
 function $(id) { return document.getElementById(id); }
-
-function triggerHaptic(type = "medium") {
-  try {
-    if (tg?.HapticFeedback) {
-      if (type === "success") tg.HapticFeedback.notificationOccurred("success");
-      else if (type === "error") tg.HapticFeedback.notificationOccurred("error");
-      else tg.HapticFeedback.impactOccurred(type);
-    }
-  } catch {}
-}
-
 function showToast(msg, type = "") {
   const toast = $("toast");
   toast.textContent = msg;
   toast.className = "toast show " + type;
-  clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => { toast.className = "toast"; }, 3500);
+  setTimeout(() => { toast.className = "toast"; }, 3500);
 }
-
-function openTelegram(url) {
-  try {
-    if (tg?.openTelegramLink) tg.openTelegramLink(url);
-    else window.open(url, "_blank");
-  } catch { window.open(url, "_blank"); }
-}
-
-function setLoading(show) { $("loadingScreen").classList.toggle("hidden", !show); }
-
-function startResetCountdown() {
-  function updateTimer() {
-    const now = new Date();
-    const utcNow = new Date(now.toUTCString().slice(0, -4));
-    const tomorrow = new Date(utcNow);
-    tomorrow.setUTCHours(24, 0, 0, 0);
-    const diff = tomorrow - utcNow;
-
-    if (diff <= 0) {
-      $("resetCountdown").textContent = "Resets in: 00:00:00";
-      return;
-    }
-
-    const hours = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
-    const minutes = String(Math.floor((diff / 1000 / 60) % 60)).padStart(2, '0');
-    const seconds = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
-
-    $("resetCountdown").textContent = `Resets in: ${hours}:${minutes}:${seconds}`;
-  }
-  updateTimer();
-  setInterval(updateTimer, 1000);
-}
+function openTelegram(url) { window.open(url, "_blank"); }
 
 async function apiRequest(endpoint, body = {}) {
-  const headers = {
-    "Content-Type": "application/json",
-    "X-Telegram-Init-Data": INIT_DATA
-  };
-
-  const response = await fetch(`/api/index?endpoint=${endpoint}`, {
+  const res = await fetch(`/api/index?endpoint=${endpoint}`, {
     method: "POST",
-    headers,
+    headers: { "Content-Type": "application/json", "X-Telegram-Init-Data": INIT_DATA },
     body: JSON.stringify({ ...body, endpoint })
   });
-
-  const responseText = await response.text();
-  let data;
-  try {
-    data = JSON.parse(responseText);
-  } catch (e) {
-    throw new Error("Server returned invalid response. Check Vercel logs.");
-  }
-
-  if (!response.ok || data?.success === false) {
-    throw new Error(data?.error || `HTTP_${response.status}`);
-  }
+  const data = await res.json();
+  if (!res.ok || data?.success === false) throw new Error(data?.error || "API_ERROR");
   return data;
 }
 
 async function initialize() {
-  startResetCountdown();
-  if (!INIT_DATA) {
-    $("browserView").classList.remove("hidden");
-    setLoading(false);
-    return;
-  }
-
-  setLoading(true);
   try {
-    const urlParams = new URLSearchParams(window.location.search);
-    const startParam =
-      tg?.initDataUnsafe?.start_param ||
-      urlParams.get("tgWebAppStartParam") ||
-      urlParams.get("startapp") ||
-      "";
-
-    const data = await apiRequest("user", { startParam });
-    if (!data?.user) throw new Error("USER_DATA_MISSING");
-
+    const data = await apiRequest("user");
     currentUser = data.user;
     updateUserUI();
-
-    if (!currentUser.channelsVerified) {
-      setLoading(false);
-      showLock();
-      return;
-    }
-
-    if (!currentUser.welcomeBonusClaimed) {
-      setLoading(false);
-      showWelcome();
-      return;
-    }
-
-    unlockApp();
-  } catch (error) {
-    setLoading(false);
-    $("loadingText").innerHTML = `<span style="color:#ef4444">Error: ${error.message}</span>`;
-    showToast(error.message, "error");
+    $("loadingScreen").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    $("bottomNav").classList.remove("hidden");
+    appReady = true;
+    loadTasks();
+    loadReferrals();
+  } catch (err) {
+    showToast(err.message, "error");
   }
-}
-
-function hideAllScreens() {
-  $("browserView").classList.add("hidden");
-  $("lockScreen").classList.add("hidden");
-  $("welcomeScreen").classList.add("hidden");
-  $("app").classList.add("hidden");
-  $("bottomNav").classList.add("hidden");
-}
-
-function showLock() {
-  hideAllScreens();
-  $("lockScreen").classList.remove("hidden");
-}
-
-function showWelcome() {
-  hideAllScreens();
-  $("welcomeScreen").classList.remove("hidden");
-}
-
-function unlockApp() {
-  setLoading(false);
-  hideAllScreens();
-  $("app").classList.remove("hidden");
-  $("bottomNav").classList.remove("hidden");
-  appReady = true;
-
-  updateUserUI();
-  loadTasks();
-  loadReferrals();
 }
 
 function updateUserUI() {
   if (!currentUser) return;
-  const pts = Number(currentUser.balance || 0);
-  $("balance").textContent = pts.toLocaleString();
-  $("balanceUsdt").textContent = (pts / 100000).toFixed(2);
-  $("withdrawBalance").textContent = pts.toLocaleString() + " PTS";
-  $("adsCount").textContent = currentUser.adsWatched || 0;
-  $("taskCount").textContent = currentUser.tasksCompleted || 0;
-  $("refCount").textContent = currentUser.referrals || 0;
+  $("balance").textContent = Number(currentUser.balance || 0).toLocaleString();
+  $("balanceUsdt").textContent = (currentUser.balance / 100000).toFixed(2);
+  $("withdrawBalance").textContent = Number(currentUser.balance || 0).toLocaleString() + " PTS";
   $("vipBadge").textContent = currentUser.vipTier || "Bronze";
-  $("vipStatusBox").textContent = currentUser.vipTier || "Bronze";
-
-  const botName = currentUser.botUsername || "Ussdt_hub_bot";
-  $("refLink").textContent = `https://t.me/${botName}?startapp=ref_${currentUser.telegramId}`;
-
-  const ml = Number(currentUser.monetagToday || 0);
-  $("monetagCount").textContent = `${ml} / 25 today`;
-  $("monetagFill").style.width = Math.min(100, (ml / 25) * 100) + "%";
-
-  const hl = Number(currentUser.hilltopToday || 0);
-  $("hilltopCount").textContent = `${hl} / 15 today`;
-  $("hilltopFill").style.width = Math.min(100, (hl / 15) * 100) + "%";
-
-  const streak = Number(currentUser.streakDay || 0);
-  const nodes = $("streakTrack").children;
-  for (let i = 0; i < nodes.length; i++) {
-    nodes[i].className = i < streak ? "streak-node active" : "streak-node";
-  }
-}
-
-async function claimDailyStreak() {
-  triggerHaptic("light");
-  try {
-    const res = await apiRequest("claim-streak");
-    currentUser.balance = Number(currentUser.balance || 0) + Number(res.reward || 0);
-    currentUser.streakDay = res.streakDay;
-    updateUserUI();
-    triggerHaptic("success");
-    showToast(`🔥 Day ${res.streakDay} claimed: +${res.reward} PTS!`, "success");
-  } catch (err) {
-    triggerHaptic("error");
-    showToast(err.message === "STREAK_ALREADY_CLAIMED_TODAY" ? "You claimed today's streak already!" : err.message, "error");
-  }
-}
-
-async function verifyChannels() {
-  triggerHaptic("light");
-  const btn = $("verifyBtn");
-  btn.disabled = true;
-  btn.textContent = "⏳ VERIFYING...";
-  try {
-    const data = await apiRequest("verify-membership");
-    if (data.joined) {
-      currentUser.channelsVerified = true;
-      triggerHaptic("success");
-      if (!currentUser.welcomeBonusClaimed) showWelcome();
-      else unlockApp();
-    } else {
-      triggerHaptic("error");
-      showToast("Join both channels first.", "error");
-      btn.disabled = false;
-      btn.textContent = "✅ VERIFY MEMBERSHIP";
-    }
-  } catch (err) {
-    triggerHaptic("error");
-    showToast(err.message, "error");
-    btn.disabled = false;
-    btn.textContent = "✅ VERIFY MEMBERSHIP";
-  }
-}
-
-async function claimWelcome() {
-  const address = $("welcomeAddress").value.trim();
-  if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
-    triggerHaptic("error");
-    showToast("Invalid BEP20 address.", "error");
-    return;
-  }
-
-  triggerHaptic("medium");
-  const btn = $("claimBtn");
-  btn.disabled = true;
-  btn.textContent = "⏳ PROCESSING...";
-  try {
-    const data = await apiRequest("claim-welcome", { address });
-    currentUser.welcomeBonusClaimed = true;
-    triggerHaptic("success");
-    showToast(`🎁 0.01 USDT sent! Hash: ${data.txHash.slice(0, 10)}...`, "success");
-    setTimeout(unlockApp, 900);
-  } catch (err) {
-    triggerHaptic("error");
-    showToast(err.message, "error");
-    btn.disabled = false;
-    btn.textContent = "🎁 CLAIM 0.01 USDT BONUS";
-  }
 }
 
 async function watchAd(provider = "monetag") {
-  triggerHaptic("medium");
-  const btn = $(provider === "hilltop" ? "hilltopBtn" : "monetagBtn");
-  btn.disabled = true;
-
   try {
-    if (provider === "monetag") {
-      if (typeof window.show_11601754 === "function") {
-        await window.show_11601754();
-      }
-    } else if (provider === "hilltop") {
-      try {
-        if (tg?.openLink) tg.openLink(HILLTOP_DIRECT_URL);
-        else window.open(HILLTOP_DIRECT_URL, "_blank");
-      } catch {
-        window.open(HILLTOP_DIRECT_URL, "_blank");
-      }
-      showToast("⏳ Registering ad view...", "info");
-      await new Promise(r => setTimeout(r, 6000));
-    }
-
+    if (typeof window.show_11601754 === "function") await window.show_11601754();
     const res = await apiRequest("ads", { provider });
-    currentUser.balance = Number(currentUser.balance || 0) + Number(res.reward || 0);
-    currentUser.adsWatched = res.totalAds;
-    if (res.monetagToday !== undefined) currentUser.monetagToday = res.monetagToday;
-    if (res.hilltopToday !== undefined) currentUser.hilltopToday = res.hilltopToday;
-
+    currentUser.balance += res.reward;
     updateUserUI();
-    triggerHaptic("success");
     showToast(`+${res.reward} PTS earned!`, "success");
   } catch (err) {
-    triggerHaptic("error");
     showToast(err.message, "error");
-  } finally {
-    btn.disabled = false;
   }
 }
 
@@ -806,37 +386,28 @@ async function loadTasks() {
     const data = await apiRequest("tasks", { action: "list" });
     const list = data.tasks || [];
     if (!list.length) {
-      container.innerHTML = `<div class="box-rect" style="text-align:center;color:var(--muted)">All caught up! No active tasks right now.</div>`;
+      container.innerHTML = `<div class="box-rect" style="text-align:center;color:var(--muted)">No active tasks right now.</div>`;
       return;
     }
-
     container.innerHTML = list.map(t => `
-      <div class="box-rect" style="margin-bottom:12px" id="task-card-${t.id}">
+      <div class="box-rect" style="margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;font-weight:950">
           <div>${t.title}</div>
           <div style="color:#4ade80">+${t.reward} PTS</div>
         </div>
-        <div style="color:var(--muted);font-size:11px;margin:4px 0 12px;font-weight:800">${t.completions || 0}/${t.maxCompletions} completed</div>
-        <button id="task-btn-${t.id}" class="action-btn" style="box-shadow:0 5px 0 #1e3a8a,0 10px 20px rgba(37,99,235,.4)" onclick="startTaskCountdown('${t.id}', '${t.link}')">🚀 JOIN & CLAIM</button>
+        <button class="action-btn" style="margin-top:10px" onclick="startTaskCountdown('${t.id}', '${t.link}')">🚀 JOIN & CLAIM</button>
       </div>
     `).join("");
   } catch {
-    container.innerHTML = `<div class="box-rect" style="text-align:center;color:var(--muted)">No community tasks available.</div>`;
+    container.innerHTML = `<div class="box-rect" style="text-align:center;color:var(--muted)">Failed to load tasks.</div>`;
   }
 }
 
-// 3-Second Task Countdown Feature
 function startTaskCountdown(taskId, link) {
-  triggerHaptic("light");
   if (link) openTelegram(link);
-
-  const btn = $(`task-btn-${taskId}`);
-  if (!btn) return;
+  const btn = event.target;
   btn.disabled = true;
-
   let timeLeft = 3;
-  btn.style.background = "linear-gradient(145deg,#f97316,#c2410c)";
-  btn.style.boxShadow = "0 5px 0 #9a3412, 0 10px 20px rgba(249,115,22,.4)";
   btn.textContent = `⏳ Please wait (${timeLeft}s)...`;
 
   const timer = setInterval(() => {
@@ -845,7 +416,6 @@ function startTaskCountdown(taskId, link) {
       btn.textContent = `⏳ Please wait (${timeLeft}s)...`;
     } else {
       clearInterval(timer);
-      btn.textContent = `✅ Claiming...`;
       executeTaskCompletion(taskId);
     }
   }, 1000);
@@ -854,146 +424,26 @@ function startTaskCountdown(taskId, link) {
 async function executeTaskCompletion(taskId) {
   try {
     const data = await apiRequest("tasks", { action: "complete", taskId });
-    currentUser.balance = Number(currentUser.balance || 0) + Number(data.reward || 0);
-    currentUser.tasksCompleted = Number(currentUser.tasksCompleted || 0) + 1;
+    currentUser.balance += data.reward;
     updateUserUI();
-    triggerHaptic("success");
-    showToast(`🎯 +${data.reward} PTS rewarded & task completed!`, "success");
-    await loadTasks();
-  } catch (err) {
-    triggerHaptic("error");
-    showToast(err.message, "error");
-    await loadTasks();
-  }
-}
-
-function openCreateTask() { triggerHaptic("light"); $("taskModal").classList.remove("hidden"); }
-function closeCreateTask() { $("taskModal").classList.add("hidden"); }
-
-async function createTask() {
-  const title = $("taskTitle").value.trim();
-  const link = $("taskLink").value.trim();
-  const chatId = $("taskChatId").value.trim();
-  const type = $("taskType").value;
-
-  if (!title || !link || !chatId) {
-    triggerHaptic("error");
-    showToast("Fill in all task fields.", "error");
-    return;
-  }
-
-  triggerHaptic("medium");
-  try {
-    await apiRequest("tasks", { action: "create", title, link, chatId, type });
-    closeCreateTask();
-    $("taskTitle").value = ""; $("taskLink").value = ""; $("taskChatId").value = "";
-    triggerHaptic("success");
-    showToast("✅ Task created successfully!", "success");
+    showToast(`🎯 +${data.reward} PTS rewarded!`, "success");
     loadTasks();
-    const u = await apiRequest("user");
-    if (u.user) { currentUser = u.user; updateUserUI(); }
   } catch (err) {
-    triggerHaptic("error");
     showToast(err.message, "error");
+    loadTasks();
   }
-}
-
-async function openDepositModal() {
-  triggerHaptic("light");
-  $("depositModal").classList.remove("hidden");
-  try {
-    const info = await apiRequest("deposit", { action: "info" });
-    $("depAddressText").textContent = info.depositAddress || "Not configured";
-  } catch {}
-}
-function closeDepositModal() { $("depositModal").classList.add("hidden"); }
-
-async function copyDepositAddress() {
-  triggerHaptic("light");
-  await navigator.clipboard.writeText($("depAddressText").textContent);
-  showToast("📋 Deposit address copied!", "success");
-}
-
-async function submitDeposit() {
-  const txHash = $("depositTxHash").value.trim();
-  if (!txHash) return showToast("Enter TX Hash.", "error");
-
-  triggerHaptic("medium");
-  try {
-    await apiRequest("deposit", { action: "submit", txHash });
-    $("depositTxHash").value = "";
-    closeDepositModal();
-    triggerHaptic("success");
-    showToast("✅ Deposit submitted for verification!", "success");
-  } catch (err) {
-    triggerHaptic("error");
-    showToast(err.message, "error");
-  }
-}
-
-async function loadReferrals() {
-  try {
-    const [refData, leadData] = await Promise.all([
-      apiRequest("referral", { action: "list" }),
-      apiRequest("referral", { action: "leaderboard" })
-    ]);
-
-    const list = refData.referrals || [];
-    $("refTotal").textContent = list.length;
-    $("refCount").textContent = list.length;
-
-    if (!list.length) {
-      $("referralList").innerHTML = `<div style="text-align:center;color:var(--muted);font-size:12px;font-weight:800">No referrals yet. Share your link to start earning!</div>`;
-    } else {
-      $("referralList").innerHTML = list.map(r => `
-        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px;font-weight:800">
-          <span>👤 User ${r.referredUserId.slice(0, 5)}***</span>
-          <span style="color:#4ade80">${r.channelRewarded && r.adsRewarded ? "+500 PTS" : r.channelRewarded ? "+300 PTS" : "Awaiting Channel Join"}</span>
-        </div>
-      `).join("");
-    }
-
-    const leaders = leadData.leaderboard || [];
-    if (!leaders.length) {
-      $("leaderboardList").innerHTML = `<div style="text-align:center;color:var(--muted);font-size:12px;font-weight:800">No leaders yet.</div>`;
-    } else {
-      $("leaderboardList").innerHTML = leaders.map((l, i) => `
-        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px;font-weight:800">
-          <span>#${i + 1} <b>${l.firstName}</b></span>
-          <span style="color:#60a5fa">${l.referrals} refs (${l.referralPoints} PTS)</span>
-        </div>
-      `).join("");
-    }
-  } catch {}
-}
-
-async function copyReferral() {
-  triggerHaptic("light");
-  await navigator.clipboard.writeText($("refLink").textContent);
-  showToast("📋 Referral link copied!", "success");
-}
-
-function shareReferral() {
-  triggerHaptic("medium");
-  const link = $("refLink").textContent;
-  const url = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent("🔥 Join USDT Hub & earn instant USDT rewards!")}`;
-  openTelegram(url);
 }
 
 async function claimPromo() {
   const code = $("promoCode").value.trim().toUpperCase();
   if (!code) return;
-
-  triggerHaptic("medium");
   try {
     const data = await apiRequest("promo", { code });
-    currentUser.balance = Number(currentUser.balance || 0) + Number(data.reward || 0);
+    currentUser.balance += data.reward;
     updateUserUI();
     $("promoCode").value = "";
-    triggerHaptic("success");
     showToast(`🎁 +${data.reward} PTS claimed!`, "success");
   } catch (err) {
-    triggerHaptic("error");
     showToast(err.message, "error");
   }
 }
@@ -1001,44 +451,25 @@ async function claimPromo() {
 async function withdraw() {
   const address = $("withdrawAddress").value.trim();
   if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
-    triggerHaptic("error");
     showToast("Invalid BEP20 address.", "error");
     return;
   }
-
-  triggerHaptic("medium");
-  const btn = $("withdrawBtn");
-  btn.disabled = true;
-  btn.textContent = "⏳ PROCESSING PAYOUT...";
   try {
     const data = await apiRequest("withdraw", { address });
-    currentUser.balance = Number(currentUser.balance || 0) - Number(data.points || 0);
+    currentUser.balance -= 10000;
     updateUserUI();
     $("withdrawAddress").value = "";
-    triggerHaptic("success");
-    showToast(`✅ Withdrawal sent: ${data.amount} USDT`, "success");
+    showToast(`✅ Withdrawal successful! Hash: ${data.txHash.slice(0, 10)}...`, "success");
   } catch (err) {
-    triggerHaptic("error");
-    showToast(err.message, "error");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "💸 WITHDRAW 0.10 USDT";
+    showToast(err.message === "WITHDRAW_RULE_REQUIRES_2_ACTIVE_REFERRALS" ? "You must invite at least 2 active friends who watched 2 ads to withdraw!" : err.message, "error");
   }
 }
 
 function showPage(page) {
-  if (!appReady) return;
-  triggerHaptic("light");
   document.querySelectorAll(".page").forEach(el => el.classList.remove("active"));
-  const target = $("page-" + page);
-  if (target) target.classList.add("active");
-
-  document.querySelectorAll(".nav-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.page === page);
-  });
-
+  $("page-" + page).classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.page === page));
   if (page === "tasks") loadTasks();
-  if (page === "referrals") loadReferrals();
 }
 
 document.addEventListener("DOMContentLoaded", initialize);
