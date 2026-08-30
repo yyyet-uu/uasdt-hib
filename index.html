@@ -3102,13 +3102,13 @@ async function apiRequest(endpoint,body={}){
 
     let errMsg = data?.error || `HTTP_${response.status}`;
     
-    // Map backend error codes to exact user-friendly messages
+    // Map backend error codes to user-friendly exact messages
     if (errMsg === "ALREADY_CLAIMED") errMsg = "Promo code already claimed!";
     else if (errMsg === "INVALID_CODE") errMsg = "Invalid promo code.";
     else if (errMsg === "WITHDRAWAL_LIMIT_TODAY") errMsg = "You can only withdraw once per day.";
     else if (errMsg === "TWO_REFERRALS_REQUIRED") errMsg = "You need at least 2 referrals to withdraw.";
     else if (errMsg === "INSUFFICIENT_BALANCE") errMsg = "Insufficient balance for this amount.";
-    else if (errMsg === "STREAK_ALREADY_CLAIMED_TODAY") errMsg = "Daily streak already claimed today!";
+    else if (errMsg === "STREAK_ALREADY_CLAIMED_TODAY") errMsg = "Streak already claimed today!";
     else if (errMsg === "CHANNELS_REQUIRED") errMsg = "Please verify your channel membership first.";
 
     throw new Error(errMsg);
@@ -4752,7 +4752,7 @@ async function withdraw(){
   if(!Number.isFinite(amountUSDT) || amountUSDT < minUSDT){ triggerHaptic('error'); showToast(`Minimum withdrawal is ${minUSDT.toFixed(2)} USDT.`,'error'); return; }
 
   const points=Math.floor(amountUSDT*Number(CONFIG.POINTS_PER_USDT || 100000));
-  if(Number(currentUser?.balance || 0) < points){ triggerHaptic('error'); showToast('Insufficient balance for this amount.','error'); return; }
+  if(Number(currentUser?.balance || 0) < points){ showToast('Insufficient balance for this amount.','error'); return; }
 
   const btn=$('withdrawBtn'); btn.disabled=true; btn.textContent='⏳ PROCESSING...';
   try{
