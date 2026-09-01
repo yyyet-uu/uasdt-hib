@@ -1,0 +1,3478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+
+<meta name="theme-color" content="#050914">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<title>USDT Hub</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js?63"></script>
+<script src="//libtl.com/sdk.js" data-zone="11601754" data-sdk="show_11601754"></script>
+
+<style>
+/* ================================================================
+   USDT HUB — NEXUS UI SYSTEM
+   Completely redesigned CSS: mobile-first, premium, lightweight,
+   accessible, touch friendly, and compatible with the existing app.
+   ================================================================ */
+:root{
+  --bg:#060812;
+  --bg-soft:#0a0f1d;
+  --surface:#0d1424;
+  --surface-2:#111a2e;
+  --surface-3:#17223a;
+  --text:#f7f9ff;
+  --text-2:#b9c4d8;
+  --text-3:#71809a;
+  --line:rgba(255,255,255,.075);
+  --line-strong:rgba(255,255,255,.13);
+  --primary:#6d7cff;
+  --primary-2:#8f68ff;
+  --cyan:#35d9ff;
+  --green:#38e58b;
+  --gold:#ffc857;
+  --orange:#ff914d;
+  --red:#ff5e73;
+  --shadow:0 24px 70px rgba(0,0,0,.42);
+  --shadow-soft:0 12px 34px rgba(0,0,0,.28);
+  --radius-xl:28px;
+  --radius-lg:22px;
+  --radius-md:17px;
+  --radius-sm:13px;
+  --nav-h:78px;
+  --max:760px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg);scroll-behavior:smooth}
+body{
+  margin:0;min-height:100vh;overflow-x:hidden;padding-bottom:calc(var(--nav-h) + 28px);
+  color:var(--text);background:
+    radial-gradient(800px 420px at -10% -5%,rgba(109,124,255,.20),transparent 62%),
+    radial-gradient(700px 450px at 110% 20%,rgba(53,217,255,.10),transparent 64%),
+    radial-gradient(700px 500px at 50% 110%,rgba(143,104,255,.12),transparent 68%),var(--bg);
+  font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:34px 34px;mask-image:linear-gradient(to bottom,#000,transparent 82%);z-index:-1}
+button,input,select,textarea{font:inherit}
+button{border:0;cursor:pointer;color:inherit}
+button:disabled{opacity:.45;cursor:not-allowed}
+a{color:var(--cyan);text-decoration:none}
+.hidden{display:none!important}
+.page{display:none;max-width:var(--max);margin:0 auto;padding:10px 14px 32px;animation:pageIn .32s ease both}
+.page.active{display:block}
+@keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(109,124,255,0)}50%{box-shadow:0 0 0 8px rgba(109,124,255,.08)}}
+@keyframes shimmer{0%{background-position:-500px 0}100%{background-position:500px 0}}
+@keyframes floatUp{from{opacity:0;transform:translate(-50%,10px) scale(.8)}15%{opacity:1}to{opacity:0;transform:translate(-50%,-80px) scale(1.05)}}
+
+/* ---------- top chrome ---------- */
+.topbar{position:sticky;top:0;z-index:50;max-width:var(--max);margin:0 auto;padding:13px 14px 10px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(6,8,18,.96),rgba(6,8,18,.72),transparent);backdrop-filter:blur(12px)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}.brand-logo{width:43px;height:43px;border-radius:15px;display:grid;place-items:center;font-weight:1000;font-size:22px;background:linear-gradient(145deg,var(--primary),var(--primary-2));box-shadow:0 10px 30px rgba(109,124,255,.25)}
+.brand-name{font-size:16px;font-weight:950;letter-spacing:-.3px}.brand-sub{font-size:8px;font-weight:850;letter-spacing:1.1px;color:var(--text-3);margin-top:2px}.top-actions{display:flex;gap:8px}.icon-btn{width:40px;height:40px;border-radius:14px;background:rgba(255,255,255,.045);border:1px solid var(--line);display:grid;place-items:center;transition:.18s}.icon-btn:active{transform:scale(.92);background:rgba(255,255,255,.09)}
+
+/* ---------- common surfaces ---------- */
+.card{position:relative;margin:10px 0;padding:17px;border:1px solid var(--line);border-radius:var(--radius-lg);background:linear-gradient(145deg,rgba(17,26,46,.94),rgba(9,14,27,.94));box-shadow:var(--shadow-soft);overflow:hidden}.card::after{content:"";position:absolute;width:150px;height:150px;right:-80px;top:-90px;border-radius:50%;background:rgba(109,124,255,.08);filter:blur(10px);pointer-events:none}.section-title{display:flex;align-items:center;justify-content:space-between;margin:20px 2px 8px;font-size:11px;font-weight:950;letter-spacing:.7px;color:#dce4f3;text-transform:uppercase}.small-text{font-size:10px;line-height:1.55;color:var(--text-3)}.card-title{font-size:14px;font-weight:950}.muted{color:var(--text-3)}
+
+/* ---------- ad strip ---------- */
+.aads-wrapper{width:100%;max-width:var(--max);margin:3px auto 0;padding:7px 14px}.aads-label{font-size:8px;font-weight:900;letter-spacing:.8px;color:var(--text-3);text-align:center;margin-bottom:4px}.aads{min-height:48px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025);display:grid;place-items:center;color:var(--text-3);font-size:9px;overflow:hidden}
+
+/* ---------- hero balance ---------- */
+.balance-card{padding:20px;background:linear-gradient(145deg,rgba(109,124,255,.19),rgba(13,20,36,.96) 46%,rgba(9,14,27,.98));border-color:rgba(109,124,255,.24)}.balance-card::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.035) 45%,transparent 65%);pointer-events:none}.balance-label{font-size:9px;font-weight:900;letter-spacing:1.2px;color:#aebbd2}.balance-num{margin-top:6px;font-size:36px;font-weight:1000;letter-spacing:-1.5px;line-height:1.05}.balance-usdt{margin-top:5px;color:var(--green);font-size:11px;font-weight:850}.balance-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}.btn{min-height:45px;border-radius:15px;padding:11px 13px;font-size:10px;font-weight:950;letter-spacing:.35px;transition:transform .16s,filter .16s,box-shadow .16s}.btn:active{transform:scale(.97)}.btn-green{background:linear-gradient(135deg,#26d980,#35b96f);box-shadow:0 9px 22px rgba(56,229,139,.13)}.btn-blue{background:linear-gradient(135deg,#6577ff,#8b68ff);box-shadow:0 9px 22px rgba(109,124,255,.16)}.btn-dark{background:rgba(255,255,255,.055);border:1px solid var(--line)}.btn-small{min-height:34px;padding:7px 11px;border-radius:11px;font-size:8px}.btn:focus-visible,.icon-btn:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+/* ---------- home quick actions ---------- */
+.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.quick-tile{min-height:82px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.035);padding:12px 8px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;transition:.18s}.quick-tile:active{transform:translateY(1px) scale(.98)}.quick-icon{font-size:20px}.quick-name{font-size:8px;font-weight:900;color:#c5d0e3}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden}.stat{background:rgba(7,12,23,.76);padding:14px}.stat-icon{font-size:17px}.stat-label{font-size:7px;font-weight:900;color:var(--text-3);margin-top:6px;letter-spacing:.5px}.stat-value{font-size:17px;font-weight:950;margin-top:3px}
+.progress{height:8px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden}.progress span{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--primary),var(--cyan));transition:width .6s ease}.progress-info{display:flex;justify-content:space-between;font-size:8px;color:var(--text-3);font-weight:850;margin-top:7px}.vip-card{padding:15px}.vip-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.vip-badge{display:inline-flex;padding:7px 10px;border-radius:10px;background:rgba(255,200,87,.11);border:1px solid rgba(255,200,87,.2);font-size:9px;font-weight:950;color:var(--gold)}
+
+/* ---------- streak ---------- */
+.streak-track{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.streak-node{min-height:51px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.025);display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:7px;font-weight:900;color:var(--text-3)}.streak-node b{font-size:8px;color:var(--green);margin-top:3px}.streak-node.active{background:rgba(56,229,139,.08);border-color:rgba(56,229,139,.22);color:#dcffed}
+
+/* ---------- missions / tasks ---------- */
+.daily-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:11px}.daily-countdown{font-size:8px;font-weight:950;color:var(--gold);font-variant-numeric:tabular-nums}.mission{display:flex;gap:10px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}.mission:first-child{border-top:0}.mission-icon{width:38px;height:38px;flex:0 0 38px;border-radius:12px;display:grid;place-items:center;background:rgba(109,124,255,.09)}.mission-main{min-width:0;flex:1}.mission-name{font-size:10px;font-weight:900}.mission-progress{font-size:8px;color:var(--text-3);margin-top:4px}.mission-reward{font-size:8px;font-weight:950;color:var(--green)}.task-card,.task{border:1px solid var(--line);background:rgba(255,255,255,.025);border-radius:17px;padding:13px;margin:8px 0}.task-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.task-title{font-size:11px;font-weight:950}.task-desc{font-size:9px;line-height:1.45;color:var(--text-3);margin-top:4px}.task-actions{display:flex;gap:7px;margin-top:10px}.task-actions .btn{flex:1}
+
+/* ---------- referral ---------- */
+.referral-hero{padding:20px;background:linear-gradient(140deg,rgba(143,104,255,.17),rgba(53,217,255,.07),rgba(13,20,36,.95))}.referral-code{font-size:26px;font-weight:1000;letter-spacing:2px;margin:8px 0}.copy-row{display:grid;grid-template-columns:1fr auto;gap:8px}.copy-box{min-width:0;padding:12px 13px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.15);font-size:9px;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.leaderboard-list{display:flex;flex-direction:column;gap:7px}.leader-row{display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:9px;padding:10px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid var(--line)}.leader-rank{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:9px;font-weight:1000;background:rgba(109,124,255,.1)}.leader-name{font-size:9px;font-weight:900}.leader-meta{font-size:7px;color:var(--text-3);margin-top:2px}.leader-value{font-size:9px;font-weight:950;color:var(--gold)}
+
+/* ---------- wallet ---------- */
+.wallet-balance{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}.wallet-points{font-size:30px;font-weight:1000}.wallet-usdt{font-size:10px;color:var(--green);font-weight:900;margin-top:4px}.input{width:100%;min-height:46px;border-radius:14px;border:1px solid var(--line-strong);outline:none;background:rgba(255,255,255,.035);color:var(--text);padding:12px 13px;font-size:10px}.input:focus{border-color:rgba(109,124,255,.65);box-shadow:0 0 0 3px rgba(109,124,255,.09)}.form-label{display:block;font-size:8px;font-weight:900;color:var(--text-2);margin:12px 0 6px}.wallet-note{padding:11px;border-radius:13px;background:rgba(255,200,87,.06);border:1px solid rgba(255,200,87,.13);color:#d9c894;font-size:8px;line-height:1.5}.history-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}.history-item:last-child{border-bottom:0}.status{font-size:7px;font-weight:950;padding:5px 7px;border-radius:8px;background:rgba(56,229,139,.08);color:var(--green)}
+
+/* ---------- games ---------- */
+.games-hero{padding:20px;background:linear-gradient(135deg,rgba(109,124,255,.20),rgba(143,104,255,.12),rgba(13,20,36,.97));border-color:rgba(109,124,255,.23)}.games-kicker{font-size:8px;font-weight:950;letter-spacing:1.1px;color:#aeb8ff}.games-title{font-size:25px;font-weight:1000;letter-spacing:-1px;margin:5px 0}.games-copy{font-size:9px;color:var(--text-3);line-height:1.55;max-width:520px}.game-status-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:15px}.game-stat{padding:10px;border-radius:13px;background:rgba(0,0,0,.16);border:1px solid var(--line)}.game-stat b{display:block;font-size:13px}.game-stat span{display:block;font-size:7px;color:var(--text-3);margin-top:3px}.game-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.game-card{position:relative;min-height:158px;padding:15px;border-radius:20px;border:1px solid var(--line);background:linear-gradient(145deg,rgba(20,30,52,.95),rgba(9,14,26,.95));overflow:hidden;display:flex;flex-direction:column}.game-card::before{content:"";position:absolute;width:100px;height:100px;right:-30px;top:-35px;border-radius:50%;background:rgba(109,124,255,.12);filter:blur(5px)}.game-emoji{font-size:28px}.game-card h3{font-size:11px;margin:10px 0 4px}.game-card p{font-size:8px;color:var(--text-3);line-height:1.4;margin:0 0 12px}.game-play-btn{margin-top:auto;min-height:36px;border-radius:11px;background:rgba(109,124,255,.12);border:1px solid rgba(109,124,255,.18);font-size:8px;font-weight:950}.game-play-btn:active{transform:scale(.98)}
+
+/* ---------- support ---------- */
+.support-hero{padding:22px;background:linear-gradient(145deg,rgba(53,217,255,.10),rgba(109,124,255,.13),rgba(13,20,36,.96))}.support-icon{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;font-size:25px;background:rgba(255,255,255,.06);border:1px solid var(--line)}.support-title{font-size:24px;font-weight:1000;letter-spacing:-.8px;margin:13px 0 5px}.support-sub{font-size:9px;line-height:1.55;color:var(--text-3)}.support-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:17px}.support-link{display:flex;align-items:center;gap:10px;padding:13px;border-radius:15px;border:1px solid var(--line);background:rgba(255,255,255,.03);font-size:9px;font-weight:900}.support-link span:first-child{font-size:18px}.faq{padding:13px 0;border-bottom:1px solid var(--line)}.faq:last-child{border-bottom:0}.faq-q{font-size:10px;font-weight:950}.faq-a{font-size:8px;line-height:1.55;color:var(--text-3);margin-top:6px}
+
+/* ---------- navigation ---------- */
+.bottom-nav{position:fixed;z-index:100;left:0;right:0;bottom:0;padding:7px 12px calc(7px + env(safe-area-inset-bottom));background:linear-gradient(to top,rgba(5,7,15,.98),rgba(5,7,15,.86));backdrop-filter:blur(18px);border-top:1px solid var(--line)}.nav-inner{max-width:var(--max);margin:auto;display:grid;grid-template-columns:repeat(6,1fr);gap:4px}.nav-btn{min-width:0;min-height:58px;border-radius:14px;background:transparent;color:var(--text-3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:7px;font-weight:900}.nav-icon{font-size:18px;line-height:1}.nav-btn.active{color:#fff;background:rgba(109,124,255,.10);box-shadow:inset 0 0 0 1px rgba(109,124,255,.12)}
+
+/* ---------- modals ---------- */
+.modal{position:fixed;z-index:200;inset:0;background:rgba(0,0,0,.68);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;padding:12px}.modal-box{width:min(100%,560px);max-height:88vh;overflow:auto;border:1px solid var(--line-strong);border-radius:25px;background:linear-gradient(145deg,#121b30,#080d19);box-shadow:var(--shadow);padding:18px;animation:rise .22s ease}.modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.modal-close{width:35px;height:35px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+
+/* ---------- game modal ---------- */
+.game-modal{text-align:center}.game-stage{min-height:190px;border-radius:22px;margin:12px 0;padding:20px;display:grid;place-items:center;background:radial-gradient(circle at center,rgba(109,124,255,.13),rgba(255,255,255,.02) 55%,rgba(0,0,0,.12));border:1px solid var(--line)}.game-big{font-size:62px;filter:drop-shadow(0 14px 22px rgba(0,0,0,.25))}.choice-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.choice-btn{min-height:44px;border-radius:13px;background:rgba(255,255,255,.045);border:1px solid var(--line);font-size:9px;font-weight:950}.choice-btn.selected{border-color:rgba(109,124,255,.55);background:rgba(109,124,255,.13)}.game-result{min-height:22px;margin:9px 0;font-size:10px;font-weight:900}.game-disclaimer{font-size:7px;line-height:1.5;color:var(--text-3);margin-top:10px}
+
+/* ---------- onboarding / lock screens ---------- */
+#lockScreen,#welcomeScreen{min-height:100vh;padding:24px 16px;display:flex;align-items:center;justify-content:center}.lock-box,.welcome-box{width:min(100%,560px);border:1px solid var(--line);border-radius:30px;padding:24px;background:linear-gradient(145deg,rgba(17,26,46,.96),rgba(7,11,21,.98));box-shadow:var(--shadow)}.lock-logo{width:68px;height:68px;border-radius:23px;display:grid;place-items:center;font-size:31px;font-weight:1000;background:linear-gradient(145deg,var(--primary),var(--primary-2));margin-bottom:17px}.lock-title{font-size:26px;font-weight:1000;letter-spacing:-.8px}.lock-copy{font-size:10px;line-height:1.6;color:var(--text-3);margin:8px 0 18px}
+
+/* ---------- toast / feedback ---------- */
+.toast{position:fixed;z-index:500;left:50%;bottom:calc(var(--nav-h) + 18px);transform:translateX(-50%);width:max-content;max-width:calc(100% - 30px);padding:11px 14px;border:1px solid var(--line-strong);border-radius:13px;background:rgba(12,18,31,.96);box-shadow:var(--shadow-soft);font-size:9px;font-weight:850;opacity:0;pointer-events:none;transition:.22s}.toast.show{opacity:1;transform:translate(-50%,-4px)}.floating-reward{position:fixed;z-index:600;left:50%;top:42%;font-size:18px;font-weight:1000;color:var(--green);pointer-events:none;animation:floatUp 1.05s ease forwards}
+
+/* ---------- skeletons / empty states ---------- */
+.skeleton{background:linear-gradient(90deg,rgba(255,255,255,.035),rgba(255,255,255,.09),rgba(255,255,255,.035));background-size:700px 100%;animation:shimmer 1.5s infinite;border-radius:9px}.empty-state{text-align:center;padding:25px 12px;color:var(--text-3)}.empty-state .empty-icon{font-size:29px}.empty-state b{display:block;color:var(--text-2);font-size:10px;margin-top:7px}.empty-state span{display:block;font-size:8px;margin-top:4px}
+
+/* ---------- accessibility / light theme ---------- */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after{animation:none!important;transition:none!important}
+body.light{--bg:#eef2fa;--bg-soft:#f4f6fb;--surface:#fff;--surface-2:#f8faff;--surface-3:#eef2f9;--text:#152033;--text-2:#47556e;--text-3:#71809a;--line:rgba(15,30,55,.09);--line-strong:rgba(15,30,55,.16)}
+body.light{background:radial-gradient(800px 420px at 0 0,rgba(109,124,255,.13),transparent 60%),#eef2fa}body.light .topbar{background:linear-gradient(to bottom,rgba(238,242,250,.96),rgba(238,242,250,.75),transparent)}body.light .bottom-nav{background:rgba(244,247,252,.94)}body.light .card,.light .modal-box{background:linear-gradient(145deg,#fff,#f4f7fc)}
+
+/* ---------- responsive polish ---------- */
+@media (min-width:620px){.page{padding-left:18px;padding-right:18px}.quick-grid{grid-template-columns:repeat(4,1fr)}.stats-grid{grid-template-columns:repeat(4,1fr)}.modal{align-items:center}.nav-inner{gap:8px}.nav-btn{min-height:54px}.game-grid{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:360px){.nav-btn{font-size:6px}.nav-icon{font-size:16px}.balance-num{font-size:31px}.quick-tile{min-height:76px}.streak-node{font-size:6px}.streak-node b{font-size:7px}}
+</style>
+</head>
+
+<body>
+
+<!-- =======================================================
+     A-ADS
+======================================================= -->
+
+<div class="aads-wrapper">
+  <div class="aads-label">SPONSORED NETWORK</div>
+
+  <div style="width:100%;min-height:90px;display:flex;justify-content:center">
+    <iframe
+      data-aa="2453118"
+      src="//acceptable.a-ads.com/2453118/?size=Adaptive"
+      style="
+        border:0;
+        padding:0;
+        width:100%;
+        min-height:90px;
+        height:90px;
+        overflow:hidden;
+        background:transparent;
+        display:block;
+      ">
+    </iframe>
+  </div>
+</div>
+
+
+<!-- =======================================================
+     BROWSER SCREEN
+======================================================= -->
+
+<div id="browserView" class="browser-view hidden">
+
+  <div class="logo-orb" style="margin-bottom:18px">₮</div>
+
+  <h2 style="margin:0 0 8px;font-size:23px;font-weight:1000">
+    USDT Hub
+  </h2>
+
+  <p class="small-text" style="margin-bottom:20px">
+    Open USDT Hub inside Telegram to access earning,
+    missions, referrals and BEP20 withdrawals.
+  </p>
+
+  <button
+    class="btn btn-blue"
+    onclick="openTelegram('https://t.me/Ussdt_hub_bot')">
+    🚀 OPEN TELEGRAM
+  </button>
+
+</div>
+
+
+<!-- =======================================================
+     LOADING
+======================================================= -->
+
+<div id="loadingScreen" class="loading-screen">
+
+  <div class="loader">
+
+    <div class="logo-orb">₮</div>
+
+    <h2 style="margin:17px 0 5px;font-size:23px;font-weight:1000">
+      USDT Hub
+    </h2>
+
+    <p
+      id="loadingText"
+      style="margin:0;color:var(--muted);font-size:11px;font-weight:800">
+      Loading secure account...
+    </p>
+
+    <div class="loader-line">
+      <span></span>
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =======================================================
+     CHANNEL LOCK
+======================================================= -->
+
+<section id="lockScreen" class="lock-screen hidden">
+
+  <div class="lock-wrap">
+
+    <div class="lock-logo">
+      🔒
+    </div>
+
+    <h2 class="screen-title">
+      Join Both Channels
+    </h2>
+
+    <div class="screen-subtitle">
+      You must join <b>both</b> official channels before
+      accessing USDT Hub.
+    </div>
+
+
+    <!-- CHANNEL 1 -->
+
+    <div class="join-card">
+
+      <div class="join-row">
+
+        <div class="channel-info">
+
+          <div class="channel-icon">
+            📢
+          </div>
+
+          <div>
+            <div style="font-size:12px;font-weight:950">
+              USDT Hub Payment Proof
+            </div>
+
+            <div style="color:var(--muted);font-size:10px;margin-top:3px">
+              @usdt_hub_payment_proof
+            </div>
+          </div>
+
+        </div>
+
+        <button
+          class="btn btn-blue btn-small"
+          onclick="openTelegram('https://t.me/usdt_hub_payment_proof')">
+          JOIN
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- CHANNEL 2 -->
+
+    <div class="join-card">
+
+      <div class="join-row">
+
+        <div class="channel-info">
+
+          <div class="channel-icon">
+            💎
+          </div>
+
+          <div>
+            <div style="font-size:12px;font-weight:950">
+              USDT Gram
+            </div>
+
+            <div style="color:var(--muted);font-size:10px;margin-top:3px">
+              @usdt_g_ram
+            </div>
+          </div>
+
+        </div>
+
+        <button
+          class="btn btn-blue btn-small"
+          onclick="openTelegram('https://t.me/usdt_g_ram')">
+          JOIN
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <button
+      id="verifyBtn"
+      class="btn btn-green"
+      style="margin-top:5px"
+      onclick="verifyChannels()">
+      ✅ VERIFY BOTH CHANNELS
+    </button>
+
+    <div
+      id="verifyStatus"
+      style="
+        text-align:center;
+        color:var(--muted);
+        font-size:10px;
+        margin-top:13px;
+        font-weight:800">
+      Join both channels, then verify your membership.
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =======================================================
+     WELCOME BONUS
+======================================================= -->
+
+<section id="welcomeScreen" class="welcome-screen hidden">
+
+  <div class="welcome-wrap">
+
+    <div class="welcome-icon">
+      🎁
+    </div>
+
+    <h2 class="screen-title">
+      Welcome to USDT Hub
+    </h2>
+
+    <div class="screen-subtitle">
+      The <b style="color:#4ade80">0.01 USDT</b> welcome gift is optional.
+      Claim it if you want, or skip and start earning right away.
+    </div>
+
+    <div class="address-card">
+
+      <label
+        style="
+          display:block;
+          margin-bottom:8px;
+          color:#cbd5e1;
+          font-size:10px;
+          font-weight:900">
+        BEP20 / BNB SMART CHAIN ADDRESS
+      </label>
+
+      <input
+        id="welcomeAddress"
+        class="input"
+        placeholder="0x..."
+        autocomplete="off">
+
+      <button
+        id="claimBtn"
+        class="btn btn-green"
+        onclick="claimWelcome()">
+        🎁 CLAIM 0.01 USDT
+      </button>
+
+    <button
+      type="button"
+      class="btn skip-btn"
+      onclick="skipWelcomeBonus()">
+      ⏭️ SKIP FOR NOW
+    </button>
+
+      <div
+        style="
+          color:var(--muted);
+          text-align:center;
+          font-size:9px;
+          line-height:1.5;
+          margin-top:11px">
+        Make sure the address supports USDT on BNB Smart Chain.
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =======================================================
+     MAIN APP
+======================================================= -->
+
+<main id="app" class="app hidden">
+
+
+<!-- =======================================================
+     TOPBAR
+======================================================= -->
+
+<header class="topbar">
+
+  <div class="brand">
+
+    <div class="brand-logo">
+      ₮
+    </div>
+
+    <div>
+      <div class="brand-name">
+        USDT Hub
+      </div>
+
+      <div class="brand-sub">
+        EARN • REWARDS • WITHDRAW
+      </div>
+    </div>
+
+  </div>
+
+  <div class="top-actions">
+
+    <button
+      class="icon-btn"
+      onclick="refreshUser()">
+      🔄
+    </button>
+
+    <button
+      class="icon-btn"
+      onclick="openSupport()">
+      🎧
+    </button>
+
+  </div>
+
+</header>
+
+
+<!-- =======================================================
+     HOME
+======================================================= -->
+
+<section id="page-home" class="page active">
+  <div class="card balance-card">
+    <div class="balance-label">AVAILABLE BALANCE</div>
+    <div class="balance-num"><span id="balance">0</span> <span style="font-size:11px;color:var(--text-3)">PTS</span></div>
+    <div class="balance-usdt">≈ $<span id="balanceUsdt">0.00</span> USDT</div>
+    <div class="balance-actions">
+      <button class="btn btn-green" onclick="showPage('wallet')">💸 WITHDRAW</button>
+      <button class="btn btn-blue" onclick="showPage('tasks')">⚡ EARN NOW</button>
+    </div>
+  </div>
+
+  <div class="section-title"><span>Quick actions</span><span class="muted">YOUR HUB</span></div>
+  <div class="quick-grid">
+    <button class="quick-tile" onclick="watchAd('monetag')"><span class="quick-icon">📺</span><span class="quick-name">Watch Ad</span></button>
+    <button class="quick-tile" onclick="showPage('tasks')"><span class="quick-icon">🎯</span><span class="quick-name">Missions</span></button>
+    <button class="quick-tile" onclick="showPage('games')"><span class="quick-icon">🎮</span><span class="quick-name">Games</span></button>
+    <button class="quick-tile" onclick="showPage('referrals')"><span class="quick-icon">👥</span><span class="quick-name">Team</span></button>
+  </div>
+
+  <div class="section-title"><span>Today's pulse</span><span id="missionStatus" class="muted">0/4</span></div>
+  <div class="card">
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-icon">📺</div><div class="stat-label">ADS TODAY</div><div id="adsCount" class="stat-value">0</div></div>
+      <div class="stat"><div class="stat-icon">🎯</div><div class="stat-label">TASKS TODAY</div><div id="taskCount" class="stat-value">0</div></div>
+      <div class="stat"><div class="stat-icon">👥</div><div class="stat-label">REFERRALS</div><div id="refCount" class="stat-value">0</div></div>
+      <div class="stat"><div class="stat-icon">⭐</div><div class="stat-label">VIP</div><div id="vipStatusBox" class="stat-value" style="font-size:13px">Bronze</div></div>
+    </div>
+  </div>
+
+  <div class="section-title"><span>⭐ VIP journey</span><span id="vipNextText" class="muted">Next: Silver</span></div>
+  <div class="card vip-card">
+    <div class="vip-head"><div id="vipBadge" class="vip-badge">Bronze</div><span class="small-text">More activity → more multiplier</span></div>
+    <div class="progress"><span id="vipProgress"></span></div>
+    <div class="progress-info"><span id="vipCurrentPts">0 PTS</span><span id="vipNextPts">25,000 PTS</span></div>
+  </div>
+
+  <div class="section-title"><span>🔥 Streak</span><button id="claimStreakBtn" class="btn btn-green btn-small" onclick="claimDailyStreak()">CLAIM</button></div>
+  <div class="card">
+    <div class="small-text" style="margin-bottom:10px">Come back daily. Your streak makes your earning routine stronger.</div>
+    <div id="streakTrack" class="streak-track">
+      <div class="streak-node">D1<b>+50</b></div><div class="streak-node">D2<b>+75</b></div><div class="streak-node">D3<b>+100</b></div><div class="streak-node">D4<b>+150</b></div><div class="streak-node">D5<b>+200</b></div><div class="streak-node">D6<b>+300</b></div><div class="streak-node">D7<b>+500</b></div>
+    </div>
+  </div>
+
+  <div class="section-title"><span>🎯 Today</span><span class="muted">small goals, steady progress</span></div>
+  <div class="card">
+    <div class="daily-head"><div><div class="card-title">Daily Missions</div><div class="small-text">Finish the set before the daily reset.</div></div><div id="dailyMissionCountdown" class="daily-countdown">23:59:59</div></div>
+    <div id="missionsList">
+      <div class="mission"><div class="mission-icon">📺</div><div class="mission-main"><div class="mission-name">Watch 5 ads</div><div id="missionAdsProgress" class="mission-progress">0 / 5</div></div><div class="mission-reward">+100</div></div>
+      <div class="mission"><div class="mission-icon">🎯</div><div class="mission-main"><div class="mission-name">Complete 3 tasks</div><div id="missionTasksProgress" class="mission-progress">0 / 3</div></div><div class="mission-reward">+150</div></div>
+      <div class="mission"><div class="mission-icon">👥</div><div class="mission-main"><div class="mission-name">Invite 2 active users</div><div id="missionRefProgress" class="mission-progress">0 / 2</div></div><div class="mission-reward">+300</div></div>
+      <div class="mission"><div class="mission-icon">🏆</div><div class="mission-main"><div class="mission-name">Complete all daily goals</div><div id="missionAllProgress" class="mission-progress">0 / 4</div></div><div class="mission-reward">MEGA +500</div></div>
+    </div>
+  </div>
+
+  <div class="section-title"><span>🏆 Your next unlock</span></div>
+  <div class="card">
+    <div class="card-title">Keep your momentum</div>
+    <div class="small-text" style="margin:5px 0 12px">Your profile grows through verified activity: ads, tasks, referrals, streaks and achievements.</div>
+    <div class="progress"><span id="homeXpProgress" style="width:0%"></span></div>
+    <div class="progress-info"><span id="homeLevelText">Level 1</span><span id="homeXpText">0 XP</span></div>
+  </div>
+</section>
+
+<section id="page-tasks" class="page">
+
+  <div class="section-title">
+
+    <span>⚡ Earn Points</span>
+
+    <span
+      id="resetCountdown"
+      style="
+        color:#facc15;
+        font-size:9px;
+        font-weight:900">
+      Resetting...
+    </span>
+
+  </div>
+
+
+  <!-- MONETAG -->
+
+  <div class="ad-card">
+
+    <div class="ad-head">
+
+      <div class="ad-icon">
+        📺
+      </div>
+
+      <div class="ad-info">
+
+        <div class="ad-name">
+          Monetag Ads
+        </div>
+
+        <div
+          id="monetagCount"
+          class="ad-count">
+          0 / 30 today
+        </div>
+
+      </div>
+
+      <button
+        id="monetagBtn"
+        class="ad-watch"
+        onclick="watchAd('monetag')">
+        WATCH
+      </button>
+
+    </div>
+
+    <div class="ad-progress">
+      <span id="monetagFill"></span>
+    </div>
+
+  </div>
+
+
+  <!-- HILLTOP -->
+
+  <div class="ad-card">
+
+    <div class="ad-head">
+
+      <div
+        class="ad-icon"
+        style="background:rgba(249,115,22,.12)">
+        ⚡
+      </div>
+
+      <div class="ad-info">
+
+        <div class="ad-name">
+          Hilltop Ads
+        </div>
+
+        <div
+          id="hilltopCount"
+          class="ad-count">
+          0 / 15 today
+        </div>
+
+      </div>
+
+      <button
+        id="hilltopBtn"
+        class="ad-watch"
+        style="background:linear-gradient(145deg,#f97316,#c2410c);box-shadow:0 4px 0 #9a3412"
+        onclick="watchAd('hilltop')">
+        WATCH
+      </button>
+
+    </div>
+
+    <div class="ad-progress">
+      <span
+        id="hilltopFill"
+        style="background:linear-gradient(90deg,#ea580c,#fb923c)">
+      </span>
+    </div>
+
+  </div>
+
+
+  <!-- TASKS -->
+
+  <div class="section-title">
+
+    <span>🎯 Community Tasks</span>
+
+    <button
+      class="btn btn-blue btn-small"
+      onclick="openCreateTask()">
+      + CREATE
+    </button>
+
+  </div>
+
+    <div id="tasksList">
+    <div class="card" style="text-align:center">
+      <div class="small-text">
+        Loading tasks...
+      </div>
+    </div>
+  </div>
+
+</section>
+
+
+<!-- =======================================================
+     REFERRALS
+======================================================= -->
+
+<section id="page-referrals" class="page">
+
+  <div class="section-title">
+    <span>👥 Referral Center</span>
+  </div>
+
+
+  <!-- REFERRAL LINK -->
+
+  <div class="card">
+
+    <div
+      style="
+        color:var(--muted);
+        text-align:center;
+        font-size:10px;
+        font-weight:800">
+      YOUR PERSONAL INVITE LINK
+    </div>
+
+    <div id="refLink" class="ref-link">
+      Loading...
+    </div>
+
+    <div class="ref-actions">
+
+      <button
+        class="btn btn-purple"
+        onclick="copyReferral()">
+        📋 COPY
+      </button>
+
+      <button
+        class="btn btn-blue"
+        onclick="shareReferral()">
+        🚀 SHARE
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- REFERRAL REWARDS -->
+
+  <div class="card">
+
+    <div class="card-title">
+      💰 Referral Rewards
+    </div>
+
+    <div
+      class="small-text"
+      style="margin-top:7px">
+      Your referral earns you rewards when they complete
+      the required activities.
+    </div>
+
+    <div
+      style="
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:9px;
+        margin-top:13px">
+
+      <div class="stat">
+
+        <div class="stat-label">
+          CHANNEL JOIN
+        </div>
+
+        <div
+          style="
+            color:#4ade80;
+            font-size:16px;
+            font-weight:1000">
+          +200 PTS
+        </div>
+
+      </div>
+
+      <div class="stat">
+
+        <div class="stat-label">
+          2 ADS WATCHED
+        </div>
+
+        <div
+          style="
+            color:#4ade80;
+            font-size:16px;
+            font-weight:1000">
+          +300 PTS
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- MILESTONES -->
+
+  <div class="section-title">
+    <span>🎁 Referral Milestones</span>
+  </div>
+
+  <div class="card">
+
+    <div class="small-text" style="margin-bottom:12px">
+      Bigger community = bigger bonuses.
+    </div>
+
+
+    <!-- 3 -->
+
+    <div class="milestone">
+
+      <div class="milestone-row">
+
+        <div class="milestone-icon">
+          🥉
+        </div>
+
+        <div class="milestone-info">
+
+          <div class="milestone-title">
+            Invite 3 Friends
+          </div>
+
+          <div
+            id="milestone3Text"
+            class="milestone-desc">
+            0 / 3 referrals
+          </div>
+
+        </div>
+
+        <div class="milestone-reward">
+          +500
+        </div>
+
+      </div>
+
+      <div class="milestone-bar">
+        <span id="milestone3Bar"></span>
+      </div>
+
+    </div>
+
+
+    <!-- 10 -->
+
+    <div class="milestone">
+
+      <div class="milestone-row">
+
+        <div class="milestone-icon">
+          🥈
+        </div>
+
+        <div class="milestone-info">
+
+          <div class="milestone-title">
+            Invite 10 Friends
+          </div>
+
+          <div
+            id="milestone10Text"
+            class="milestone-desc">
+            0 / 10 referrals
+          </div>
+
+        </div>
+
+        <div class="milestone-reward">
+          +2,000
+        </div>
+
+      </div>
+
+      <div class="milestone-bar">
+        <span id="milestone10Bar"></span>
+      </div>
+
+    </div>
+
+
+    <!-- 25 -->
+
+    <div class="milestone">
+
+      <div class="milestone-row">
+
+        <div class="milestone-icon">
+          💎
+        </div>
+
+        <div class="milestone-info">
+
+          <div class="milestone-title">
+            Invite 25 Friends
+          </div>
+
+          <div
+            id="milestone25Text"
+            class="milestone-desc">
+            0 / 25 referrals
+          </div>
+
+        </div>
+
+        <div class="milestone-reward">
+          +5,000
+        </div>
+
+      </div>
+
+      <div class="milestone-bar">
+        <span id="milestone25Bar"></span>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- LEADERBOARD -->
+
+  <div class="section-title">
+    <span>🏆 Top Referrers</span>
+  </div>
+
+  <div
+    id="leaderboardList"
+    class="card">
+    Loading leaderboard...
+  </div>
+
+
+  <!-- REFERRAL LIST -->
+
+  <div class="section-title">
+    <span>
+      Your Referrals
+      (<span id="refTotal">0</span>)
+    </span>
+  </div>
+
+  <div
+    id="referralList"
+    class="card">
+    No referrals yet.
+  </div>
+
+</section>
+
+
+<!-- =======================================================
+     WALLET
+======================================================= -->
+
+<section id="page-games" class="page">
+  <div class="card games-hero">
+    <div class="games-kicker">ARCADE • PLAY • LEVEL UP</div>
+    <div class="games-title">🎮 Reward Arcade</div>
+    <div class="games-copy">A separate playground so Home stays clean. Games are quick, mobile-friendly challenges. Results and any real rewards are decided by the server.</div>
+    <div class="game-status-row"><div class="game-stat"><b id="gamesPlayedCount">0</b><span>PLAYED TODAY</span></div><div class="game-stat"><b id="gamesWonCount">0</b><span>WINS</span></div><div class="game-stat"><b id="gamesLeftCount">20</b><span>PLAYS LEFT</span></div></div>
+  </div>
+  <div class="section-title"><span>Pick a challenge</span><span class="muted">FREE PLAY</span></div>
+  <div class="game-grid">
+    <article class="game-card"><div class="game-emoji">🪙</div><h3>Coin Flip</h3><p>Pick heads or tails and see if luck is on your side.</p><button class="game-play-btn" onclick="openRewardGame('coinflip')">PLAY NOW</button></article>
+    <article class="game-card"><div class="game-emoji">🎲</div><h3>Dice Challenge</h3><p>Roll the virtual dice and chase the high side.</p><button class="game-play-btn" onclick="openRewardGame('dice')">ROLL DICE</button></article>
+    <article class="game-card"><div class="game-emoji">🔢</div><h3>Pick a Number</h3><p>Choose a number and test your prediction.</p><button class="game-play-btn" onclick="openRewardGame('number')">PICK</button></article>
+    <article class="game-card"><div class="game-emoji">🎟️</div><h3>Scratch Reveal</h3><p>Reveal a hidden result with a satisfying scratch-style animation.</p><button class="game-play-btn" onclick="openRewardGame('scratch')">SCRATCH</button></article>
+    <article class="game-card"><div class="game-emoji">🎡</div><h3>Lucky Wheel</h3><p>Spin through a colorful set of server-selected outcomes.</p><button class="game-play-btn" onclick="openRewardGame('wheel')">SPIN</button></article>
+    <article class="game-card"><div class="game-emoji">🎁</div><h3>Mystery Box</h3><p>Open today's surprise challenge and discover the result.</p><button class="game-play-btn" onclick="openRewardGame('mystery')">OPEN BOX</button></article>
+  </div>
+  <div class="card"><div class="card-title">✨ Play smart</div><div class="small-text" style="margin-top:6px">No game button on this page directly edits your balance. The frontend only requests a game result; the backend remains the authority for game limits, XP and rewards.</div></div>
+</section>
+
+<section id="page-wallet" class="page">
+
+  <div class="section-title">
+    <span>💰 Wallet</span>
+  </div>
+
+
+  <!-- WITHDRAW -->
+
+  <div class="card">
+
+    <div
+      style="
+        text-align:center;
+        color:var(--muted);
+        font-size:10px;
+        font-weight:800">
+      AVAILABLE BALANCE
+    </div>
+
+    <div
+      id="withdrawBalance"
+      style="
+        text-align:center;
+        margin:7px 0;
+        font-size:32px;
+        font-weight:1000">
+      0 PTS
+    </div>
+
+    <div
+      style="
+        text-align:center;
+        color:#4ade80;
+        font-size:10px;
+        font-weight:900;
+        margin-bottom:18px">
+      Minimum withdrawal: 10,000 PTS = 0.10 USDT
+    </div>
+
+
+    <label style="display:block;color:var(--muted);font-size:9px;font-weight:900;margin-bottom:7px">WITHDRAWAL AMOUNT</label>
+    <div class="withdraw-amount-wrap">
+      <input id="withdrawAmount" class="input" style="margin:0" type="number" inputmode="decimal" min="0.10" step="0.01" placeholder="Enter USDT amount" autocomplete="off">
+      <div class="amount-unit">USDT</div>
+    </div>
+    <div class="small-text" style="margin:7px 0 14px">Minimum: 0.10 USDT • One withdrawal per day • 2 valid referrals required</div>
+
+    <label
+      style="
+        display:block;
+        color:var(--muted);
+        font-size:9px;
+        font-weight:900;
+        margin-bottom:7px">
+      DESTINATION BEP20 ADDRESS
+    </label>
+
+    <input
+      id="withdrawAddress"
+      class="input"
+      placeholder="0x... BSC address"
+      autocomplete="off">
+
+    <button
+      id="withdrawBtn"
+      class="btn btn-green"
+      onclick="withdraw()">
+      💸 WITHDRAW
+    </button>
+
+  </div>
+
+
+  <!-- DEPOSIT -->
+
+  <div class="card">
+
+    <div class="card-title">
+      💳 Deposit USDT
+    </div>
+
+    <div
+      class="small-text"
+      style="margin:7px 0 13px">
+      Deposit USDT on BNB Smart Chain to purchase
+      task credits.
+    </div>
+
+    <button
+      class="btn btn-purple"
+      onclick="openDepositModal()">
+      💳 VIEW DEPOSIT ADDRESS
+    </button>
+
+  </div>
+
+
+  <!-- PROOFS -->
+
+  <div class="card">
+
+    <div class="card-title">
+      📢 Payment Proofs
+    </div>
+
+    <div
+      class="small-text"
+      style="margin:7px 0 13px">
+      Successful payouts are published in our official
+      payment proof channel.
+    </div>
+
+    <button
+      class="btn btn-blue"
+      onclick="openTelegram('https://t.me/usdt_hub_payment_proof')">
+      📢 VIEW PAYMENT PROOFS
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- =======================================================
+     SUPPORT
+======================================================= -->
+
+<section id="page-support" class="page">
+  <div class="card support-hero">
+    <div class="support-icon">🎧</div>
+    <div class="support-title">Need a hand?</div>
+    <div class="support-sub">Get help with withdrawals, tasks, channel verification, missing rewards or account questions. Never share your seed phrase or private key.</div>
+    <div class="support-actions">
+      <button class="btn btn-blue" onclick="openSupport()">💬 CONTACT SUPPORT</button>
+      <button class="btn btn-dark" onclick="openFAQ()">❓ OPEN FAQ</button>
+    </div>
+  </div>
+  <div class="section-title"><span>Help center</span><span class="muted">FAST ANSWERS</span></div>
+  <div class="card">
+    <div class="support-link" onclick="openSupport()"><span>💬</span><div><b>Official support</b><div class="small-text">Talk to the USDT Hub support team</div></div></div>
+    <div style="height:8px"></div>
+    <div class="support-link" onclick="openFAQ()"><span>📚</span><div><b>Frequently asked questions</b><div class="small-text">Withdrawals, referrals, rewards and verification</div></div></div>
+    <div style="height:8px"></div>
+    <div class="support-link" onclick="showToast('🔐 Never share your private key or seed phrase.')"><span>🔐</span><div><b>Security check</b><div class="small-text">Only your public BEP20 address is needed for payouts</div></div></div>
+  </div>
+  <div class="section-title"><span>Common questions</span></div>
+  <div class="card">
+    <div class="faq"><div class="faq-q">How do I earn?</div><div class="faq-a">Watch available ads, complete missions and tasks, keep your streak alive, and invite active users through your referral link.</div></div>
+    <div class="faq"><div class="faq-q">When are referral rewards credited?</div><div class="faq-a">Referral rewards depend on verified activity. A referral must meet the required conditions before rewards are credited.</div></div>
+    <div class="faq"><div class="faq-q">What network is used for withdrawals?</div><div class="faq-a">Withdrawals use USDT on BEP20 / BNB Smart Chain. Double-check the address before submitting.</div></div>
+    <div class="faq"><div class="faq-q">What is the minimum withdrawal?</div><div class="faq-a">The current app configuration uses 10,000 PTS as the minimum withdrawal threshold.</div></div>
+    <div class="faq"><div class="faq-q">Why do I need channel verification?</div><div class="faq-a">Required channel membership is part of the app's account-unlock and eligibility flow.</div></div>
+  </div>
+  <div class="card"><div class="card-title">🛡️ Golden rule</div><div class="small-text" style="margin-top:6px">USDT Hub will never need your seed phrase, private key or wallet password. If anyone asks for them, do not send them.</div></div>
+</section>
+
+
+</main>
+
+
+<!-- =======================================================
+     BOTTOM NAV
+======================================================= -->
+
+<nav id="bottomNav" class="bottom-nav hidden">
+  <div class="nav-inner">
+    <button class="nav-btn active" data-page="home" onclick="showPage('home')"><span class="nav-icon">🏠</span>Home</button>
+    <button class="nav-btn" data-page="tasks" onclick="showPage('tasks')"><span class="nav-icon">⚡</span>Earn</button>
+    <button class="nav-btn" data-page="games" onclick="showPage('games')"><span class="nav-icon">🎮</span>Games</button>
+    <button class="nav-btn" data-page="referrals" onclick="showPage('referrals')"><span class="nav-icon">👥</span>Team</button>
+    <button class="nav-btn" data-page="wallet" onclick="showPage('wallet')"><span class="nav-icon">💰</span>Wallet</button>
+    <button class="nav-btn" data-page="support" onclick="showPage('support')"><span class="nav-icon">🎧</span>Help</button>
+  </div>
+</nav>
+
+
+<!-- =======================================================
+     TOAST
+======================================================= -->
+
+<div id="toast" class="toast"></div>
+
+
+<!-- =======================================================
+     DEPOSIT MODAL
+======================================================= -->
+
+<div id="depositModal" class="modal hidden">
+
+  <div class="modal-box">
+
+    <div
+      style="
+        font-size:18px;
+        font-weight:1000;
+        margin-bottom:7px">
+      💳 Deposit USDT
+    </div>
+
+    <div
+      class="small-text"
+      style="margin-bottom:14px">
+      Send USDT on BEP20 to the address below.
+    </div>
+
+    <div
+      id="depAddressText"
+      style="
+        padding:13px;
+        border-radius:15px;
+        word-break:break-all;
+        background:rgba(3,9,20,.8);
+        border:1px solid var(--line);
+        color:#38bdf8;
+        font-size:10px;
+        font-weight:900;
+        margin-bottom:10px">
+      Loading...
+    </div>
+
+    <button
+      class="btn btn-purple"
+      style="margin-bottom:10px"
+      onclick="copyDepositAddress()">
+      📋 COPY ADDRESS
+    </button>
+
+    <input
+      id="depositTxHash"
+      class="input"
+      placeholder="0x... transaction hash">
+
+    <button
+      class="btn btn-green"
+      onclick="submitDeposit()">
+      ✅ SUBMIT TRANSACTION
+    </button>
+
+    <button
+      class="btn btn-dark"
+      style="margin-top:8px"
+      onclick="closeDepositModal()">
+      CLOSE
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- =======================================================
+     TASK MODAL
+======================================================= -->
+
+<div id="taskModal" class="modal hidden">
+
+  <div class="modal-box">
+
+    <div
+      style="
+        font-size:18px;
+        font-weight:1000;
+        margin-bottom:7px">
+      🎯 Create Community Task
+    </div>
+
+    <div
+      class="small-text"
+      style="margin-bottom:14px">
+      Cost: 100,000 PTS ($1.00).
+      Admin accounts can create tasks for free.
+    </div>
+
+    <input
+      id="taskTitle"
+      class="input"
+      placeholder="Channel / Bot Title">
+
+    <input
+      id="taskLink"
+      class="input"
+      placeholder="https://t.me/example">
+
+    <input
+      id="taskChatId"
+      class="input"
+      placeholder="@username or Chat ID">
+
+    <select
+      id="taskType"
+      class="input">
+
+      <option value="channel">
+        Channel
+      </option>
+
+      <option value="bot">
+        Bot
+      </option>
+
+    </select>
+
+    <button
+      class="btn btn-blue"
+      onclick="createTask()">
+      CREATE TASK
+    </button>
+
+    <button
+      class="btn btn-purple"
+      style="margin-top:8px"
+      onclick="openDepositModal()">
+      💳 DEPOSIT
+    </button>
+
+    <button
+      class="btn btn-dark"
+      style="margin-top:8px"
+      onclick="closeCreateTask()">
+      CANCEL
+    </button>
+
+  </div>
+
+</div>
+
+
+<script>
+"use strict";
+
+/* =========================================================
+   CONFIG MATCHES BACKEND
+   ========================================================= */
+
+const CONFIG = {
+
+  BOT_USERNAME: "Ussdt_hub_bot",
+
+  SUPPORT_USERNAME: "Usdt_hub_support",
+
+  PROOF_CHANNEL:
+    "@usdt_hub_payment_proof",
+
+  CHANNELS:[
+    "@usdt_hub_payment_proof",
+    "@usdt_g_ram"
+  ],
+
+  WELCOME_USDT:0.01,
+
+  AD_REWARD:50,
+
+  MONETAG_LIMIT:30,
+
+  HILLTOP_LIMIT:15,
+
+  ADSGRAM_LIMIT:25,
+
+  REFERRAL_CHANNEL_JOIN:200,
+
+  REFERRAL_ADS_WATCHED:300,
+
+  TASK_REWARD:150,
+
+  TASK_CREATE_COST:100000,
+
+  TASK_LIMIT:500,
+
+  WITHDRAW_MIN_POINTS:10000,
+
+  POINTS_PER_USDT:100000,
+
+  DAILY_MISSIONS:{
+    ads:5,
+    tasks:3,
+    referrals:1
+  },
+
+  MISSION_BONUS:400,
+
+  REFERRAL_MILESTONES:{
+    3:500,
+    10:2000,
+    25:5000
+  },
+
+  VIP_TIERS:{
+    Bronze:0,
+    Silver:25000,
+    Gold:75000,
+    Diamond:200000
+  }
+
+};
+
+
+/* =========================================================
+   HILLTOP
+========================================================= */
+
+const HILLTOP_DIRECT_URL =
+"https://sorrowfulpsychology.com/bS3hVo0.Pz3-p-v/bxmRVTJJZYDd0/3/MyzSQS2XOMTuIk5eLLT-cbz/N/DcYN5/MjzZMm";
+
+
+/* =========================================================
+   TELEGRAM
+========================================================= */
+
+const tg = window.Telegram?.WebApp;
+
+if(tg){
+
+  tg.ready();
+  tg.expand();
+
+  try{
+    tg.setHeaderColor("#050914");
+    tg.setBackgroundColor("#050914");
+  }catch{}
+
+}
+
+const INIT_DATA =
+tg?.initData || "";
+
+let currentUser = null;
+
+let appReady = false;
+
+
+/* =========================================================
+   SHORTCUT
+========================================================= */
+
+function $(id){
+  return document.getElementById(id);
+}
+
+
+/* =========================================================
+   HAPTIC
+========================================================= */
+
+function triggerHaptic(type="medium"){
+
+  try{
+
+    if(!tg?.HapticFeedback)
+      return;
+
+    if(type==="success")
+      tg.HapticFeedback.notificationOccurred("success");
+
+    else if(type==="error")
+      tg.HapticFeedback.notificationOccurred("error");
+
+    else
+      tg.HapticFeedback.impactOccurred(type);
+
+  }catch{}
+
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function showToast(message,type=""){
+
+  const toast=$("toast");
+
+  toast.textContent=message;
+
+  toast.className=
+    "toast show " + type;
+
+  clearTimeout(showToast.timer);
+
+  showToast.timer=
+    setTimeout(()=>{
+      toast.className="toast";
+    },3500);
+
+}
+
+
+/* =========================================================
+   TELEGRAM LINK
+========================================================= */
+
+function openTelegram(url){
+
+  try{
+
+    if(tg?.openTelegramLink)
+      tg.openTelegramLink(url);
+
+    else
+      window.open(url,"_blank");
+
+  }catch{
+
+    window.open(url,"_blank");
+
+  }
+
+}
+
+
+/* =========================================================
+   SUPPORT
+========================================================= */
+
+function openSupport(){
+
+  openTelegram(
+    "https://t.me/" +
+    CONFIG.SUPPORT_USERNAME
+  );
+
+}
+
+
+/* =========================================================
+   FAQ
+========================================================= */
+
+function openFAQ(){
+
+  showPage("support");
+
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+function setLoading(show){
+
+  $("loadingScreen")
+    .classList
+    .toggle("hidden",!show);
+
+}
+
+
+/* =========================================================
+   RESET COUNTDOWN
+========================================================= */
+
+function startResetCountdown(){
+
+  function update(){
+
+    const now=new Date();
+
+    const next=new Date();
+
+    next.setHours(24,0,0,0);
+
+    let diff=next-now;
+
+    if(diff<0)
+      diff=0;
+
+    const h=
+      String(
+        Math.floor(
+          diff/(1000*60*60)
+        )
+      ).padStart(2,"0");
+
+    const m=
+      String(
+        Math.floor(
+          diff/(1000*60)%60
+        )
+      ).padStart(2,"0");
+
+    const s=
+      String(
+        Math.floor(
+          diff/1000%60
+        )
+      ).padStart(2,"0");
+
+    $("resetCountdown").textContent=
+      `Reset ${h}:${m}:${s}`;
+
+    const daily=$("dailyMissionCountdown");
+    if(daily) daily.textContent=`RESET ${h}:${m}:${s}`;
+
+  }
+
+  update();
+
+  setInterval(update,1000);
+
+}
+
+
+/* =========================================================
+   API
+========================================================= */
+
+async function apiRequest(endpoint,body={}){
+
+  const response=
+    await fetch(
+      `/api/index?endpoint=${encodeURIComponent(endpoint)}`,
+      {
+        method:"POST",
+
+        headers:{
+          "Content-Type":
+            "application/json",
+
+          "X-Telegram-Init-Data":
+            INIT_DATA
+        },
+
+        body:
+          JSON.stringify({
+            ...body,
+            endpoint
+          })
+      }
+    );
+
+  const text=
+    await response.text();
+
+  let data;
+
+  try{
+
+    data=JSON.parse(text);
+
+  }catch{
+
+    throw new Error(
+      text || "Server returned an invalid response."
+    );
+
+  }
+
+  if(
+    !response.ok ||
+    data?.success===false
+  ){
+
+    let errMsg = data?.error || `HTTP_${response.status}`;
+    
+    // Map backend error codes to user-friendly exact messages
+    if (errMsg === "ALREADY_CLAIMED") errMsg = "Promo code already claimed!";
+    else if (errMsg === "INVALID_CODE") errMsg = "Invalid promo code.";
+    else if (errMsg === "WITHDRAWAL_LIMIT_TODAY") errMsg = "You can only withdraw once per day.";
+    else if (errMsg === "TWO_REFERRALS_REQUIRED") errMsg = "You need at least 2 referrals to withdraw.";
+    else if (errMsg === "INSUFFICIENT_BALANCE") errMsg = "Insufficient balance for this amount.";
+    else if (errMsg === "STREAK_ALREADY_CLAIMED_TODAY") errMsg = "Streak already claimed today!";
+    else if (errMsg === "CHANNELS_REQUIRED") errMsg = "Please verify your channel membership first.";
+
+    throw new Error(errMsg);
+
+  }
+
+  return data;
+
+}
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+async function initialize(){
+
+  startResetCountdown();
+
+  if(!INIT_DATA){
+
+    $("browserView")
+      .classList
+      .remove("hidden");
+
+    setLoading(false);
+
+    return;
+
+  }
+
+  setLoading(true);
+
+  try{
+
+    const params=
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const startParam=
+      tg?.initDataUnsafe?.start_param ||
+      params.get("tgWebAppStartParam") ||
+      params.get("startapp") ||
+      "";
+
+    const data=
+      await apiRequest(
+        "user",
+        {startParam}
+      );
+
+    if(!data?.user)
+      throw new Error(
+        "USER_DATA_MISSING"
+      );
+
+    currentUser=data.user;
+
+    updateUserUI();
+
+    if(!currentUser.channelsVerified){
+
+      setLoading(false);
+
+      showLock();
+
+      return;
+
+    }
+
+    if(!currentUser.welcomeBonusClaimed){
+
+      setLoading(false);
+
+      showWelcome();
+
+      return;
+
+    }
+
+    unlockApp();
+
+  }catch(error){
+
+    setLoading(false);
+
+    $("loadingText").textContent=
+      "Error: " + error.message;
+
+    showToast(
+      error.message,
+      "error"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   SCREEN MANAGEMENT
+========================================================= */
+
+function hideAllScreens(){
+
+  $("browserView")
+    .classList.add("hidden");
+
+  $("lockScreen")
+    .classList.add("hidden");
+
+  $("welcomeScreen")
+    .classList.add("hidden");
+
+  $("app")
+    .classList.add("hidden");
+
+  $("bottomNav")
+    .classList.add("hidden");
+
+}
+
+
+function showLock(){
+
+  hideAllScreens();
+
+  $("lockScreen")
+    .classList
+    .remove("hidden");
+
+}
+
+
+function showWelcome(){
+
+  hideAllScreens();
+
+  $("welcomeScreen")
+    .classList
+    .remove("hidden");
+
+}
+
+
+function unlockApp(){
+
+  setLoading(false);
+
+  hideAllScreens();
+
+  $("app")
+    .classList
+    .remove("hidden");
+
+  $("bottomNav")
+    .classList
+    .remove("hidden");
+
+  appReady=true;
+
+  updateUserUI();
+
+  loadTasks();
+
+  loadReferrals();
+
+}
+
+
+/* =========================================================
+   VIP
+========================================================= */
+
+function updateVIP(points){
+
+  let tier="Bronze";
+
+  if(points>=200000)
+    tier="Diamond";
+
+  else if(points>=75000)
+    tier="Gold";
+
+  else if(points>=25000)
+    tier="Silver";
+
+  const thresholds=[
+    0,
+    25000,
+    75000,
+    200000
+  ];
+
+  const names=[
+    "Bronze",
+    "Silver",
+    "Gold",
+    "Diamond"
+  ];
+
+  const index=
+    names.indexOf(tier);
+
+  const current=
+    thresholds[index];
+
+  const next=
+    thresholds[index+1];
+
+  if(!next){
+
+    $("vipProgress").style.width="100%";
+
+    $("vipNextText").textContent=
+      "MAX VIP";
+
+    $("vipCurrentPts").textContent=
+      points.toLocaleString()+" PTS";
+
+    $("vipNextPts").textContent=
+      "MAX";
+
+    return;
+
+  }
+
+  const percent=
+    Math.max(
+      0,
+      Math.min(
+        100,
+        ((points-current)/
+        (next-current))*100
+      )
+    );
+
+  $("vipProgress").style.width=
+    percent+"%";
+
+  $("vipNextText").textContent=
+    "Next: "+names[index+1];
+
+  $("vipCurrentPts").textContent=
+    points.toLocaleString()+" PTS";
+
+  $("vipNextPts").textContent=
+    next.toLocaleString()+" PTS";
+
+}
+
+
+/* =========================================================
+   USER UI
+========================================================= */
+
+function updateUserUI(){
+
+  if(!currentUser)
+    return;
+
+  const pts=
+    Number(
+      currentUser.balance || 0
+    );
+
+  $("balance").textContent=
+    pts.toLocaleString();
+
+  $("balanceUsdt").textContent=
+    (pts/CONFIG.POINTS_PER_USDT)
+      .toFixed(2);
+
+  $("withdrawBalance").textContent=
+    pts.toLocaleString()+" PTS";
+
+  $("adsCount").textContent=
+    Number(
+      currentUser.adsWatched || 0
+    );
+
+  $("taskCount").textContent=
+    Number(
+      currentUser.tasksCompleted || 0
+    );
+
+  $("refCount").textContent=
+    Number(
+      currentUser.referrals || 0
+    );
+
+  const vip=
+    currentUser.vipTier ||
+    "Bronze";
+
+  $("vipBadge").textContent=vip;
+
+  $("vipStatusBox").textContent=vip;
+
+  updateVIP(pts);
+
+  const botName=
+    currentUser.botUsername ||
+    CONFIG.BOT_USERNAME;
+
+  $("refLink").textContent=
+    `https://t.me/${botName}?startapp=ref_${currentUser.telegramId}`;
+
+
+  /* MONETAG */
+
+  const monetag=
+    Number(
+      currentUser.monetagToday || 0
+    );
+
+  $("monetagCount").textContent=
+    `${monetag} / ${CONFIG.MONETAG_LIMIT} today`;
+
+  $("monetagFill").style.width=
+    Math.min(
+      100,
+      (monetag/
+      CONFIG.MONETAG_LIMIT)*100
+    )+"%";
+
+
+  /* HILLTOP */
+
+  const hilltop=
+    Number(
+      currentUser.hilltopToday || 0
+    );
+
+  $("hilltopCount").textContent=
+    `${hilltop} / ${CONFIG.HILLTOP_LIMIT} today`;
+
+  $("hilltopFill").style.width=
+    Math.min(
+      100,
+      (hilltop/
+      CONFIG.HILLTOP_LIMIT)*100
+    )+"%";
+
+
+  /* STREAK */
+
+  const streak=
+    Number(
+      currentUser.streakDay || 0
+    );
+
+  const nodes=
+    $("streakTrack").children;
+
+  for(
+    let i=0;
+    i<nodes.length;
+    i++
+  ){
+
+    nodes[i].className=
+      i<streak
+      ? "streak-node active"
+      : "streak-node";
+
+  }
+
+
+  updateMissions();
+
+  updateMilestones();
+
+}
+
+
+/* =========================================================
+   REFRESH
+========================================================= */
+
+async function refreshUser(){
+
+  triggerHaptic("light");
+
+  try{
+
+    const data=
+      await apiRequest("user");
+
+    if(data.user){
+
+      currentUser=data.user;
+
+      updateUserUI();
+
+      showToast(
+        "🔄 Account refreshed!",
+        "success"
+      );
+
+    }
+
+  }catch(error){
+
+    showToast(
+      error.message,
+      "error"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   TWO CHANNEL VERIFICATION
+========================================================= */
+
+async function verifyChannels(){
+
+  triggerHaptic("light");
+
+  const btn=
+    $("verifyBtn");
+
+  btn.disabled=true;
+
+  btn.textContent=
+    "⏳ VERIFYING...";
+
+  $("verifyStatus").textContent=
+    "Checking both channel memberships...";
+
+  try{
+
+    const data=
+      await apiRequest(
+        "verify-membership"
+      );
+
+    if(data.joined){
+
+      currentUser.channelsVerified=true;
+
+      triggerHaptic("success");
+
+      $("verifyStatus").textContent=
+        "✅ Both channels verified!";
+
+      if(
+        !currentUser.welcomeBonusClaimed
+      ){
+
+        showWelcome();
+
+      }else{
+
+        unlockApp();
+
+      }
+
+    }else{
+
+      triggerHaptic("error");
+
+      $("verifyStatus").textContent=
+        "❌ Both channels are required.";
+
+      showToast(
+        "Join both channels first.",
+        "error"
+      );
+
+      btn.disabled=false;
+
+      btn.textContent=
+        "✅ VERIFY BOTH CHANNELS";
+
+    }
+
+  }catch(error){
+
+    triggerHaptic("error");
+
+    showToast(
+      error.message,
+      "error"
+    );
+
+    btn.disabled=false;
+
+    btn.textContent=
+      "✅ VERIFY BOTH CHANNELS";
+
+  }
+
+}
+
+
+/* =========================================================
+   WELCOME BONUS
+========================================================= */
+
+async function claimWelcome(){
+
+  const address=
+    $("welcomeAddress")
+      .value
+      .trim();
+
+  if(
+    !/^0x[a-fA-F0-9]{40}$/
+      .test(address)
+  ){
+
+    triggerHaptic("error");
+
+    showToast(
+      "Invalid BEP20 address.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  const btn=
+    $("claimBtn");
+
+  btn.disabled=true;
+
+  btn.textContent=
+    "⏳ PROCESSING...";
+
+  try{
+
+    const data=
+      await apiRequest(
+        "claim-welcome",
+        {address}
+      );
+
+    currentUser.welcomeBonusClaimed=true;
+
+    triggerHaptic("success");
+
+    showToast(
+      `🎁 0.01 USDT sent!`,
+      "success"
+    );
+
+    setTimeout(
+      unlockApp,
+      800
+    );
+
+  }catch(error){
+
+    triggerHaptic("error");
+
+    showToast(
+      error.message,
+      "error"
+    );
+
+    btn.disabled=false;
+
+    btn.textContent=
+      "🎁 CLAIM 0.01 USDT";
+
+  }
+
+}
+
+
+/* =========================================================
+   ADS
+========================================================= */
+
+async function watchAd(provider="monetag"){
+
+  triggerHaptic("medium");
+
+  const btn=
+    provider==="hilltop"
+    ? $("hilltopBtn")
+    : $("monetagBtn");
+
+  btn.disabled=true;
+
+  try{
+
+    if(provider==="monetag"){
+
+      if(
+        typeof window.show_11601754
+        ==="function"
+      ){
+
+        await window.show_11601754();
+
+      }else{
+
+        throw new Error(
+          "Monetag ad is unavailable right now."
+        );
+
+      }
+
+    }
+
+
+    if(provider==="hilltop"){
+
+      try{
+
+        if(tg?.openLink)
+          tg.openLink(
+            HILLTOP_DIRECT_URL
+          );
+
+        else
+          window.open(
+            HILLTOP_DIRECT_URL,
+            "_blank"
+          );
+
+      }catch{
+
+        window.open(
+          HILLTOP_DIRECT_URL,
+          "_blank"
+        );
+
+      }
+
+      showToast(
+        "⏳ Registering ad view...",
+        ""
+      );
+
+      await new Promise(
+        resolve=>setTimeout(
+          resolve,
+          6000
+        )
+      );
+
+    }
+
+
+    const result=
+      await apiRequest(
+        "ads",
+        {provider}
+      );
+
+    currentUser.balance=
+      Number(
+        currentUser.balance || 0
+      )+
+      Number(
+        result.reward || 0
+      );
+
+    currentUser.adsWatched=
+      result.totalAds;
+
+    if(
+      result.monetagToday !==
+      undefined
+    ){
+
+      currentUser.monetagToday=
+        result.monetagToday;
+
+    }
+
+    if(
+      result.hilltopToday !==
+      undefined
+    ){
+
+      currentUser.hilltopToday=
+        result.hilltopToday;
+
+    }
+
+    updateUserUI();
+
+    triggerHaptic("success");
+
+    showToast(
+      `+${result.reward} PTS earned!`,
+      "success"
+    );
+
+  }catch(error){
+
+    triggerHaptic("error");
+
+    showToast(
+      error.message,
+      "error"
+    );
+
+  }finally{
+
+    btn.disabled=false;
+
+  }
+
+}
+
+
+/* =========================================================
+   DAILY MISSIONS
+========================================================= */
+
+function updateMissions(){
+
+  if(!currentUser)
+    return;
+
+  const ads=
+    Number(
+      currentUser.adsWatched || 0
+    );
+
+  const tasks=
+    Number(
+      currentUser.tasksCompleted || 0
+    );
+
+  const refs=
+    Number(
+      currentUser.referrals || 0
+    );
+
+  const checkin=
+    Number(
+      currentUser.streakDay || 0
+    )>0;
+
+
+  $("missionAdsProgress").textContent=
+    `${Math.min(ads,5)} / 5`;
+
+  $("missionTasksProgress").textContent=
+    `${Math.min(tasks,3)} / 3`;
+
+  $("missionRefProgress").textContent=
+    `${Math.min(refs,1)} / 1`;
+
+  $("missionCheckinProgress").textContent=
+    checkin
+    ? "Completed today"
+    : "Not completed";
+
+
+  const completed=
+    (ads>=5?1:0)+
+    (tasks>=3?1:0)+
+    (refs>=1?1:0)+
+    (checkin?1:0);
+
+  $("missionStatus").textContent=
+    `${completed}/4`;
+
+  if(completed===4){
+
+    $("missionBonusBox")
+      .classList
+      .remove("hidden");
+
+  }else{
+
+    $("missionBonusBox")
+      .classList
+      .add("hidden");
+
+  }
+
+}
+
+
+/* =========================================================
+   REFERRAL MILESTONES
+========================================================= */
+
+function updateMilestones(){
+
+  if(!currentUser)
+    return;
+
+  const refs=
+    Number(
+      currentUser.referrals || 0
+    );
+
+
+  const m3=
+    Math.min(
+      100,
+      refs/3*100
+    );
+
+  const m10=
+    Math.min(
+      100,
+      refs/10*100
+    );
+
+  const m25=
+    Math.min(
+      100,
+      refs/25*100
+    );
+
+
+  $("milestone3Bar").style.width=
+    m3+"%";
+
+  $("milestone10Bar").style.width=
+    m10+"%";
+
+  $("milestone25Bar").style.width=
+    m25+"%";
+
+
+  $("milestone3Text").textContent=
+    `${Math.min(refs,3)} / 3 referrals`;
+
+  $("milestone10Text").textContent=
+    `${Math.min(refs,10)} / 10 referrals`;
+
+  $("milestone25Text").textContent=
+    `${Math.min(refs,25)} / 25 referrals`;
+
+}
+
+
+/* =========================================================
+   STREAK
+========================================================= */
+
+async function claimDailyStreak(){
+
+  triggerHaptic("light");
+
+  try{
+
+    const data=
+      await apiRequest(
+        "claim-streak"
+      );
+
+    currentUser.balance=
+      Number(
+        currentUser.balance || 0
+      )+
+      Number(
+        data.reward || 0
+      );
+
+    currentUser.streakDay=
+      data.streakDay;
+
+    updateUserUI();
+
+    triggerHaptic("success");
+
+    showToast(
+      `🔥 Day ${data.streakDay}: +${data.reward} PTS`,
+      "success"
+    );
+
+  }catch(error){
+
+    triggerHaptic("error");
+
+    showToast(
+      error.message,
+      "error"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   PROMO
+========================================================= */
+
+async function claimPromo(){
+
+  const code=
+    $("promoCode")
+      .value
+      .trim()
+      .toUpperCase();
+
+  if(!code){
+
+    showToast(
+      "Enter a promo code.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  try{
+
+    const data=
+      await apiRequest(
+        "promo",
+        {code}
+      );
+
+    currentUser.balance=
+      Number(
+        currentUser.balance || 0
+      )+
+      Number(
+        data.reward || 0
+      );
+
+    $("promoCode").value="";
+
+    updateUserUI();
+
+    triggerHaptic("success");
+
+    showToast(
+      `🎁 +${data.reward} PTS claimed!`,
+      "success"
+    );
+
+  }catch(error){
+
+    triggerHaptic("error");
+
+    showToast(
+      error.message,
+      "error"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   TASKS
+========================================================= */
+
+async function loadTasks(){
+
+  const container=
+    $("tasksList");
+
+  try{
+
+    const data=
+      await apiRequest(
+        "tasks",
+        {action:"list"}
+      );
+
+    const list=
+      data.tasks || [];
+
+    if(!list.length){
+
+      container.innerHTML=`
+        <div class="card" style="text-align:center">
+          <div style="font-size:25px;margin-bottom:7px">
+            🎯
+          </div>
+          <div style="font-weight:950;font-size:12px">
+            No active tasks
+          </div>
+          <div class="small-text">
+            Check back later for new community tasks.
+          </div>
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    container.innerHTML=
+      list.map(task=>`
+
+        <div
+          class="task-card"
+          id="task-card-${escapeHTML(task.id)}">
+
+          <div class="task-top">
+
+            <div class="task-title">
+              ${escapeHTML(task.title)}
+            </div>
+
+            <div class="task-reward">
+              +${Number(task.reward || 0)} PTS
+            </div>
+
+          </div>
+
+          <div class="task-meta">
+            ${Number(task.completions || 0)}
+            /
+            ${Number(task.maxCompletions || CONFIG.TASK_LIMIT)}
+            completed
+          </div>
+
+          <button
+            id="task-btn-${escapeHTML(task.id)}"
+            class="btn btn-blue"
+            onclick="startTaskCountdown(
+              '${escapeAttr(task.id)}',
+              '${escapeAttr(task.link || "")}'
+            )">
+            🚀 JOIN & CLAIM
+          </button>
+
+        </div>
+
+      `).join("");
+
+  }catch(error){
+
+    container.innerHTML=`
+      <div class="card" style="text-align:center">
+        <div class="small-text">
+          Unable to load tasks right now.
+        </div>
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* =========================================================
+   HTML SAFETY
+========================================================= */
+
+function escapeHTML(value){
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+function escapeAttr(value){
+
+  return String(value ?? "")
+    .replace(/\\/g,"\\\\")
+    .replace(/'/g,"\\'")
+    .replace(/"/g,"&quot;");
+
+}
+
+
+/* =========================================================
+   TASK COUNTDOWN
+========================================================= */
+
+function startTaskCountdown(
+  taskId,
+  link
+){
+
+  triggerHaptic("light");
+
+  if(link)
+    openTelegram(link);
+
+  const btn=
+    $(`task-btn-${taskId}`);
+
+  if(!btn)
+    return;
+
+  btn.disabled=true;
+
+  let seconds=3;
+
+  btn.className=
+    "btn btn-orange";
+
+  btn.textContent=
+    `⏳ Wait ${seconds}s`;
+
+  const timer=
+    setInterval(()=>{
+
+      seconds--;
+
+      if(seconds>0){
+
+        btn.textContent=
+          `⏳ Wait ${seconds}s`;
+
+      }else{
+
+        clearInterval(timer);
+
+        btn.textContent=
+          "✅ CLAIMING...";
+
+        executeTaskCompletion(
+          taskId
+        );
+
+      }
+
+    },1000);
+
+}
+
+
+/* =========================================================
+   COMPLETE TASK
+========================================================= */
+
+async function executeTaskCompletion(taskId){
+
+  try{
+
+    const data=
+      await apiRequest(
+        "tasks",
+        {
+          action:"complete",
+          taskId
+        }
+      );
+
+    currentUser.balance=
+      Number(
+        currentUser.balance || 0
+      )+
+      Number(
+        data.reward || 0
+      );
+
+    currentUser.tasksCompleted=
+      Number(
+        currentUser.tasksCompleted || 0
+      )+1;
+
+    updateUserUI();
+
+    triggerHaptic("success");
+
+    showToast(
+      `🎯 +${data.reward} PTS rewarded!`,
+      "success"
+    );
+
+    await loadTasks();
+
+  }catch(error){
+
+    triggerHaptic("error");
+
+    showToast(
+      error.message,
+      "error"
+    );
+
+    await loadTasks();
+
+  }
+
+}
+
+
+/* =========================================================
+   CREATE TASK
+========================================================= */
+
+function openCreateTask(){
+
+  triggerHaptic("light");
+
+  $("taskModal")
+    .classList
+    .remove("hidden");
+
+}
+
+
+function closeCreateTask(){
+
+  $("taskModal")
+    .classList
+    .add("hidden");
+
+}
+
+
+async function createTask(){
+
+  const title=
+    $("taskTitle").value.trim();
+
+  const link=
+    $("taskLink").value.trim();
+
+  const chatId=
+    $("taskChatId").value.trim();
+
+  const type=
+    $("taskType").value;
+
+
+  if(!title || !link || !chatId){
+
+    triggerHaptic("error");
+
+    showToast(
+      "Fill in all task fields.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    await apiRequest(
+      "tasks",
+      {
+        action:"create",
+        title,
+        link,
+        chatId,
+        type
+      }
+    );
+
+    closeCreateTask();
+
+    $("taskTitle").value="";
+    $("taskLink").value="";
+    $("taskChatId").value="";
+
+    triggerHaptic("success");
+
+    showToast(
+      "✅ Task created!",
+      "success"
+    );
+
+    await loadTasks();
+
+    await refreshUser();
+
+  }catch(error){
+
+    triggerHaptic("error");
+
+    showToast(
+      error.message,
+      "error"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   DEPOSIT
+========================================================= */
+
+async function openDepositModal(){
+
+  triggerHaptic("light");
+
+  $("depositModal")
+    .classList
+    .remove("hidden");
+
+  try{
+
+    const info=
+      await apiRequest(
+        "deposit",
+        {action:"info"}
+      );
+
+    $("depAddressText")
+      .textContent=
+      info.depositAddress ||
+      "Not configured";
+
+  }catch{
+
+    $("depAddressText")
+      .textContent=
+      "Unable to load address.";
+
+  }
+
+}
+
+
+function closeDepositModal(){
+
+  $("depositModal")
+    .classList
+    .add("hidden");
+
+}
+
+
+async function copyDepositAddress(){
+
+  try{
+
+    await navigator.clipboard.writeText(
+      $("depAddressText").textContent
+    );
+
+    showToast(
+      "📋 Address copied!",
+      "success"
+    );
+
+  }catch{
+
+    showToast(
+      "Copy failed.",
+      "error"
+    );
+
+  }
+
+}
+
+
+async function submitDeposit(){
+
+  const txHash=
+    $("depositTxHash")
+      .value
+      .trim();
+
+  if(!txHash){
+
+    showToast(
+      "Enter transaction hash.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  try{
+
+    await apiRequest(
+      "deposit",
+      {
+        action:"submit",
+        txHash
+      }
+    );
+
+    $("depositTxHash").value="";
+
+    closeDepositModal();
+
+    triggerHaptic("success");
+
+    showToast(
+      "✅ Deposit submitted!",
+      "success"
+    );
+
+  }catch(error){
+
+    triggerHaptic("error");
+
+    showToast(
+      error.message,
+      "error"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   REFERRALS
+========================================================= */
+
+async function loadReferrals(){
+
+  try{
+
+    const [
+      refData,
+      leadData
+    ]=
+      await Promise.all([
+
+        apiRequest(
+          "referral",
+          {action:"list"}
+        ),
+
+        apiRequest(
+          "referral",
+          {action:"leaderboard"}
+        )
+
+      ]);
+
+
+    const list=
+      refData.referrals || [];
+
+    $("refTotal").textContent=
+      list.length;
+
+    $("refCount").textContent=
+      list.length;
+
+
+    if(!list.length){
+
+      $("referralList").innerHTML=`
+        <div style="text-align:center">
+          <div style="font-size:24px">
+            👥
+          </div>
+
+          <div
+            style="
+              font-size:11px;
+              font-weight:950;
+              margin-top:5px">
+            No referrals yet
+          </div>
+
+          <div class="small-text">
+            Share your invite link to start earning.
+          </div>
+        </div>
+      `;
+
+    }else{
+
+      $("referralList").innerHTML=
+        list.map(
+          referral=>`
+
+          <div class="list-row">
+
+            <span>
+              👤 User
+              ${escapeHTML(
+                String(
+                  referral.referredUserId || ""
+                ).slice(0,5)
+              )}***
+            </span>
+
+            <span
+              style="color:#4ade80">
+              ${
+                referral.channelRewarded &&
+                referral.adsRewarded
+                ? "+500 PTS"
+                : referral.channelRewarded
+                ? "+200 PTS"
+                : "Pending"
+              }
+            </span>
+
+          </div>
+
+        `
+        ).join("");
+
+    }
+
+
+    const leaders=
+      leadData.leaderboard || [];
+
+    if(!leaders.length){
+
+      $("leaderboardList").innerHTML=`
+        <div
+          style="
+            text-align:center;
+            color:var(--muted);
+            font-size:10px">
+          No leaderboard data yet.
+        </div>
+      `;
+
+    }else{
+
+      $("leaderboardList").innerHTML=
+        leaders.map(
+          (leader,index)=>`
+
+          <div class="list-row">
+
+            <div style="display:flex;align-items:center;gap:9px">
+
+              <div class="list-rank">
+                ${index+1}
+              </div>
+
+              <span>
+                ${escapeHTML(
+                  leader.firstName ||
+                  "User"
+                )}
+              </span>
+
+            </div>
+
+            <span style="color:#60a5fa">
+              ${Number(
+                leader.referrals || 0
+              )} refs
+            </span>
+
+          </div>
+
+        `
+        ).join("");
+
+    }
+
+  }catch{
+
+    $("leaderboardList").innerHTML=`
+      <div class="small-text" style="text-align:center">
+        Leaderboard unavailable.
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* =========================================================
+   COPY REFERRAL
+========================================================= */
+
+async function copyReferral(){
+
+  try{
+
+    await navigator.clipboard.writeText(
+      $("refLink").textContent
+    );
+
+    triggerHaptic("light");
+
+    showToast(
+      "📋 Referral link copied!",
+      "success"
+    );
+
+  }catch{
+
+    showToast(
+      "Copy failed.",
+      "error"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   SHARE REFERRAL
+========================================================= */
+
+function shareReferral(){
+
+  triggerHaptic("medium");
+
+  const link=
+    $("refLink").textContent;
+
+  const url=
+    `https://t.me/share/url?url=${
+      encodeURIComponent(link)
+    }&text=${
+      encodeURIComponent(
+        "🔥 Join USDT Hub and earn rewards!"
+      )
+    }`;
+
+  openTelegram(url);
+
+}
+
+
+/* =========================================================
+   WITHDRAW
+========================================================= */
+
+async function withdraw(){
+
+  const address=$('withdrawAddress').value.trim();
+  const amountUSDT=Number($('withdrawAmount')?.value || 0);
+  const minUSDT=Number(CONFIG.WITHDRAW_MIN_POINTS || 10000)/Number(CONFIG.POINTS_PER_USDT || 100000);
+
+  if(!/^0x[a-fA-F0-9]{40}$/.test(address)){ triggerHaptic('error'); showToast('Invalid BEP20 address.','error'); return; }
+  if(!Number.isFinite(amountUSDT) || amountUSDT < minUSDT){ triggerHaptic('error'); showToast(`Minimum withdrawal is ${minUSDT.toFixed(2)} USDT.`,'error'); return; }
+
+  const points=Math.floor(amountUSDT*Number(CONFIG.POINTS_PER_USDT || 100000));
+  if(Number(currentUser?.balance || 0) < points){ triggerHaptic('error'); showToast('Insufficient balance for this amount.','error'); return; }
+
+  const btn=$('withdrawBtn'); btn.disabled=true; btn.textContent='⏳ PROCESSING...';
+  try{
+    const data=await apiRequest('withdraw',{address,amount:amountUSDT,amountUSDT,points});
+    currentUser.balance=Number(currentUser.balance||0)-Number(data.points||points);
+    updateUserUI();
+    $('withdrawAddress').value=''; if($('withdrawAmount')) $('withdrawAmount').value='';
+    triggerHaptic('success'); showToast(`✅ ${data.amount ?? amountUSDT} USDT sent!`,'success');
+  }catch(error){ triggerHaptic('error'); showToast(error.message,'error'); }
+  finally{ btn.disabled=false; btn.textContent='💸 WITHDRAW'; }
+}
+
+function skipWelcomeBonus(){
+  triggerHaptic('light');
+  unlockApp();
+  showToast('Welcome bonus skipped. You can start earning now.','success');
+}
+
+function updateDailyMissionCountdown(){
+  const el=$('dailyMissionCountdown'); if(!el) return;
+  const now=new Date(), next=new Date(now); next.setHours(24,0,0,0);
+  let d=Math.max(0,next-now);
+  const h=String(Math.floor(d/3600000)).padStart(2,'0'); d%=3600000;
+  const m=String(Math.floor(d/60000)).padStart(2,'0'); d%=60000;
+  const sec=String(Math.floor(d/1000)).padStart(2,'0'); el.textContent=`RESET ${h}:${m}:${sec}`;
+}
+setInterval(updateDailyMissionCountdown,1000);
+
+
+/* =========================================================
+   PAGE NAVIGATION
+========================================================= */
+
+function showPage(page){
+
+  if(!appReady)
+    return;
+
+  triggerHaptic("light");
+
+  document
+    .querySelectorAll(".page")
+    .forEach(
+      pageElement=>
+        pageElement
+          .classList
+          .remove("active")
+    );
+
+
+  const target=
+    $("page-"+page);
+
+  if(target)
+    target.classList.add("active");
+
+
+  document
+    .querySelectorAll(".nav-btn")
+    .forEach(btn=>{
+
+      btn.classList.toggle(
+        "active",
+        btn.dataset.page===page
+      );
+
+    });
+
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+
+  if(page==="tasks")
+    loadTasks();
+
+  if(page==="referrals")
+    loadReferrals();
+
+}
+
+
+/* =========================================================
+   MODAL OUTSIDE CLICK
+========================================================= */
+
+document
+  .addEventListener(
+    "click",
+    event=>{
+
+      if(
+        event.target.classList
+          .contains("modal")
+      ){
+
+        event.target
+          .classList
+          .add("hidden");
+
+      }
+
+    }
+  );
+
+
+/* =========================================================
+   START
+========================================================= */
+
+document
+  .addEventListener(
+    "DOMContentLoaded",
+    initialize
+  );
+
+
+/* ================================================================
+   PREMIUM ARCADE + DASHBOARD ENHANCEMENTS
+   ================================================================ */
+let rewardGameType="";
+let rewardGameChoice="";
+const GAME_NAMES={coinflip:"Coin Flip",dice:"Dice Challenge",number:"Pick a Number",scratch:"Scratch Reveal",wheel:"Lucky Wheel",mystery:"Mystery Box"};
+
+function gameModalMarkup(){
+  if(document.getElementById("rewardGameModal")) return;
+  const el=document.createElement("div");
+  el.id="rewardGameModal";
+  el.className="modal hidden";
+  el.innerHTML=`<div class="modal-box game-modal">
+    <div class="modal-head"><div><div class="small-text">REWARD ARCADE</div><div id="rewardGameTitle" class="card-title">Game</div></div><button class="modal-close" onclick="closeRewardGame()">✕</button></div>
+    <div id="rewardGameStage" class="game-stage"><div id="rewardGameBig" class="game-big">🎮</div></div>
+    <div id="rewardGameChoices" class="choice-grid"></div>
+    <div id="rewardGameResult" class="game-result"></div>
+    <button id="rewardGamePlayBtn" class="btn btn-blue" style="width:100%" onclick="playRewardGame()">PLAY</button>
+    <div class="game-disclaimer">Game limits and real rewards are enforced by the server. This interface never credits points locally.</div>
+  </div>`;
+  document.body.appendChild(el);
+}
+
+function openRewardGame(type){
+  gameModalMarkup();
+  rewardGameType=type; rewardGameChoice="";
+  const modal=document.getElementById("rewardGameModal");
+  const title=document.getElementById("rewardGameTitle");
+  const stage=document.getElementById("rewardGameBig");
+  const choices=document.getElementById("rewardGameChoices");
+  const result=document.getElementById("rewardGameResult");
+  const play=document.getElementById("rewardGamePlayBtn");
+  title.textContent=GAME_NAMES[type]||"Reward Game";
+  result.textContent=""; play.disabled=false; play.textContent="PLAY";
+  const icons={coinflip:"🪙",dice:"🎲",number:"🔢",scratch:"🎟️",wheel:"🎡",mystery:"🎁"};
+  stage.textContent=icons[type]||"🎮";
+  if(type==="coinflip") choices.innerHTML=`<button class="choice-btn" onclick="selectGameChoice('heads',this)">🙂 HEADS</button><button class="choice-btn" onclick="selectGameChoice('tails',this)">🦅 TAILS</button>`;
+  else if(type==="number") choices.innerHTML=[1,2,3,4,5,6].map(n=>`<button class="choice-btn" onclick="selectGameChoice('${n}',this)">${n}</button>`).join("");
+  else if(type==="dice") choices.innerHTML=`<button class="choice-btn" onclick="selectGameChoice('high',this)">⬆️ HIGH (4–6)</button><button class="choice-btn" onclick="selectGameChoice('low',this)">⬇️ LOW (1–3)</button>`;
+  else choices.innerHTML=`<button class="choice-btn selected" onclick="selectGameChoice('play',this)">✨ READY</button>`;
+  modal.classList.remove("hidden");
+}
+function closeRewardGame(){const m=document.getElementById("rewardGameModal");if(m)m.classList.add("hidden")}
+function selectGameChoice(value,button){rewardGameChoice=value;document.querySelectorAll("#rewardGameChoices .choice-btn").forEach(b=>b.classList.remove("selected"));button.classList.add("selected")}
+async function playRewardGame(){
+  const play=document.getElementById("rewardGamePlayBtn"), result=document.getElementById("rewardGameResult"), stage=document.getElementById("rewardGameBig");
+  if(!rewardGameType) return;
+  if(["coinflip","dice","number"].includes(rewardGameType)&&!rewardGameChoice){result.textContent="Choose an option first.";return}
+  play.disabled=true; play.textContent="PLAYING…"; result.textContent="";
+  stage.animate([{transform:"scale(.85) rotate(-6deg)"},{transform:"scale(1.08) rotate(6deg)"},{transform:"scale(1) rotate(0)"}],{duration:650,easing:"ease-out"});
+  try{
+    const data=await apiRequest("game-play",{game:rewardGameType,choice:rewardGameChoice});
+    const won=!!data?.won;
+    result.textContent=won?`🎉 ${data.message||"Nice!"}`:(data?.message||"Try again next time.");
+    stage.textContent=won?"🎉":"✨";
+    if(data?.user) updateUserUI(data.user); else await refreshUser();
+    if(won) showFloatingReward(`+${Number(data.reward||0).toLocaleString()} PTS`);
+    await loadGameStatus();
+    play.textContent="PLAY AGAIN";
+    play.disabled=false;
+  }catch(error){result.textContent=error?.message||"Game unavailable right now.";play.disabled=false;play.textContent="TRY AGAIN"}
+}
+async function loadGameStatus(){
+  try{
+    const data=await apiRequest("game-status",{});
+    const s=data?.status||data||{};
+    const played=Number(s.gamesToday??s.playedToday??0);
+    const limit=Number(s.dailyLimit??20);
+    const won=Number(s.gamesWon??0);
+    const left=Math.max(0,limit-played);
+    const a=document.getElementById("gamesPlayedCount"),b=document.getElementById("gamesWonCount"),c=document.getElementById("gamesLeftCount");
+    if(a)a.textContent=played.toLocaleString();if(b)b.textContent=won.toLocaleString();if(c)c.textContent=left.toLocaleString();
+  }catch(e){}
+}
+function showFloatingReward(text){const el=document.createElement("div");el.className="floating-reward";el.textContent=text;document.body.appendChild(el);setTimeout(()=>el.remove(),1100)}
+
+async function loadPremiumDashboard(){
+  try{
+    const data=await apiRequest("dashboard",{});
+    const d=data?.dashboard||data||{};
+    const xp=Number(d?.xp?.current??d?.xp??0), pct=Number(d?.xp?.progress??d?.xpProgress??0);
+    const level=d?.level?.level??d?.level??1;
+    const bar=document.getElementById("homeXpProgress"),lt=document.getElementById("homeLevelText"),xt=document.getElementById("homeXpText");
+    if(bar)bar.style.width=Math.max(0,Math.min(100,pct))+"%";
+    if(lt)lt.textContent=`Level ${level}`;
+    if(xt)xt.textContent=`${xp.toLocaleString()} XP`;
+  }catch(e){}
+}
+
+const _originalShowPage=window.showPage;
+window.showPage=function(page){
+  if(typeof _originalShowPage==="function")_originalShowPage(page);
+  if(page==="games")setTimeout(loadGameStatus,80);
+  if(page==="home")setTimeout(loadPremiumDashboard,80);
+};
+
+document.addEventListener("click",e=>{if(e.target?.id==="rewardGameModal")closeRewardGame()});
+
+/* Final UI bootstrap */
+(function(){
+  try{
+    const tg=window.Telegram?.WebApp;
+    if(tg){tg.ready();tg.expand();document.documentElement.style.setProperty("--tg-bg",tg.backgroundColor||"");}
+  }catch(e){}
+  gameModalMarkup();
+  setTimeout(loadPremiumDashboard,700);
+})();
+</script>
+
+</body>
+</html>
